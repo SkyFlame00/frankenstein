@@ -1,6 +1,9 @@
 #include "GameController.h"
 
 #include <iostream>
+#include <list>
+#include <algorithm>
+#include <math.h>
 #include "../vendor/imgui/imgui_impl_opengl3.h"
 #include "../vendor/imgui/imgui_impl_glfw.h"
 
@@ -43,6 +46,22 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+bool LineSegmentAndPlaneIntersection(glm::vec3 planePoint, glm::vec3 planeNorm, glm::vec3 segmentV1, glm::vec3 segmentV2, glm::vec3 &intersection)
+{
+    glm::vec3 lineDir = segmentV2 - segmentV1;
+    float prod = glm::dot(lineDir, planeNorm);
+
+    if (prod == 0)
+    {
+        // Then line segment and plane are parallel, no intersection
+        return false;
+    }
+
+    float d = glm::dot(planePoint - segmentV1, planeNorm) / prod;
+    intersection = segmentV1 + lineDir * d;
+    return true;
+}
+
 // camera
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -61,6 +80,40 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 bool cursor_enabled = true;
+
+struct Triangle
+{
+    glm::vec3 v0, v1, v2;
+};
+
+struct Edge
+{
+    glm::vec3 v0, v1;
+};
+
+struct Polygon
+{
+    float a, b, c, d;
+    int count = 0;
+    glm::vec3 norm;
+    std::list<Triangle> triangles;
+    std::list<glm::vec3> vertices;
+    std::list< std::pair<glm::vec3, int> > indexedVertices;
+    std::list<Edge> allEdges;
+    std::list<Edge> borderEdges;
+
+    auto FindIndexedVertex(glm::vec3 vertex)
+    {
+        for (auto& pair : indexedVertices)
+        {
+            if (pair.first == vertex)
+            {
+                return pair.second;
+            }
+        }
+    }
+};
+
 
 
 /* Static members definition */
@@ -134,16 +187,29 @@ void GameController::Run()
     //points.push_back(Point(0, 1, 1));
     //points.push_back(Point(1, 1, 1));
 
-    //std::vector<Point_3> points;
-    //points.push_back(Point_3(0, 0, 0));
-    //points.push_back(Point_3(1, 0, 0));
-    //points.push_back(Point_3(0, 0, 1));
-    //points.push_back(Point_3(1, 0, 1));
-    //points.push_back(Point_3(0, 1, 0));
-    //points.push_back(Point_3(1, 1, 0));
-    //points.push_back(Point_3(0, 1, 1));
-    //points.push_back(Point_3(1, 1, 1));
+    std::vector<Point_3> points_before2;
+    points_before2.push_back(Point_3(0, 0, 0));
+    points_before2.push_back(Point_3(1, 0, 0));
+    points_before2.push_back(Point_3(0, 0, 1));
+    points_before2.push_back(Point_3(1, 0, 1));
+    points_before2.push_back(Point_3(0, 1, 0));
+    points_before2.push_back(Point_3(1, 1, 0));
+    points_before2.push_back(Point_3(0, 1, 1));
+    points_before2.push_back(Point_3(1, 1, 1));
+    points_before2.push_back(Point_3(0.5, 2.0, 0.5));
 
+    glm::mat4 transform(1.0);
+    transform = glm::rotate(transform, glm::radians(20.0f), glm::vec3(1.0, 0.5, 0.3));
+
+    std::vector<Point_3> points_before;
+    for (auto& point : points_before2)
+    {
+        glm::vec4 p(point[0], point[1], point[2], 1.0f);
+        p = transform * p;
+        points_before.push_back(Point_3(p.x, p.y, p.z));
+    }
+
+    std::cout << "Hello";
     /* Tetrahedra */
     //std::vector<Point> points;
     //points.push_back(Point(0, 0, 0));
@@ -151,17 +217,17 @@ void GameController::Run()
     //points.push_back(Point(0, 0, 1));
     //points.push_back(Point(0, 1, 0));
 
-    std::vector<Point_3> points;
+    //std::vector<Point_3> points;
     //points.push_back(Point_3(0, 0, 0));
     //points.push_back(Point_3(1, 0, 0));
     //points.push_back(Point_3(0, 0, 1));
     //points.push_back(Point_3(0, 1, 0));
-    points.push_back(Point_3(0, 0, 0));
-    points.push_back(Point_3(1, 0, 0));
-    points.push_back(Point_3(0, 0, 1));
-    points.push_back(Point_3(1, 0, 1));
-    points.push_back(Point_3(0.5, 1, 0.5));
-    points.push_back(Point_3(0.5, -1, 0.5));
+    //points.push_back(Point_3(0, 0, 0));
+    //points.push_back(Point_3(1, 0, 0));
+    //points.push_back(Point_3(0, 0, 1));
+    //points.push_back(Point_3(1, 0, 1));
+    //points.push_back(Point_3(0.5, 1, 0.5));
+    //points.push_back(Point_3(0.5, -1, 0.5));
 
     //std::vector<std::pair<Point, int>> points;
     //points.push_back(std::make_pair(Point(0, 0, 0), 0));
@@ -175,13 +241,6 @@ void GameController::Run()
     //points.push_back(Point(0, 1, 0));
     //points.push_back(Point(0, 0, 1));
 
-    glm::vec3 v1(1.0, 0.0, 0.0);
-    glm::vec3 v2(0.0, 0.0, 1.0);
-    glm::vec3 v3(0.0, 1.0, 0.0);
-
-    glm::vec3 norm = glm::cross(v3 - v2, v3 - v1);
-
-    std::cout << "Norm: (" << norm.x << ", " << norm.y << ", " << norm.z << ")" << std::endl;
 
     //Delaunay triangulation(points.begin(), points.end());
     //Delaunay::Finite_facets_iterator fit;
@@ -252,20 +311,46 @@ void GameController::Run()
     //    
     //}
 
-    Polyhedron_3 poly;
-    CGAL::convex_hull_3(points.begin(), points.end(), poly);
-    std::cout << "The convex hull contains " << poly.size_of_vertices() << " vertices" << std::endl;
+
+    Polyhedron_3 poly_before;
+    CGAL::convex_hull_3(points_before2.begin(), points_before2.end(), poly_before);
     
+    /* Plane and line segment intersection test */
+    glm::vec3 v1(1.0f, 0.0f, 0.5f), v2(0.5f, 0.0f, 1.0f);
+    float k = (v2.z - v1.z) / (v2.x - v1.x);
+    float b = v1.z - k * v1.x;
+
+    auto getZ = [&](float x) {
+        return k * x + b;
+    };
+
+    glm::vec3 pv1(0.0f, 0.0f, getZ(0.0f)), pv2(1.0f, 1.0f, getZ(1.0f)), pv3(-1.0f, -1.0f, getZ(-1.0f));
+    glm::vec3 planeNorm = glm::cross(pv2 - pv1, pv2 - pv3);
+
     
-    
+    //std::vector<Point_3> points;
     Polyhedron_3::Edge_iterator eit;
     int j = 0;
-    for (eit = poly.edges_begin(); eit != poly.edges_end(); eit++)
+    for (eit = poly_before.edges_begin(); eit != poly_before.edges_end(); eit++)
     {
-        j++;
+        //std::cout << "Edge " << j++ << ": (" << eit->vertex()->point() << ", " << eit->next()->vertex()->point() << ")" << std::endl;
+        //std::cout << "Edge " << j++ << std::endl;
+        //LineSegmentAndPlaneIntersection(pv1, planeNorm, , );
     }
-    std::cout << "Edges: " << j << std::endl;
+    //std::cout << "Edge " << j << std::endl;
+    //std::cout << "Facets " << poly_before.size_of_halfedges() << std::endl;
 
+    //std::vector<Point_3> points;
+    //points.push_back(Point_3(0, 0, 0));
+    //points.push_back(Point_3(1, 0, 0));
+    //points.push_back(Point_3(0, 0, 1));
+    //points.push_back(Point_3(1, 0, 1));
+    //points.push_back(Point_3(0, 1, 0));
+    //points.push_back(Point_3(1, 1, 0));
+    //points.push_back(Point_3(0, 1, 1));
+    //points.push_back(Point_3(1, 1, 1));
+    Polyhedron_3 poly;
+    CGAL::convex_hull_3(points_before.begin(), points_before.end(), poly);
     int num = poly.size_of_facets();
     int size = num * 3 * 8;
     float *vertices = new float[size];
@@ -273,6 +358,14 @@ void GameController::Run()
     Polyhedron_3::Facet_iterator fit;
 
     int i = 0;
+
+    std::list<Polygon> polygons;
+    std::list<Edge> edges;
+
+    auto round = [](float num) {
+        return std::round(num * 1000) / 1000;
+    };
+
     for (fit = poly.facets_begin(); fit != poly.facets_end(); fit++)
     {
         Polyhedron_3::Facet facet = *fit;
@@ -290,99 +383,213 @@ void GameController::Run()
         norm = glm::cross(v1 - v2, v1 - v3);
         norm = glm::normalize(norm);
 
-        vertices[i++] = v1.x;
-        vertices[i++] = v1.y;
-        vertices[i++] = v1.z;
-        vertices[i++] = norm.x;
-        vertices[i++] = norm.y;
-        vertices[i++] = norm.z;
-        vertices[i++] = 0.0f;
-        vertices[i++] = 0.0f;
+        Edge edge1{ v1, v2 }, edge2{ v1, v3 }, edge3{ v2, v3 };
+        auto containsEdge = [](std::list<Edge> edges, Edge target_edge) {
+            auto res = std::find_if(edges.begin(), edges.end(), [&](Edge edge) {
+                return
+                    target_edge.v0 == edge.v0 && target_edge.v1 == edge.v1 ||
+                    target_edge.v1 == edge.v0 && target_edge.v0 == edge.v1;
+            });
+            return res != edges.end();
+        };
+        auto containsVertex = [](std::list<glm::vec3> vertices, glm::vec3 target_vertex) {
+            auto res = std::find_if(vertices.begin(), vertices.end(), [&](glm::vec3 vertex) {
+                return vertex == target_vertex;
+                });
+            return res != vertices.end();
+        };
+        //auto containsEdge1 = [&](Edge edge) { return edge.v0 == edge1.v0 && edge.v1 == edge1.v1 || edge.v1 == edge1.v0 && edge.v0 == edge1.v1; };
+        if (!containsEdge(edges, edge1))
+            edges.push_back(edge1);
+        if (!containsEdge(edges, edge2))
+            edges.push_back(edge2);
+        if (!containsEdge(edges, edge3))
+            edges.push_back(edge3);
 
-        vertices[i++] = v2.x;
-        vertices[i++] = v2.y;
-        vertices[i++] = v2.z;
-        vertices[i++] = norm.x;
-        vertices[i++] = norm.y;
-        vertices[i++] = norm.z;
-        vertices[i++] = 0.0f;
-        vertices[i++] = 0.0f;
+        //float a = norm.x;
+        //float b = norm.y;
+        //float c = norm.z;
+        //float d = -glm::dot(norm, v1);
+        float a = round(norm.x);
+        float b = round(norm.y);
+        float c = round(norm.z);
+        float d = round(-glm::dot(norm, v1));
+        std::cout << "a = " << a << ", b = " << b << ", c = " << c << ", d = " << d << std::endl;
 
-        vertices[i++] = v3.x;
-        vertices[i++] = v3.y;
-        vertices[i++] = v3.z;
-        vertices[i++] = norm.x;
-        vertices[i++] = norm.y;
-        vertices[i++] = norm.z;
-        vertices[i++] = 0.0f;
-        vertices[i++] = 0.0f;
+        bool found = false;
+        Triangle triangle{ v1, v2, v3 };
+        for (auto& poly : polygons)
+        {
+            if (poly.a == a && poly.b == b && poly.c == c && poly.d == d)
+            {
+                found = true;
+                if (!containsEdge(poly.allEdges, edge1))
+                    poly.allEdges.push_back(edge1);
+                if (!containsEdge(poly.allEdges, edge2))
+                    poly.allEdges.push_back(edge2);
+                if (!containsEdge(poly.allEdges, edge3))
+                    poly.allEdges.push_back(edge3);
+                if (!containsVertex(poly.vertices, v1))
+                    poly.vertices.push_back(v1);
+                if (!containsVertex(poly.vertices, v2))
+                    poly.vertices.push_back(v2);
+                if (!containsVertex(poly.vertices, v3))
+                    poly.vertices.push_back(v3);
+                poly.triangles.push_back(triangle);
+                poly.count++;
+            }
+        }
+
+        if (!found)
+        {
+            Polygon polygon{ a, b, c, d };
+            if (!containsEdge(polygon.allEdges, edge1))
+                polygon.allEdges.push_back(edge1);
+            if (!containsEdge(polygon.allEdges, edge2))
+                polygon.allEdges.push_back(edge2);
+            if (!containsEdge(polygon.allEdges, edge3))
+                polygon.allEdges.push_back(edge3);
+            if (!containsVertex(polygon.vertices, v1))
+                polygon.vertices.push_back(v1);
+            if (!containsVertex(polygon.vertices, v2))
+                polygon.vertices.push_back(v2);
+            if (!containsVertex(polygon.vertices, v3))
+                polygon.vertices.push_back(v3);
+            polygon.norm = norm;
+            polygon.triangles.push_back(triangle);
+            polygon.count++;
+            polygons.push_back(polygon);
+        }
+
+        //vertices[i++] = v1.x;
+        //vertices[i++] = v1.y;
+        //vertices[i++] = v1.z;
+        //vertices[i++] = norm.x;
+        //vertices[i++] = norm.y;
+        //vertices[i++] = norm.z;
+        //vertices[i++] = 0.0f;
+        //vertices[i++] = 0.0f;
+
+        //vertices[i++] = v2.x;
+        //vertices[i++] = v2.y;
+        //vertices[i++] = v2.z;
+        //vertices[i++] = norm.x;
+        //vertices[i++] = norm.y;
+        //vertices[i++] = norm.z;
+        //vertices[i++] = 0.0f;
+        //vertices[i++] = 0.0f;
+
+        //vertices[i++] = v3.x;
+        //vertices[i++] = v3.y;
+        //vertices[i++] = v3.z;
+        //vertices[i++] = norm.x;
+        //vertices[i++] = norm.y;
+        //vertices[i++] = norm.z;
+        //vertices[i++] = 0.0f;
+        //vertices[i++] = 0.0f;
     }
 
-    //std::vector< std::pair<Point, unsigned> > dots;
-    //dots.push_back(std::make_pair(Point(0, 0, 0), 0));
-    //dots.push_back(std::make_pair(Point(1, 0, 0), 1));
-    //dots.push_back(std::make_pair(Point(0, 1, 0), 2));
-    //dots.push_back(std::make_pair(Point(0, 0, 1), 3));
-    //dots.push_back(std::make_pair(Point(2, 2, 2), 4));
-    //dots.push_back(std::make_pair(Point(-1, 0, 1), 5));
-    //Delaunay T(dots.begin(), dots.end());
-    //CGAL_assertion(T.number_of_vertices() == 6);
-    //// check that the info was correctly set.
-    //for (Delaunay::Vertex_handle v : T.finite_vertex_handles())
-    //    if (dots[v->info()].first != v->point()) {
-    //        
-    //        std::cerr << "Error different info" << std::endl;
-    //        exit(EXIT_FAILURE);
-    //    }
+    //std::cout << "Edges num = " << edges.size() << std::endl;
+
+    //float nn = 1.0;
+    //glm::vec3 n(0, 1, 0), _v1(nn, 0, 0), _v2(0, 0, nn), _v3(0, 0, -nn), _v4(-nn, 0, 0), center(0.01f, 0, 0.01f),
+    //    _v5(-0.5f, 0.0f, -0.5f), _v6(0.5f, 0.0f, -0.5f),
+    //    _v7(-0.5f, 0.0f, 0.5f), _v8(0.5f, 0.0f, 0.5f);
+    //float res = glm::dot(n, glm::cross(_v1 - center, _v5 - center));
+    //float res2 = glm::dot(n, glm::cross(_v1 - center, _v6 - center));
+    //float res3 = glm::dot(n, glm::cross(_v1 - center, _v7 - center));
+    //float res4 = glm::dot(n, glm::cross(_v1 - center, _v8 - center));
+    //float res5 = glm::dot(n, glm::cross(_v1 - center, _v4 - center));
+    //std::cout << "Order is " << res << std::endl;
 
 
+    //std::list<glm::vec3> pts{
+    //    glm::vec3(0.0, 0.0, 0.0),
+    //    glm::vec3(1.0, 0.0, 0.0),
+    //    glm::vec3(0.0, 0.0, 1.0),
+    //    glm::vec3(1.0, 0.0, 1.0)
+    //};
+    //glm::vec3 ctr(0.5, 0.0, 0.5), norm(0.0, 1.0, 0.0);
+
+    //pts.sort([&](glm::vec3 v1, glm::vec3 v2) {
+    //    return glm::dot(norm, glm::cross(v1 - ctr, v2 - ctr)) < 0;
+    //});
+
+    for (auto& poly : polygons)
+    {
+        glm::vec3 center(0.0);
+        for (auto& v : poly.vertices)
+        {
+            center += v;
+        }
+        center /= poly.vertices.size();
+        float delta = 0.1f; // TODO: when the minimum unit is defined, adjust this value to be smaller than min unit
+        center += delta;
+
+        // https://stackoverflow.com/questions/14370636/sorting-a-list-of-3d-coplanar-points-to-be-clockwise-or-counterclockwise
+        poly.vertices.sort([&](glm::vec3 v1, glm::vec3 v2) {
+            return glm::dot(poly.norm, glm::cross(v1 - center, v2 - center)) < 0;
+        });
+    }
+
+    for (auto& poly : polygons)
+    {
+        int i = 0;
+        for (auto& vertex : poly.vertices)
+        {
+            poly.indexedVertices.push_back(std::make_pair(vertex, i++));
+        }
+    }
+
+    int linesVerticesNum = 0;
+    for (auto& poly : polygons)
+    {
+        for (auto& edge : poly.allEdges)
+        {
+            int v0Index = poly.FindIndexedVertex(edge.v0);
+            int v1Index = poly.FindIndexedVertex(edge.v1);
+            if (std::abs(v0Index - v1Index) == 1 ||
+                std::abs(v0Index - v1Index) == poly.indexedVertices.size() - 1)
+            {
+                poly.borderEdges.push_back(edge);
+                linesVerticesNum += 2;
+            }
+        }
+    }
+
+    i = 0;
+    int linesSize = linesVerticesNum * 8;
+    float* linesVertices = new float[linesSize];
+    for (auto& poly : polygons)
+    {
+        glm::vec3 norm = poly.norm;
+
+        for (auto& edge : poly.borderEdges)
+        {
+            glm::vec3 v1 = edge.v0;
+            glm::vec3 v2 = edge.v1;
+
+            linesVertices[i++] = v1.x;
+            linesVertices[i++] = v1.y;
+            linesVertices[i++] = v1.z;
+            linesVertices[i++] = norm.x;
+            linesVertices[i++] = norm.y;
+            linesVertices[i++] = norm.z;
+            linesVertices[i++] = 0.0f;
+            linesVertices[i++] = 0.0f;
+
+            linesVertices[i++] = v2.x;
+            linesVertices[i++] = v2.y;
+            linesVertices[i++] = v2.z;
+            linesVertices[i++] = norm.x;
+            linesVertices[i++] = norm.y;
+            linesVertices[i++] = norm.z;
+            linesVertices[i++] = 0.0f;
+            linesVertices[i++] = 0.0f;
+        }
+    }
 
     Shader ourShader("shaders/object2.vert.glsl", "shaders/object2.frag.glsl");
-
-    //float vertices[] = {
-    //    // positions          // normals           // texture coords
-    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    //     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-    //    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-    //};
 
     unsigned int objectVBO, objectVAO;
     glGenVertexArrays(1, &objectVAO);
@@ -391,7 +598,7 @@ void GameController::Run()
     glBindVertexArray(objectVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, objectVBO);
-    glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, linesSize * sizeof(float), linesVertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -409,7 +616,7 @@ void GameController::Run()
     glBindVertexArray(lampVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, lampVBO);
-    glBufferData(GL_ARRAY_BUFFER, size * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, linesSize * sizeof(float), linesVertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -430,7 +637,7 @@ void GameController::Run()
     float specular = 1.0f;
 
     glEnable(GL_DEPTH_TEST);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while (!glfwWindowShouldClose(m_GlfwWindow))
     {
@@ -482,7 +689,7 @@ void GameController::Run()
             model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
             ourShader.setMat4("model", model);
             glBindVertexArray(objectVAO);
-            glDrawArrays(GL_TRIANGLES, 0, num * 3);
+            glDrawArrays(GL_LINES, 0, linesVerticesNum);
         }
         
 
@@ -497,7 +704,7 @@ void GameController::Run()
             lampShader.setMat4("projection", projection);
             lampShader.setMat4("view", view);
             glBindVertexArray(lampVAO);
-            glDrawArrays(GL_TRIANGLES, 0, num * 3);
+            glDrawArrays(GL_LINES, 0, linesVerticesNum);
         }
         
         ImGui::Begin("Global light");
@@ -517,6 +724,9 @@ void GameController::Run()
         glfwSwapBuffers(m_GlfwWindow);
         glfwPollEvents();
     }
+
+    delete vertices;
+    delete linesVertices;
     glfwTerminate();
 }
 
