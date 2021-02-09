@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QOpenGLWidget>
+#include <QElapsedTimer>
 #include "../editor/Scene.h"
 #include "../editor/Renderer3D.h"
 #include "../common/types.h"
@@ -19,16 +20,14 @@ public:
 	void leaveEvent(QEvent* event) override;
 	void mousePressEvent(QMouseEvent* event) override;
 	void mouseReleaseEvent(QMouseEvent* event) override;
-	void keyPressEvent(QKeyEvent* event) override;
-	void keyReleaseEvent(QKeyEvent* event) override;
 
 	struct {
-		ButtonState keyW;
-		ButtonState keyA;
-		ButtonState keyS;
-		ButtonState keyD;
-		ButtonState leftMouse;
-		ButtonState rightMouse;
+		ButtonState keyW = ButtonState::NOT_ACTIVE;
+		ButtonState keyA = ButtonState::NOT_ACTIVE;
+		ButtonState keyS = ButtonState::NOT_ACTIVE;
+		ButtonState keyD = ButtonState::NOT_ACTIVE;
+		ButtonState leftMouse = ButtonState::NOT_ACTIVE;
+		ButtonState rightMouse = ButtonState::NOT_ACTIVE;
 		float mouseX;
 		float mouseY;
 		bool isMouseOver;
@@ -43,6 +42,8 @@ private:
 	bool m_isCameraModeStarted = false;
 	int lastX;
 	int lastY;
+	QElapsedTimer m_timer;
+	float m_timeDelta = 0.0f;
 
 	void processInputData();
 	void updateCamera();

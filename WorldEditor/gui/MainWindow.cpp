@@ -83,27 +83,41 @@ void MainWindow::enableMouseTracking()
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-	qInfo() << "key pressed" << event->key();
+	auto key = event->key();
 
-	switch (event->key())
-	{
-	case 'W':
+	if (key == 'W')
 		m_glWidget3D->m_inputData.keyW = ButtonState::PRESSED;
-	case 'A':
+	if (key == 'A')
 		m_glWidget3D->m_inputData.keyA = ButtonState::PRESSED;
-	case 'S':
+	if (key == 'S')
 		m_glWidget3D->m_inputData.keyS = ButtonState::PRESSED;
-	case 'D':
+	if (key == 'D')
 		m_glWidget3D->m_inputData.keyD = ButtonState::PRESSED;
-	}
 
 	QMainWindow::keyPressEvent(event);
 }
 
+void MainWindow::keyReleaseEvent(QKeyEvent* event)
+{
+	auto key = event->key();
+
+	if (key == 'W')
+		m_glWidget3D->m_inputData.keyW = ButtonState::RELEASED;
+	if (key == 'A')
+		m_glWidget3D->m_inputData.keyA = ButtonState::RELEASED;
+	if (key == 'S')
+		m_glWidget3D->m_inputData.keyS = ButtonState::RELEASED;
+	if (key == 'D')
+		m_glWidget3D->m_inputData.keyD = ButtonState::RELEASED;
+
+	QMainWindow::keyReleaseEvent(event);
+}
+
 void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	//qInfo() << "Mouse move event" << event->pos();
 	auto pos = event->pos();
 	m_glWidget3D->m_inputData.mouseX = pos.x();
 	m_glWidget3D->m_inputData.mouseY = pos.y();
+
+	QMainWindow::mouseMoveEvent(event);
 }

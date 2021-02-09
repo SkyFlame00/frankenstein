@@ -36,9 +36,6 @@
     <ClCompile Include="editor\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="editor\Renderer2D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gui\Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,9 +71,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="editor\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="editor\Renderer2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gui\Debug.h">

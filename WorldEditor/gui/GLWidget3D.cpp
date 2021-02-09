@@ -15,14 +15,22 @@ GLWidget3D::~GLWidget3D()
 void GLWidget3D::initializeGL()
 {
 	m_scene->setup();
+	m_timer.start();
+
+	update();
 }
 
 void GLWidget3D::paintGL()
 {
+	m_timeDelta = m_timer.elapsed();
+
 	processInputData();
 	updateCamera();
 	m_renderer->render(m_scene->getObjects());
 	clearInputData();
+
+	m_timer.restart();
+
 	update();
 }
 
@@ -35,17 +43,16 @@ void GLWidget3D::updateCamera()
 {
 	bool isCameraMode = m_isCameraToolPicked && m_inputData.leftMouse == ButtonState::PRESSED;
 	bool isWidgetActive = isCameraMode || m_inputData.isMouseOver;
+	float deltaSec = m_timeDelta / 1000.0f;
 	int offsetX = 0;
 	int offsetY = 0;
-
-	//qInfo() << "iscameramode" << isCameraMode;
 
 	if (isCameraMode)
 	{
 		if (m_isCameraModeStarted)
 		{
 			offsetX = m_inputData.mouseX - lastX;
-			offsetY = m_inputData.mouseY - lastY;
+			offsetY = lastY - m_inputData.mouseY;
 			lastX = m_inputData.mouseX;
 			lastY = m_inputData.mouseY;
 		}
@@ -64,24 +71,31 @@ void GLWidget3D::updateCamera()
 	if (m_inputData.leftMouse == ButtonState::PRESSED && isCameraMode && m_isCameraModeStarted)
 		m_camera->processMouseMovement(offsetX, offsetY);
 	if (m_inputData.keyW == ButtonState::PRESSED && isWidgetActive)
-		m_camera->processKeyboard(Camera::Direction::FORWARD, 0);
+		m_camera->processKeyboard(Camera::Direction::FORWARD, deltaSec);
+	if (m_inputData.keyA == ButtonState::PRESSED && isWidgetActive)
+		m_camera->processKeyboard(Camera::Direction::LEFT, deltaSec);
+	if (m_inputData.keyS == ButtonState::PRESSED && isWidgetActive)
+		m_camera->processKeyboard(Camera::Direction::BACKWARD, deltaSec);
+	if (m_inputData.keyD == ButtonState::PRESSED && isWidgetActive)
+		m_camera->processKeyboard(Camera::Direction::RIGHT, deltaSec);
 
 	m_camera->updateCameraVectors();
 }
 
 void GLWidget3D::clearInputData()
 {
-
 }
 
 void GLWidget3D::enterEvent(QEvent* event)
 {
 	m_inputData.isMouseOver = true;
+	QOpenGLWidget::enterEvent(event);
 }
 										  
 void GLWidget3D::leaveEvent(QEvent* event)
 {
 	m_inputData.isMouseOver = false;
+	QOpenGLWidget::leaveEvent(event);
 }
 
 void GLWidget3D::mousePressEvent(QMouseEvent* event)
@@ -98,15 +112,4 @@ void GLWidget3D::mouseReleaseEvent(QMouseEvent* event)
 		m_inputData.leftMouse = ButtonState::RELEASED;
 
 	QOpenGLWidget::mouseReleaseEvent(event);
-}
-
-void GLWidget3D::keyPressEvent(QKeyEvent* event)
-{
-	qInfo() << "key pressed" << event->key();
-	QOpenGLWidget::keyPressEvent(event);
-}
-
-void GLWidget3D::keyReleaseEvent(QKeyEvent* event)
-{
-	QOpenGLWidget::keyReleaseEvent(event);
 }

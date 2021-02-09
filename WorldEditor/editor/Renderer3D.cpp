@@ -12,7 +12,6 @@ Renderer3D::Renderer3D(Camera* camera, int width, int height)
 
 Renderer3D::~Renderer3D()
 {
-
 }
 
 void Renderer3D::render(QList<Brush*>& objects)

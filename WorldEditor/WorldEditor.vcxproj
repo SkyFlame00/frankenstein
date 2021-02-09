@@ -106,7 +106,6 @@
     <ClCompile Include="gui\MainWindow.cpp" />
     <ClCompile Include="editor\Renderer3D.cpp" />
     <ClCompile Include="editor\Scene.cpp" />
-    <ClCompile Include="editor\Renderer2D.cpp" />
     <ClCompile Include="editor\ResourceManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -122,7 +121,6 @@
     <ClInclude Include="editor\Camera.h" />
     <ClInclude Include="editor\Renderer3D.h" />
     <ClInclude Include="editor\Scene.h" />
-    <ClInclude Include="editor\Renderer2D.h" />
     <ClInclude Include="editor\ResourceManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

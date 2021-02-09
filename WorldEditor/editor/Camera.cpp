@@ -20,7 +20,7 @@ void Camera::updateCameraVectors()
     m_right = QVector3D::crossProduct(m_front, m_worldUp);
     m_right.normalize();
 
-    m_up = QVector3D::crossProduct(m_front, m_right);
+    m_up = QVector3D::crossProduct(m_right, m_front);
     m_up.normalize();
 }
 

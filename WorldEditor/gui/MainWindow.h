@@ -22,6 +22,7 @@ public:
 	QMenu* fileMenu;
 
 	void keyPressEvent(QKeyEvent* event) override;
+	void keyReleaseEvent(QKeyEvent* event) override;
 	void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
