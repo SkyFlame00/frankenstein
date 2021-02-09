@@ -46,6 +46,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>5</QtInstall>
     <QtModules>core;gui;opengl;widgets</QtModules>
@@ -86,7 +96,34 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common\types.h" />
+    <ClCompile Include="editor\Brush.cpp" />
+    <ClCompile Include="editor\GL.cpp" />
+    <ClCompile Include="gui\Debug.cpp" />
+    <ClCompile Include="editor\Camera.cpp" />
+    <ClCompile Include="gui\GLWidget3D.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="gui\MainWindow.cpp" />
+    <ClCompile Include="editor\Renderer3D.cpp" />
+    <ClCompile Include="editor\Scene.cpp" />
+    <ClCompile Include="editor\Renderer2D.cpp" />
+    <ClCompile Include="editor\ResourceManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="gui\MainWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="gui\GLWidget3D.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="editor\Brush.h" />
+    <ClInclude Include="editor\GL.h" />
+    <ClInclude Include="gui\Debug.h" />
+    <ClInclude Include="editor\Camera.h" />
+    <ClInclude Include="editor\Renderer3D.h" />
+    <ClInclude Include="editor\Scene.h" />
+    <ClInclude Include="editor\Renderer2D.h" />
+    <ClInclude Include="editor\ResourceManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
