@@ -16,8 +16,6 @@ public:
 	{
 		X1 = 1, X2 = 2, X4 = 4, X8 = 8, X16 = 16, X32 = 32
 	};
-	
-	
 
 	const float HALF_CUBE = 4096.0f;
 	const float MIN_UNIT = 1.0f;
@@ -48,8 +46,6 @@ public:
 
 	void increaseScale();
 	void decreaseScale();
-	void zoomIn();
-	void zoomOut();
 	inline int verticesCount() { return m_verticesCount; }
 	void updateView(QVector3D position, float width, float height);
 	inline bool ShouldDraw() { return m_shouldDraw; }

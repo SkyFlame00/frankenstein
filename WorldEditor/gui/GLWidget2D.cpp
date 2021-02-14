@@ -51,31 +51,23 @@ void GLWidget2D::resizeGL(int width, int height)
 void GLWidget2D::processInputData()
 {
 	float prevFactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
-	bool scrolled = false;
 
 	if (m_inputData.mouseScroll == MouseScroll::UP)
 	{
 		zoomIn();
 		m_grid->m_zoom = m_zoom;
 		m_renderer->setZoom(m_zoom);
-		scrolled = true;
 	}
 	else if (m_inputData.mouseScroll == MouseScroll::DOWN)
 	{
 		zoomOut();
 		m_grid->m_zoom = m_zoom;
 		m_renderer->setZoom(m_zoom);
-		scrolled = true;
 	}
 
 	float newFactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
 	float factor = newFactor / prevFactor;
 	m_camera->setPosition(m_camera->getPosition() * factor);
-
-	if (scrolled)
-	{
-		
-	}
 
 	bool isWidgetActive = m_inputData.isMouseOver;
 	float velocity = 0.8f;
