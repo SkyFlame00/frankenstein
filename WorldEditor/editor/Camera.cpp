@@ -59,7 +59,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset)
         m_pitch = -89.0f;
 }
 
-void Camera::moveRelativeToAxis(Axis axis, float horShift, float verShift)
+void Camera::moveRelativelyToAxis(Axis axis, float horShift, float verShift)
 {
     switch (axis)
     {

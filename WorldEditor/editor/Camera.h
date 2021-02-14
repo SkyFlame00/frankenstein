@@ -33,7 +33,7 @@ public:
 	void updateCameraVectors();
 	inline QVector3D getPosition() { return m_position; }
 	inline void setPosition(QVector3D position) { m_position = position; }
-	void moveRelativeToAxis(Axis axis, float horShift, float verShift);
+	void moveRelativelyToAxis(Axis axis, float horShift, float verShift);
 
 private:
 	QVector3D m_position;

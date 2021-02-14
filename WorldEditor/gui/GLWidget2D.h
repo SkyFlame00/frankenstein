@@ -48,6 +48,10 @@ private:
 	Axis m_axis;
 	float m_frustrumWidth;
 	float m_frustrumHeight;
+	SceneZoom m_zoom = SceneZoom::X1;
+
+	void zoomIn();
+	void zoomOut();
 };
 
 
