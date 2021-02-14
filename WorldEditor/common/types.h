@@ -6,3 +6,8 @@ enum class ButtonState
 	PRESSED,
 	RELEASED
 };
+
+enum class Axis
+{
+	X, Y, Z
+};

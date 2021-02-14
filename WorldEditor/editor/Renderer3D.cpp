@@ -30,6 +30,7 @@ void Renderer3D::render(QList<Brush*>& objects)
 		program->setUniformValue("proj", m_projMatrix);
 		program->setUniformValue("view", m_camera->getViewMatrix());
 		program->setUniformValue("model", model);
+		program->setUniformValue("color", 0.9f, 0.9f, 0.9f);
 
 		object->m_vao.bind();
 		$->glDrawArrays(GL_TRIANGLES, 0, object->verticesCount());

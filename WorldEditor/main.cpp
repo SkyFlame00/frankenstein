@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
 	MainWindow window;
 	//window.showMaximized();
-	window.setMinimumSize(800, 600);
+	window.setMinimumSize(320, 240);
 	window.show();
 
 	return app.exec();

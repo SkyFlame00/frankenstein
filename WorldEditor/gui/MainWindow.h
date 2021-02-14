@@ -5,6 +5,7 @@
 #include <QMenu>
 
 #include "GLWidget3D.h"
+#include "GLWidget2D.h"
 #include "../editor/Scene.h"
 #include "../editor/Renderer3D.h"
 #include "../editor/Camera.h"
@@ -34,9 +35,12 @@ private:
 
 	QWidget* m_centralWidget;
 	GLWidget3D* m_glWidget3D;
+	GLWidget2D* m_glWidget2D;
 	Camera* m_camera3D;
+	Camera* m_camera2D;
 	Scene* m_scene;
 	Renderer3D* m_renderer3D;
+	Renderer2D* m_renderer2D;
 
 private slots:
 };

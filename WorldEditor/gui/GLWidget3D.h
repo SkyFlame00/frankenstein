@@ -4,6 +4,7 @@
 #include <QElapsedTimer>
 #include "../editor/Scene.h"
 #include "../editor/Renderer3D.h"
+#include "../editor/Camera.h"
 #include "../common/types.h"
 
 class GLWidget3D : public QOpenGLWidget
@@ -30,7 +31,7 @@ public:
 		ButtonState rightMouse = ButtonState::NOT_ACTIVE;
 		float mouseX;
 		float mouseY;
-		bool isMouseOver;
+		bool isMouseOver = false;
 		bool isInitialized = false;
 	} m_inputData;
 

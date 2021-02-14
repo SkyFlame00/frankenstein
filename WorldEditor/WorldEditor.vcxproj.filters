@@ -57,6 +57,15 @@
     <ClCompile Include="common\types.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="editor\Renderer2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\GLWidget2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\Grid2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
@@ -86,6 +95,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="editor\GL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\Renderer2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\GLWidget2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\Grid2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\Renderable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

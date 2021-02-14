@@ -58,3 +58,28 @@ void Camera::processMouseMovement(float xoffset, float yoffset)
     if (m_pitch < -89.0f)
         m_pitch = -89.0f;
 }
+
+void Camera::moveRelativeToAxis(Axis axis, float horShift, float verShift)
+{
+    switch (axis)
+    {
+    case Axis::X:
+    {
+        m_position.setZ(m_position.z() + horShift);
+        m_position.setY(m_position.y() + verShift);
+        break;
+    }
+    case Axis::Y:
+    {
+        m_position.setX(m_position.x() + horShift);
+        m_position.setZ(m_position.z() + verShift);
+        break;
+    }
+    case Axis::Z:
+    {
+        m_position.setX(m_position.x() + horShift);
+        m_position.setY(m_position.y() + verShift);
+        break;
+    }
+    }
+}

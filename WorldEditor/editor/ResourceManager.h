@@ -9,7 +9,7 @@ class ResourceManager
 public:
 	static void Init();
 	static void Cleanup();
-	static QOpenGLShaderProgram* getProgram(const QString& vertexShaderPath, const QString& fragmentShaderPath);
+	static QOpenGLShaderProgram* getProgram(const QString& vertexShaderName, const QString& fragmentShaderName);
 
 private:
 	struct ShaderTriplet {

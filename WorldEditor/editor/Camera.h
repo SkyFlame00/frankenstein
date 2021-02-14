@@ -2,6 +2,7 @@
 
 #include <QVector3D>
 #include <QMatrix4x4>
+#include "../common/types.h"
 
 class Camera
 {
@@ -30,6 +31,9 @@ public:
 	void processKeyboard(Camera::Direction direction, float deltaTime);
 	void processMouseMovement(float xoffset, float yoffset);
 	void updateCameraVectors();
+	inline QVector3D getPosition() { return m_position; }
+	inline void setPosition(QVector3D position) { m_position = position; }
+	void moveRelativeToAxis(Axis axis, float horShift, float verShift);
 
 private:
 	QVector3D m_position;

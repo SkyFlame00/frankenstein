@@ -73,7 +73,7 @@
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -86,19 +86,21 @@
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <Optimization>MaxSpeed</Optimization>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common\types.h" />
     <ClCompile Include="editor\Brush.cpp" />
     <ClCompile Include="editor\GL.cpp" />
+    <ClCompile Include="editor\Grid2D.cpp" />
+    <ClCompile Include="gui\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
     <ClCompile Include="gui\GLWidget3D.cpp" />
@@ -107,6 +109,7 @@
     <ClCompile Include="editor\Renderer3D.cpp" />
     <ClCompile Include="editor\Scene.cpp" />
     <ClCompile Include="editor\ResourceManager.cpp" />
+    <ClCompile Include="editor\Renderer2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -115,13 +118,18 @@
     <QtMoc Include="gui\GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\helpers.h" />
     <ClInclude Include="editor\Brush.h" />
     <ClInclude Include="editor\GL.h" />
+    <ClInclude Include="editor\Grid2D.h" />
+    <ClInclude Include="gui\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />
     <ClInclude Include="editor\Renderer3D.h" />
     <ClInclude Include="editor\Scene.h" />
     <ClInclude Include="editor\ResourceManager.h" />
+    <ClInclude Include="editor\Renderer2D.h" />
+    <ClInclude Include="editor\Renderable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
