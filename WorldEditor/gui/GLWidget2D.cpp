@@ -90,6 +90,14 @@ void GLWidget2D::processInputData()
 	{
 		m_camera->moveRelativelyToAxis(m_axis, horShift, 0.0f);
 	}
+	if (m_inputData.keyOpenBracket == ButtonState::PRESSED && isWidgetActive)
+	{
+		m_grid->increaseScale();
+	}
+	if (m_inputData.keyCloseBracket == ButtonState::PRESSED && isWidgetActive)
+	{
+		m_grid->decreaseScale();
+	}
 
 	m_camera->updateCameraVectors();
 }
@@ -97,6 +105,8 @@ void GLWidget2D::processInputData()
 void GLWidget2D::clearInputData()
 {
 	m_inputData.mouseScroll = MouseScroll::NO_SCROLL;
+	m_inputData.keyOpenBracket = ButtonState::NOT_ACTIVE;
+	m_inputData.keyCloseBracket = ButtonState::NOT_ACTIVE;
 }
 
 void GLWidget2D::wheelEvent(QWheelEvent* event)

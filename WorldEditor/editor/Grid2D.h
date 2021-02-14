@@ -35,7 +35,82 @@ public:
 				{ SceneZoom::X4, UnitSize::X1 },
 				{ SceneZoom::X8, UnitSize::X1 },
 			}
-		}
+		},
+		{ UnitSize::X2,
+			{
+				{ SceneZoom::X001, UnitSize::X32 },
+				{ SceneZoom::X005, UnitSize::X16 },
+				{ SceneZoom::X01, UnitSize::X16 },
+				{ SceneZoom::X02, UnitSize::X16 },
+				{ SceneZoom::X04, UnitSize::X8 },
+				{ SceneZoom::X06, UnitSize::X4 },
+				{ SceneZoom::X08, UnitSize::X2 },
+				{ SceneZoom::X1, UnitSize::X2 },
+				{ SceneZoom::X2, UnitSize::X2 },
+				{ SceneZoom::X4, UnitSize::X2 },
+				{ SceneZoom::X8, UnitSize::X2 },
+			}
+		},
+		{ UnitSize::X4,
+			{
+				{ SceneZoom::X001, UnitSize::X32 },
+				{ SceneZoom::X005, UnitSize::X16 },
+				{ SceneZoom::X01, UnitSize::X16 },
+				{ SceneZoom::X02, UnitSize::X16 },
+				{ SceneZoom::X04, UnitSize::X8 },
+				{ SceneZoom::X06, UnitSize::X4 },
+				{ SceneZoom::X08, UnitSize::X4 },
+				{ SceneZoom::X1, UnitSize::X4 },
+				{ SceneZoom::X2, UnitSize::X4 },
+				{ SceneZoom::X4, UnitSize::X4 },
+				{ SceneZoom::X8, UnitSize::X4 },
+			}
+		},
+		{ UnitSize::X8,
+			{
+				{ SceneZoom::X001, UnitSize::X32 },
+				{ SceneZoom::X005, UnitSize::X16 },
+				{ SceneZoom::X01, UnitSize::X16 },
+				{ SceneZoom::X02, UnitSize::X16 },
+				{ SceneZoom::X04, UnitSize::X8 },
+				{ SceneZoom::X06, UnitSize::X8 },
+				{ SceneZoom::X08, UnitSize::X8 },
+				{ SceneZoom::X1, UnitSize::X8 },
+				{ SceneZoom::X2, UnitSize::X8 },
+				{ SceneZoom::X4, UnitSize::X8 },
+				{ SceneZoom::X8, UnitSize::X8 },
+			}
+		},
+		{ UnitSize::X16,
+			{
+				{ SceneZoom::X001, UnitSize::X32 },
+				{ SceneZoom::X005, UnitSize::X16 },
+				{ SceneZoom::X01, UnitSize::X16 },
+				{ SceneZoom::X02, UnitSize::X16 },
+				{ SceneZoom::X04, UnitSize::X16 },
+				{ SceneZoom::X06, UnitSize::X16 },
+				{ SceneZoom::X08, UnitSize::X16 },
+				{ SceneZoom::X1, UnitSize::X16 },
+				{ SceneZoom::X2, UnitSize::X16 },
+				{ SceneZoom::X4, UnitSize::X16 },
+				{ SceneZoom::X8, UnitSize::X16 },
+			}
+		},
+		{ UnitSize::X32,
+			{
+				{ SceneZoom::X001, UnitSize::X32 },
+				{ SceneZoom::X005, UnitSize::X32 },
+				{ SceneZoom::X01, UnitSize::X32 },
+				{ SceneZoom::X02, UnitSize::X32 },
+				{ SceneZoom::X04, UnitSize::X32 },
+				{ SceneZoom::X06, UnitSize::X32 },
+				{ SceneZoom::X08, UnitSize::X32 },
+				{ SceneZoom::X1, UnitSize::X32 },
+				{ SceneZoom::X2, UnitSize::X32 },
+				{ SceneZoom::X4, UnitSize::X32 },
+				{ SceneZoom::X8, UnitSize::X32 },
+			}
+		},
 	};
 
 	Axis m_axis;

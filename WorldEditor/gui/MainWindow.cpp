@@ -116,6 +116,14 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		m_glWidget3D->m_inputData.keyD = ButtonState::PRESSED;
 		m_glWidget2D->m_inputData.keyD = ButtonState::PRESSED;
 	}
+	if (key == '[')
+	{
+		m_glWidget2D->m_inputData.keyOpenBracket = ButtonState::PRESSED;
+	}
+	if (key == ']')
+	{
+		m_glWidget2D->m_inputData.keyCloseBracket = ButtonState::PRESSED;
+	}
 
 	QMainWindow::keyPressEvent(event);
 }

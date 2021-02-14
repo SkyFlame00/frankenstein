@@ -22,6 +22,8 @@ public:
 		ButtonState keyA = ButtonState::NOT_ACTIVE;
 		ButtonState keyS = ButtonState::NOT_ACTIVE;
 		ButtonState keyD = ButtonState::NOT_ACTIVE;
+		ButtonState keyOpenBracket = ButtonState::NOT_ACTIVE;
+		ButtonState keyCloseBracket = ButtonState::NOT_ACTIVE;
 		bool isMouseOver = false;
 		MouseScroll mouseScroll = MouseScroll::NO_SCROLL;
 	} m_inputData;

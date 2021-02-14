@@ -97,7 +97,6 @@ void Grid2D::updateView(QVector3D position, float width, float height)
 	}
 
 	float factor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
-
 	float halfWidth = width /  2;
 	float halfHeight = height /  2;
 	float frustrumLeft = c1 - halfWidth;
