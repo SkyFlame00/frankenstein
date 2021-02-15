@@ -2,8 +2,8 @@
 #include "ResourceManager.h"
 #include "../common/helpers.h"
 
-Grid2D::Grid2D(Axis axis)
-	: m_axis(axis)
+Grid2D::Grid2D(Axis axis, SceneZoom zoom)
+	: m_axis(axis), m_zoom(zoom)
 {
 	m_vao.create();
 	m_vao.bind();
@@ -186,13 +186,13 @@ void Grid2D::updateView(QVector3D position, float width, float height)
 		return;
 	}
 
-	for (float horPos = hor; Helpers::trunc(horPos) <= Helpers::trunc(horEnd); horPos += step)
+	for (float horPos = hor; Helpers::trunc(horPos) <= Helpers::trunc(horEnd, 3); horPos += step)
 	{
 		verticalLines.push_back({ horPos, ver });
 		verticalLines.push_back({ horPos, verEnd });
 	}
 
-	for (float verPos = ver; Helpers::trunc(verPos) >= Helpers::trunc(verEnd); verPos -= step)
+	for (float verPos = ver; Helpers::trunc(verPos) >= Helpers::trunc(verEnd, 3); verPos -= step)
 	{
 		horizontalLines.push_back({ hor, verPos });
 		horizontalLines.push_back({ horEnd, verPos });

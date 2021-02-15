@@ -16,7 +16,7 @@ enum class Axis
 
 enum class SceneZoom
 {
-	X001, X005, X01, X02, X04, X06, X08, X1, X2, X4, X8
+	X001, X005, X01, X02, X04, X06, X08, X1, X2, X4, X8, X16, X32, X64, X128
 };
 
 const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
@@ -31,4 +31,8 @@ const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
 	{ SceneZoom::X2, 2.0f },
 	{ SceneZoom::X4, 4.0f },
 	{ SceneZoom::X8, 8.0f },
+	{ SceneZoom::X16, 16.0f },
+	{ SceneZoom::X32, 32.0f },
+	{ SceneZoom::X64, 64.0f },
+	{ SceneZoom::X128, 128.0f }
 };

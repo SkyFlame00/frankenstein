@@ -110,6 +110,7 @@
     <ClCompile Include="editor\Scene.cpp" />
     <ClCompile Include="editor\ResourceManager.cpp" />
     <ClCompile Include="editor\Renderer2D.cpp" />
+    <ClCompile Include="editor\grid2d\Point.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -130,6 +131,7 @@
     <ClInclude Include="editor\ResourceManager.h" />
     <ClInclude Include="editor\Renderer2D.h" />
     <ClInclude Include="editor\Renderable.h" />
+    <ClInclude Include="editor\grid2d\Point.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

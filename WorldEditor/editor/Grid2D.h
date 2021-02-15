@@ -19,7 +19,6 @@ public:
 
 	const float HALF_CUBE = 4096.0f;
 	const float MIN_UNIT = 1.0f;
-	
 	const std::unordered_map<UnitSize, std::unordered_map<SceneZoom, UnitSize>> SIZES {
 		{ UnitSize::X1,
 			{
@@ -34,6 +33,10 @@ public:
 				{ SceneZoom::X2, UnitSize::X1 },
 				{ SceneZoom::X4, UnitSize::X1 },
 				{ SceneZoom::X8, UnitSize::X1 },
+				{ SceneZoom::X16, UnitSize::X1 },
+				{ SceneZoom::X32, UnitSize::X1 },
+				{ SceneZoom::X64, UnitSize::X1 },
+				{ SceneZoom::X128, UnitSize::X1 },
 			}
 		},
 		{ UnitSize::X2,
@@ -49,6 +52,10 @@ public:
 				{ SceneZoom::X2, UnitSize::X2 },
 				{ SceneZoom::X4, UnitSize::X2 },
 				{ SceneZoom::X8, UnitSize::X2 },
+				{ SceneZoom::X16, UnitSize::X2 },
+				{ SceneZoom::X32, UnitSize::X2 },
+				{ SceneZoom::X64, UnitSize::X2 },
+				{ SceneZoom::X128, UnitSize::X2 },
 			}
 		},
 		{ UnitSize::X4,
@@ -64,6 +71,10 @@ public:
 				{ SceneZoom::X2, UnitSize::X4 },
 				{ SceneZoom::X4, UnitSize::X4 },
 				{ SceneZoom::X8, UnitSize::X4 },
+				{ SceneZoom::X16, UnitSize::X4 },
+				{ SceneZoom::X32, UnitSize::X4 },
+				{ SceneZoom::X64, UnitSize::X4 },
+				{ SceneZoom::X128, UnitSize::X4 },
 			}
 		},
 		{ UnitSize::X8,
@@ -79,6 +90,10 @@ public:
 				{ SceneZoom::X2, UnitSize::X8 },
 				{ SceneZoom::X4, UnitSize::X8 },
 				{ SceneZoom::X8, UnitSize::X8 },
+				{ SceneZoom::X16, UnitSize::X8 },
+				{ SceneZoom::X32, UnitSize::X8 },
+				{ SceneZoom::X64, UnitSize::X8 },
+				{ SceneZoom::X128, UnitSize::X8 },
 			}
 		},
 		{ UnitSize::X16,
@@ -94,6 +109,10 @@ public:
 				{ SceneZoom::X2, UnitSize::X16 },
 				{ SceneZoom::X4, UnitSize::X16 },
 				{ SceneZoom::X8, UnitSize::X16 },
+				{ SceneZoom::X16, UnitSize::X16 },
+				{ SceneZoom::X32, UnitSize::X16 },
+				{ SceneZoom::X64, UnitSize::X16 },
+				{ SceneZoom::X128, UnitSize::X16 },
 			}
 		},
 		{ UnitSize::X32,
@@ -109,21 +128,26 @@ public:
 				{ SceneZoom::X2, UnitSize::X32 },
 				{ SceneZoom::X4, UnitSize::X32 },
 				{ SceneZoom::X8, UnitSize::X32 },
+				{ SceneZoom::X16, UnitSize::X32 },
+				{ SceneZoom::X32, UnitSize::X32 },
+				{ SceneZoom::X64, UnitSize::X32 },
+				{ SceneZoom::X128, UnitSize::X32 },
 			}
 		},
 	};
 
 	Axis m_axis;
-	SceneZoom m_zoom = SceneZoom::X1;
+	SceneZoom m_zoom;
 
-	Grid2D(Axis axis);
+	Grid2D(Axis axis, SceneZoom zoom);
 	~Grid2D();
 
 	void increaseScale();
 	void decreaseScale();
 	inline int verticesCount() { return m_verticesCount; }
 	void updateView(QVector3D position, float width, float height);
-	inline bool ShouldDraw() { return m_shouldDraw; }
+	inline bool shouldDraw() { return m_shouldDraw; }
+	inline UnitSize getStep() { return m_step; }
 
 private:
 	int m_verticesCount = 0;

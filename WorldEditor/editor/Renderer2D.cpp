@@ -5,6 +5,7 @@ Renderer2D::Renderer2D(Camera* camera, float width, float height)
 {
 	m_camera->setPosition(QVector3D(0.0f, 0.0f, 1.0f));
 	m_camera->updateCameraVectors();
+	setZoom(m_zoom);
 }
 
 Renderer2D::~Renderer2D()
@@ -60,11 +61,20 @@ void Renderer2D::render(QList<Brush*>& objects, QList<Renderable*>& guiObjects)
 
 	for (auto& guiObject : guiObjects)
 	{
-		auto program = guiObject->m_program;
+		if (!guiObject->shouldDraw())
+		{
+			continue;
+		}
 
+		auto program = guiObject->m_program;
+		auto origin = guiObject->m_origin;
 		QMatrix4x4 model;
+		QVector3D translationVec(origin.x() * m_zoomVec.x(), origin.y() * m_zoomVec.y(), origin.z() * m_zoomVec.z());
+
 		model.setToIdentity();
-		//model.scale(m_zoomVec);
+		
+		model.translate(translationVec);
+		model.scale(guiObject->m_scaleVec);
 
 		program->bind();
 		program->setUniformValue("proj", m_projMatrix);
@@ -73,6 +83,6 @@ void Renderer2D::render(QList<Brush*>& objects, QList<Renderable*>& guiObjects)
 		program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
 
 		guiObject->m_vao.bind();
-		$->glDrawArrays(GL_LINES, 0, guiObject->verticesCount());
+		$->glDrawArrays(guiObject->getDrawMode(), 0, guiObject->verticesCount());
 	}
 }
