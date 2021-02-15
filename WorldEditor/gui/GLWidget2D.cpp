@@ -22,7 +22,8 @@ void GLWidget2D::initializeGL()
 	m_grid = new Grid2D(m_axis, m_zoom);
 	m_guiObjects.push_back(m_grid);
 	m_renderer->m_axis = m_axis;
-	m_renderer->setup(-1.0f, m_grid->HALF_CUBE * 2);
+	m_renderer->setup(-1.0f, m_grid->HALF_LENGTH * 2);
+	m_renderer->setZoom(m_zoom);
 }
 
 void GLWidget2D::paintGL()
@@ -173,25 +174,16 @@ void GLWidget2D::zoomIn()
 {
 	switch (m_zoom)
 	{
-	case SceneZoom::X001:
-		m_zoom = SceneZoom::X005;
-		break;
 	case SceneZoom::X005:
 		m_zoom = SceneZoom::X01;
 		break;
 	case SceneZoom::X01:
-		m_zoom = SceneZoom::X02;
+		m_zoom = SceneZoom::X025;
 		break;
-	case SceneZoom::X02:
-		m_zoom = SceneZoom::X04;
+	case SceneZoom::X025:
+		m_zoom = SceneZoom::X05;
 		break;
-	case SceneZoom::X04:
-		m_zoom = SceneZoom::X06;
-		break;
-	case SceneZoom::X06:
-		m_zoom = SceneZoom::X08;
-		break;
-	case SceneZoom::X08:
+	case SceneZoom::X05:
 		m_zoom = SceneZoom::X1;
 		break;
 	case SceneZoom::X1:
@@ -225,29 +217,20 @@ void GLWidget2D::zoomOut()
 {
 	switch (m_zoom)
 	{
-	case SceneZoom::X001:
-		/* do nothing*/
-		break;
 	case SceneZoom::X005:
-		m_zoom = SceneZoom::X001;
+		/* do nothing*/
 		break;
 	case SceneZoom::X01:
 		m_zoom = SceneZoom::X005;
 		break;
-	case SceneZoom::X02:
+	case SceneZoom::X025:
 		m_zoom = SceneZoom::X01;
 		break;
-	case SceneZoom::X04:
-		m_zoom = SceneZoom::X02;
-		break;
-	case SceneZoom::X06:
-		m_zoom = SceneZoom::X04;
-		break;
-	case SceneZoom::X08:
-		m_zoom = SceneZoom::X06;
+	case SceneZoom::X05:
+		m_zoom = SceneZoom::X025;
 		break;
 	case SceneZoom::X1:
-		m_zoom = SceneZoom::X08;
+		m_zoom = SceneZoom::X05;
 		break;
 	case SceneZoom::X2:
 		m_zoom = SceneZoom::X1;

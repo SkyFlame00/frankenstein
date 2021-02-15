@@ -226,19 +226,19 @@ void Grid2D::addVertex(float* vertices, int i, float horPos, float verPos)
 	switch (m_axis)
 	{
 	case Axis::X:
-		vertices[i] = -HALF_CUBE;
+		vertices[i] = -HALF_LENGTH;
 		vertices[i + 1] = verPos;
 		vertices[i + 2] = horPos;
 		break;
 	case Axis::Y:
 		vertices[i] = horPos;
-		vertices[i + 1] = -HALF_CUBE;
+		vertices[i + 1] = -HALF_LENGTH;
 		vertices[i + 2] = verPos;
 		break;
 	case Axis::Z:
 		vertices[i] = horPos;
 		vertices[i + 1] = verPos;
-		vertices[i + 2] = -HALF_CUBE;
+		vertices[i + 2] = -HALF_LENGTH;
 		break;
 	}
 }

@@ -17,22 +17,19 @@ public:
 		X1 = 1, X2 = 2, X4 = 4, X8 = 8, X16 = 16, X32 = 32
 	};
 
-	const float HALF_CUBE = 4096.0f;
+	const float HALF_LENGTH = 4096.0f;
 	const float MIN_UNIT = 1.0f;
 	const std::unordered_map<UnitSize, std::unordered_map<SceneZoom, UnitSize>> SIZES {
 		{ UnitSize::X1,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X16 },
 				{ SceneZoom::X01, UnitSize::X16 },
-				{ SceneZoom::X02, UnitSize::X16 },
-				{ SceneZoom::X04, UnitSize::X8 },
-				{ SceneZoom::X06, UnitSize::X4 },
-				{ SceneZoom::X08, UnitSize::X2 },
-				{ SceneZoom::X1, UnitSize::X1 },
-				{ SceneZoom::X2, UnitSize::X1 },
-				{ SceneZoom::X4, UnitSize::X1 },
-				{ SceneZoom::X8, UnitSize::X1 },
+				{ SceneZoom::X025, UnitSize::X8 },
+				{ SceneZoom::X05, UnitSize::X4 },
+				{ SceneZoom::X1, UnitSize::X4 },
+				{ SceneZoom::X2, UnitSize::X4 },
+				{ SceneZoom::X4, UnitSize::X4 },
+				{ SceneZoom::X8, UnitSize::X2 },
 				{ SceneZoom::X16, UnitSize::X1 },
 				{ SceneZoom::X32, UnitSize::X1 },
 				{ SceneZoom::X64, UnitSize::X1 },
@@ -41,16 +38,13 @@ public:
 		},
 		{ UnitSize::X2,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X16 },
 				{ SceneZoom::X01, UnitSize::X16 },
-				{ SceneZoom::X02, UnitSize::X16 },
-				{ SceneZoom::X04, UnitSize::X8 },
-				{ SceneZoom::X06, UnitSize::X4 },
-				{ SceneZoom::X08, UnitSize::X2 },
-				{ SceneZoom::X1, UnitSize::X2 },
-				{ SceneZoom::X2, UnitSize::X2 },
-				{ SceneZoom::X4, UnitSize::X2 },
+				{ SceneZoom::X025, UnitSize::X8 },
+				{ SceneZoom::X05, UnitSize::X4 },
+				{ SceneZoom::X1, UnitSize::X4 },
+				{ SceneZoom::X2, UnitSize::X4 },
+				{ SceneZoom::X4, UnitSize::X4 },
 				{ SceneZoom::X8, UnitSize::X2 },
 				{ SceneZoom::X16, UnitSize::X2 },
 				{ SceneZoom::X32, UnitSize::X2 },
@@ -60,13 +54,10 @@ public:
 		},
 		{ UnitSize::X4,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X16 },
 				{ SceneZoom::X01, UnitSize::X16 },
-				{ SceneZoom::X02, UnitSize::X16 },
-				{ SceneZoom::X04, UnitSize::X8 },
-				{ SceneZoom::X06, UnitSize::X4 },
-				{ SceneZoom::X08, UnitSize::X4 },
+				{ SceneZoom::X025, UnitSize::X8 },
+				{ SceneZoom::X05, UnitSize::X4 },
 				{ SceneZoom::X1, UnitSize::X4 },
 				{ SceneZoom::X2, UnitSize::X4 },
 				{ SceneZoom::X4, UnitSize::X4 },
@@ -79,13 +70,10 @@ public:
 		},
 		{ UnitSize::X8,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X16 },
 				{ SceneZoom::X01, UnitSize::X16 },
-				{ SceneZoom::X02, UnitSize::X16 },
-				{ SceneZoom::X04, UnitSize::X8 },
-				{ SceneZoom::X06, UnitSize::X8 },
-				{ SceneZoom::X08, UnitSize::X8 },
+				{ SceneZoom::X025, UnitSize::X8 },
+				{ SceneZoom::X05, UnitSize::X8 },
 				{ SceneZoom::X1, UnitSize::X8 },
 				{ SceneZoom::X2, UnitSize::X8 },
 				{ SceneZoom::X4, UnitSize::X8 },
@@ -98,13 +86,10 @@ public:
 		},
 		{ UnitSize::X16,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X16 },
 				{ SceneZoom::X01, UnitSize::X16 },
-				{ SceneZoom::X02, UnitSize::X16 },
-				{ SceneZoom::X04, UnitSize::X16 },
-				{ SceneZoom::X06, UnitSize::X16 },
-				{ SceneZoom::X08, UnitSize::X16 },
+				{ SceneZoom::X025, UnitSize::X16 },
+				{ SceneZoom::X05, UnitSize::X16 },
 				{ SceneZoom::X1, UnitSize::X16 },
 				{ SceneZoom::X2, UnitSize::X16 },
 				{ SceneZoom::X4, UnitSize::X16 },
@@ -117,13 +102,10 @@ public:
 		},
 		{ UnitSize::X32,
 			{
-				{ SceneZoom::X001, UnitSize::X32 },
 				{ SceneZoom::X005, UnitSize::X32 },
 				{ SceneZoom::X01, UnitSize::X32 },
-				{ SceneZoom::X02, UnitSize::X32 },
-				{ SceneZoom::X04, UnitSize::X32 },
-				{ SceneZoom::X06, UnitSize::X32 },
-				{ SceneZoom::X08, UnitSize::X32 },
+				{ SceneZoom::X025, UnitSize::X32 },
+				{ SceneZoom::X05, UnitSize::X32 },
 				{ SceneZoom::X1, UnitSize::X32 },
 				{ SceneZoom::X2, UnitSize::X32 },
 				{ SceneZoom::X4, UnitSize::X32 },
@@ -151,10 +133,10 @@ public:
 
 private:
 	int m_verticesCount = 0;
-	int m_gridLeft = -HALF_CUBE;
-	int m_gridRight = HALF_CUBE;
-	int m_gridTop = HALF_CUBE;
-	int m_gridBottom = -HALF_CUBE;
+	int m_gridLeft = -HALF_LENGTH;
+	int m_gridRight = HALF_LENGTH;
+	int m_gridTop = HALF_LENGTH;
+	int m_gridBottom = -HALF_LENGTH;
 	UnitSize m_step = UnitSize::X1;
 	bool m_shouldDraw = true;
 
