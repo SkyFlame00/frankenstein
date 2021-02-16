@@ -6,6 +6,9 @@
 #include "../editor/Brush.h"
 #include "../editor/Renderable.h"
 #include "../editor/grid2d/Point.h"
+#include "../common/helpers.h"
+#include "../common/GlobalData.h"
+#include "../editor/ConstructionBlock.h"
 
 GLWidget2D::GLWidget2D(Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent)
 	: QOpenGLWidget(parent), m_camera(camera), m_renderer(renderer), m_scene(scene)
@@ -20,7 +23,6 @@ void GLWidget2D::initializeGL()
 {
 	m_axis = Axis::Z;
 	m_grid = new Grid2D(m_axis, m_zoom);
-	m_guiObjects.push_back(m_grid);
 	m_renderer->m_axis = m_axis;
 	m_renderer->setup(-1.0f, m_grid->HALF_LENGTH * 2);
 	m_renderer->setZoom(m_zoom);
@@ -33,7 +35,7 @@ void GLWidget2D::paintGL()
 
 	QList<Brush*> objects;
 
-	m_renderer->render(objects, m_guiObjects);
+	m_renderer->render(*m_grid, objects, m_scene->m_gui2DObjects);
 
 	clearInputData();
 	update();
@@ -96,14 +98,126 @@ void GLWidget2D::processInputData()
 	{
 		m_grid->decreaseScale();
 	}
-	if (m_inputData.leftMouseDown == ButtonDownState::ACTIVE)
+	
+	if (GlobalData::getInstance()->m_editorMode == EdtitorMode::BLOCK_MODE)
 	{
-		qInfo() << "leftMouseDown: x = " << m_inputData.mouseX << ", " << m_inputData.mouseY;
-		placePoint(m_inputData.mouseX, m_inputData.mouseY);
-		m_inputData.leftMouseDown = ButtonDownState::PROCESSED;
+		processToolMode();
 	}
 
+	//if (m_inputData.leftMouseDown == ButtonDownState::ACTIVE)
+	//{
+	//	//placePoint(m_inputData.mouseX, m_inputData.mouseY);
+	//	m_inputData.leftMouseDown = ButtonDownState::PROCESSED;
+	//}
+	
 	m_camera->updateCameraVectors();
+}
+
+void GLWidget2D::processToolMode()
+{
+	auto globalData = GlobalData::getInstance();
+	auto blockToolData = &globalData->m_blockToolData;
+
+	if (blockToolData->state == BlockToolState::CREATING)
+	{
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+		{
+			float nearestX, nearestY;
+			getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
+
+			QVector3D pointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY);
+
+			m_dragData.startPoint = new Point(pointPos);
+			m_scene->m_gui2DObjects.push_back(m_dragData.startPoint);
+		}
+		else if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
+		{
+			float nearestX, nearestY;
+			getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
+			QVector3D endPointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY);
+			QVector3D startPointPos = m_dragData.startPoint->m_origin;
+
+			if (
+				Helpers::trunc(endPointPos.x()) != Helpers::trunc(startPointPos.x()) ||
+				Helpers::trunc(endPointPos.y()) != Helpers::trunc(startPointPos.y()) ||
+				Helpers::trunc(endPointPos.z()) != Helpers::trunc(startPointPos.z()))
+			{
+				m_dragData.endPoint = new Point(endPointPos);
+				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
+
+				if (blockToolData->blockInstance)
+				{
+					m_scene->m_gui2DObjects.removeOne(blockToolData->blockInstance);
+					delete blockToolData->blockInstance;
+				}
+				
+				blockToolData->blockInstance = new ConstructionBlock(startPointPos, endPointPos);
+				m_scene->m_gui2DObjects.push_back(blockToolData->blockInstance);
+			}
+		}
+		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
+		{
+			if (m_dragData.startPoint)
+			{
+				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
+				delete m_dragData.startPoint;
+				m_dragData.startPoint = nullptr;
+			}
+			if (m_dragData.endPoint)
+			{
+				m_scene->m_gui2DObjects.removeOne(m_dragData.endPoint);
+				delete m_dragData.endPoint;
+				m_dragData.endPoint = nullptr;
+			}
+			if (blockToolData->blockInstance)
+			{
+				blockToolData->state = BlockToolState::READY_TO_EDIT;
+			}
+		}
+	}
+	else if (blockToolData->state == BlockToolState::READY_TO_EDIT)
+	{
+		if (m_inputData.keyEscape == ButtonDownState::DOWN_NOT_PROCESSED)
+		{
+			m_scene->m_gui2DObjects.removeOne(blockToolData->blockInstance);
+			delete blockToolData->blockInstance;
+			blockToolData->blockInstance = nullptr;
+			blockToolData->state = BlockToolState::CREATING;
+			return;
+		}
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+		{
+			// start moving or resizing or do nothing if cursor is not in boundaries
+			float x, y;
+			getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
+			blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
+		}
+	}
+	else if (blockToolData->state == BlockToolState::RESIZE)
+	{
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
+		{
+			float x, y;
+			float step = static_cast<float>(m_grid->getStep());
+			getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
+			blockToolData->blockInstance->doResizeStep(m_axis, QVector2D(x, y), step);
+		}
+		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
+		{
+			blockToolData->state = BlockToolState::READY_TO_EDIT;
+		}
+	}
+	else if (blockToolData->state == BlockToolState::MOVE)
+	{
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
+		{
+			//blockToolData.blockInstance->doMoveStep();
+		}
+		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
+		{
+			blockToolData->state = BlockToolState::READY_TO_EDIT;
+		}
+	}
 }
 
 void GLWidget2D::clearInputData()
@@ -111,6 +225,15 @@ void GLWidget2D::clearInputData()
 	m_inputData.mouseScroll = MouseScroll::NO_SCROLL;
 	m_inputData.keyOpenBracket = ButtonState::NOT_ACTIVE;
 	m_inputData.keyCloseBracket = ButtonState::NOT_ACTIVE;
+
+	if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.leftMouseDown = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.leftMouseDown = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyEscape == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyEscape = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyEscape == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyEscape = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget2D::wheelEvent(QWheelEvent* event)
@@ -141,9 +264,9 @@ void GLWidget2D::mousePressEvent(QMouseEvent* event)
 	{
 		m_inputData.leftMouse = ButtonState::PRESSED;
 
-		if (m_inputData.leftMouseDown == ButtonDownState::READY)
+		if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_PROCESSED)
 		{
-			m_inputData.leftMouseDown = ButtonDownState::ACTIVE;
+			m_inputData.leftMouseDown = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
 
@@ -155,7 +278,11 @@ void GLWidget2D::mouseReleaseEvent(QMouseEvent* event)
 	if (event->button() == Qt::LeftButton)
 	{
 		m_inputData.leftMouse = ButtonState::RELEASED;
-		m_inputData.leftMouseDown = ButtonDownState::READY;
+		
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.leftMouseDown = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
 	}
 
 	QOpenGLWidget::mouseReleaseEvent(event);
@@ -256,7 +383,7 @@ void GLWidget2D::zoomOut()
 	}
 }
 
-void GLWidget2D::placePoint(int screenX, int screenY)
+void GLWidget2D::getMouseCoordinates(int screenX, int screenY, float* resX, float* resY)
 {
 	float camX, camY;
 	QVector3D camPos = m_camera->getPosition();
@@ -276,90 +403,111 @@ void GLWidget2D::placePoint(int screenX, int screenY)
 		camY = camPos.y();
 	}
 
-	float currentfactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
-	float referenceFactor = SCENE_ZOOM_FACTORS.find(REFERENCE_ZOOM)->second;
-	float factor = referenceFactor / currentfactor;
+	float factor = getZoomFactor();
 	float x0 = m_frustrumWidth / 2.0f;
 	float y0 = m_frustrumHeight / 2.0f;
 	float shiftX = (screenX - x0) * factor;
 	float shiftY = (y0 - screenY) * factor;
-	float pointX = camX * factor + shiftX;
-	float pointY = camY * factor + shiftY;
+	*resX = camX * factor + shiftX;
+	*resY = camY * factor + shiftY;
+}
 
-	float nearestCellX, nearestCellY;
+void GLWidget2D::getNearestPoint(float x, float y, float* nearestX, float* nearestY)
+{
 	float step = static_cast<float>(m_grid->getStep());
 
-	if (pointX < 0.0f)
+	if (x < 0.0f)
 	{
-		int times = pointX / step;
+		int times = x / step;
 		float right = step * times;
 		float left = right - step;
-		if (std::abs(pointX - left) < std::abs(pointX - right))
+		if (std::abs(x - left) < std::abs(x - right))
 		{
-			nearestCellX = left;
+			*nearestX = left;
 		}
 		else
 		{
-			nearestCellX = right;
+			*nearestX = right;
 		}
 	}
 	else
 	{
-		int times = pointX / step;
+		int times = x / step;
 		float left = step * times;
 		float right = left + step;
-		if (std::abs(pointX - left) < std::abs(pointX - right))
+		if (std::abs(x - left) < std::abs(x - right))
 		{
-			nearestCellX = left;
+			*nearestX = left;
 		}
 		else
 		{
-			nearestCellX = right;
+			*nearestX = right;
 		}
 	}
 
-	if (pointY < 0.0f)
+	if (y < 0.0f)
 	{
-		int times = pointY / step;
+		int times = y / step;
 		float top = step * times;
 		float bottom = top - step;
-		if (std::abs(pointY - top) < std::abs(pointY - bottom))
+		if (std::abs(y - top) < std::abs(y - bottom))
 		{
-			nearestCellY = top;
+			*nearestY = top;
 		}
 		else
 		{
-			nearestCellY = bottom;
+			*nearestY = bottom;
 		}
 	}
 	else
 	{
-		int times = pointY / step;
+		int times = y / step;
 		float bottom = step * times;
 		float top = bottom + step;
-		if (std::abs(pointY - top) < std::abs(pointY - bottom))
+		if (std::abs(y - top) < std::abs(y - bottom))
 		{
-			nearestCellY = top;
+			*nearestY = top;
 		}
 		else
 		{
-			nearestCellY = bottom;
+			*nearestY = bottom;
 		}
 	}
+}
+
+void GLWidget2D::getNearestPointFromScreen(int screenX, int screenY, float* nearestX, float* nearestY)
+{
+	float pointX, pointY;
+	getMouseCoordinates(screenX, screenY, &pointX, &pointY);
+	getNearestPoint(pointX, pointY, nearestX, nearestY);
+}
+
+void GLWidget2D::placePoint(int screenX, int screenY)
+{
+	float nearestX, nearestY;
+	getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
 
 	Point* point;
 
 	switch (m_axis)
 	{
 	case Axis::X:
-		point = new Point(0.0f, nearestCellY, nearestCellX);
+		point = new Point(0.0f, nearestY, nearestX);
 		break;
 	case Axis::Y:
-		point = new Point(nearestCellX, 0.0f, nearestCellY);
+		point = new Point(nearestX, 0.0f, nearestY);
 		break;
 	case Axis::Z:
-		point = new Point(nearestCellX, nearestCellY, 0.0f);
+		point = new Point(nearestX, nearestY, 0.0f);
 	}
 
-	m_guiObjects.push_back(point);
+	m_scene->m_gui2DObjects.push_back(point);
+}
+
+float GLWidget2D::getZoomFactor()
+{
+	float currentfactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
+	float referenceFactor = SCENE_ZOOM_FACTORS.find(REFERENCE_ZOOM)->second;
+	float factor = referenceFactor / currentfactor;
+	return factor;
 }

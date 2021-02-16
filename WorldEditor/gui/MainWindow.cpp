@@ -124,6 +124,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	{
 		m_glWidget2D->m_inputData.keyCloseBracket = ButtonState::PRESSED;
 	}
+	if (key == Qt::Key_Escape)
+	{
+		if (m_glWidget2D->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D->m_inputData.keyEscape = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 
 	QMainWindow::keyPressEvent(event);
 }
@@ -151,6 +158,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 	{
 		m_glWidget3D->m_inputData.keyD = ButtonState::RELEASED;
 		m_glWidget2D->m_inputData.keyD = ButtonState::RELEASED;
+	}
+	if (key == Qt::Key_Escape)
+	{
+		if (m_glWidget2D->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D->m_inputData.keyEscape = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
 	}
 
 	QMainWindow::keyReleaseEvent(event);

@@ -4,6 +4,7 @@
 #include "gui/Debug.h"
 #include "editor/ResourceManager.h"
 #include "editor/GL.h"
+#include "common/GlobalData.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,6 +16,7 @@ int main(int argc, char* argv[])
 
 	ResourceManager::Init();
 	GL::init();
+	GlobalData::init();
 
 	MainWindow window;
 	//window.showMaximized();

@@ -180,8 +180,6 @@ void Grid2D::updateView(QVector3D position, float width, float height)
 
 	if (nothing)
 	{
-		//m_vbo.bind();
-		//m_vbo.allocate(0);
 		m_shouldDraw = false;
 		return;
 	}

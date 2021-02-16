@@ -9,6 +9,14 @@ enum class ButtonState
 	RELEASED
 };
 
+enum class ButtonDownState
+{
+	DOWN_NOT_PROCESSED,
+	DOWN_PROCESSED,
+	RELEASED_NOT_PROCESSED,
+	RELEASED_PROCESSED
+};
+
 enum class Axis
 {
 	X, Y, Z
@@ -32,4 +40,18 @@ const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
 	{ SceneZoom::X32, 32.0f },
 	{ SceneZoom::X64, 64.0f },
 	{ SceneZoom::X128, 128.0f }
+};
+
+enum class EdtitorMode
+{
+	SELECTING_MODE,
+	BLOCK_MODE
+};
+
+enum class BlockToolState
+{
+	CREATING,
+	READY_TO_EDIT,
+	RESIZE,
+	MOVE
 };

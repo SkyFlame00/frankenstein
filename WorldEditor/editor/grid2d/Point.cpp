@@ -89,3 +89,8 @@ Point::Point(float x, float y, float z)
 	m_scaleVec.setY(5.0f);
 	m_scaleVec.setZ(5.0f);
 }
+
+Point::Point(QVector3D position)
+	: Point(position.x(), position.y(), position.z())
+{
+}

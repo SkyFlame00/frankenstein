@@ -96,10 +96,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common\helpers.cpp" />
     <ClCompile Include="common\types.h" />
+    <ClCompile Include="editor\ConstructionBlock.cpp" />
     <ClCompile Include="editor\Brush.cpp" />
     <ClCompile Include="editor\GL.cpp" />
     <ClCompile Include="editor\Grid2D.cpp" />
+    <ClCompile Include="common\GlobalData.cpp" />
+    <ClCompile Include="editor\Renderable.cpp" />
     <ClCompile Include="gui\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
@@ -120,9 +124,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\helpers.h" />
+    <ClInclude Include="editor\ConstructionBlock.h" />
     <ClInclude Include="editor\Brush.h" />
     <ClInclude Include="editor\GL.h" />
     <ClInclude Include="editor\Grid2D.h" />
+    <ClInclude Include="common\GlobalData.h" />
     <ClInclude Include="gui\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />

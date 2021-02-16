@@ -36,53 +36,42 @@ void Renderer2D::setZoom(SceneZoom zoom)
 	m_zoomVec.setZ(m_axis == Axis::Z ? 0.0f : val);
 }
 
-void Renderer2D::render(QList<Brush*>& objects, QList<Renderable*>& guiObjects)
+void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects)
 {
 	$->glClearColor(0.0, 0.0, 0.0, 1.0);
 	$->glClear(GL_COLOR_BUFFER_BIT);
 
-	for (auto& object : objects)
 	{
-		auto program = object->m_program;
-
-		QMatrix4x4 model;
-		model.setToIdentity();
-		model.scale(m_zoomVec);
-
+		auto program = grid2D.m_program;
 		program->bind();
 		program->setUniformValue("proj", m_projMatrix);
 		program->setUniformValue("view", m_camera->getViewMatrix());
-		program->setUniformValue("model", model);
 		program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
-		
-		object->m_vao.bind();
-		$->glDrawArrays(GL_LINES, 0, object->verticesCount());
+
+		grid2D.m_vao.bind();
+		$->glDrawArrays(grid2D.getDrawMode(), 0, grid2D.verticesCount());
 	}
 
 	for (auto& guiObject : guiObjects)
 	{
-		if (!guiObject->shouldDraw())
-		{
-			continue;
-		}
-
-		auto program = guiObject->m_program;
-		auto origin = guiObject->m_origin;
-		QMatrix4x4 model;
-		QVector3D translationVec(origin.x() * m_zoomVec.x(), origin.y() * m_zoomVec.y(), origin.z() * m_zoomVec.z());
-
-		model.setToIdentity();
-		
-		model.translate(translationVec);
-		model.scale(guiObject->m_scaleVec);
-
-		program->bind();
-		program->setUniformValue("proj", m_projMatrix);
-		program->setUniformValue("view", m_camera->getViewMatrix());
-		program->setUniformValue("model", model);
-		program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
-
-		guiObject->m_vao.bind();
-		$->glDrawArrays(guiObject->getDrawMode(), 0, guiObject->verticesCount());
+		guiObject->render2D(m_projMatrix, m_zoomVec, *m_camera);
 	}
+
+	//for (auto& object : objects)
+	//{
+	//	auto program = object->m_program;
+
+	//	QMatrix4x4 model;
+	//	model.setToIdentity();
+	//	model.scale(m_zoomVec);
+
+	//	program->bind();
+	//	program->setUniformValue("proj", m_projMatrix);
+	//	program->setUniformValue("view", m_camera->getViewMatrix());
+	//	program->setUniformValue("model", model);
+	//	program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
+	//	
+	//	object->m_vao.bind();
+	//	$->glDrawArrays(GL_LINES, 0, object->verticesCount());
+	//}
 }

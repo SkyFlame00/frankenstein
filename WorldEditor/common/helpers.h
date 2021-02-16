@@ -1,15 +1,11 @@
 #pragma once
 
 #include <cmath>
+#include <QVector3D>
+#include "types.h"
 
 namespace Helpers
 {
-
-	float trunc(float num, int digits = 0)
-	{
-		float factor = std::pow(10, digits);
-		num = std::trunc(num * factor);
-		return num / factor;
-	}
-
+	float trunc(float num, int digits = 0);
+	QVector3D get3DPointFrom2D(Axis axis, float hor, float ver, float thirdAxisVal = 0.0f);
 }
