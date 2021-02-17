@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Qt>
 #include <unordered_map>
 
 enum class ButtonState

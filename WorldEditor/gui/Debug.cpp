@@ -5,6 +5,7 @@
 
 QWidget* Debug::m_debugWindow = nullptr;
 QPlainTextEdit* Debug::m_debugTextEdit = nullptr;
+QTime Debug::m_timeStart;
 
 void Debug::Init()
 {
@@ -23,6 +24,8 @@ void Debug::Init()
     layout->addWidget(m_debugTextEdit);
     m_debugWindow->show();
     qInstallMessageHandler(Log);
+
+    m_timeStart = QTime::currentTime();
 }
 
 void Debug::Log(QtMsgType type, const QMessageLogContext& context, const QString& msg)

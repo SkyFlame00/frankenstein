@@ -1,6 +1,6 @@
 #include "Renderable.h"
 
-void Renderable::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
+void Renderable::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
 {
 	if (!shouldDraw())
 	{

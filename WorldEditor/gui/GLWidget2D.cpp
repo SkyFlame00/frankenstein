@@ -35,7 +35,7 @@ void GLWidget2D::paintGL()
 
 	QList<Brush*> objects;
 
-	m_renderer->render(*m_grid, objects, m_scene->m_gui2DObjects);
+	m_renderer->render(*m_grid, objects, m_scene->m_gui2DObjects, getZoomFactor());
 
 	clearInputData();
 	update();
@@ -127,7 +127,7 @@ void GLWidget2D::processToolMode()
 
 			QVector3D pointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY);
 
-			m_dragData.startPoint = new Point(pointPos);
+			m_dragData.startPoint = new Point(1.0f, pointPos);
 			m_scene->m_gui2DObjects.push_back(m_dragData.startPoint);
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
@@ -142,7 +142,7 @@ void GLWidget2D::processToolMode()
 				Helpers::trunc(endPointPos.y()) != Helpers::trunc(startPointPos.y()) ||
 				Helpers::trunc(endPointPos.z()) != Helpers::trunc(startPointPos.z()))
 			{
-				m_dragData.endPoint = new Point(endPointPos);
+				m_dragData.endPoint = new Point(1.0f, endPointPos);
 				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
 
 				if (blockToolData->blockInstance)
@@ -172,25 +172,28 @@ void GLWidget2D::processToolMode()
 			if (blockToolData->blockInstance)
 			{
 				blockToolData->state = BlockToolState::READY_TO_EDIT;
+				blockToolData->blockInstance->m_isEditingMode = true;
 			}
 		}
 	}
 	else if (blockToolData->state == BlockToolState::READY_TO_EDIT)
 	{
+		float x, y;
+		getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
+		Qt::CursorShape cursor = blockToolData->blockInstance->checkHover(x, y, m_axis, getZoomFactor());
+		setCursor(cursor);
+		
 		if (m_inputData.keyEscape == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
 			m_scene->m_gui2DObjects.removeOne(blockToolData->blockInstance);
 			delete blockToolData->blockInstance;
 			blockToolData->blockInstance = nullptr;
 			blockToolData->state = BlockToolState::CREATING;
-			return;
 		}
-		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+		else if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
-			// start moving or resizing or do nothing if cursor is not in boundaries
-			float x, y;
-			getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
-			blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
+			BlockToolState state = blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
+			blockToolData->state = state;
 		}
 	}
 	else if (blockToolData->state == BlockToolState::RESIZE)
@@ -492,13 +495,13 @@ void GLWidget2D::placePoint(int screenX, int screenY)
 	switch (m_axis)
 	{
 	case Axis::X:
-		point = new Point(0.0f, nearestY, nearestX);
+		point = new Point(1.0f, 0.0f, nearestY, nearestX);
 		break;
 	case Axis::Y:
-		point = new Point(nearestX, 0.0f, nearestY);
+		point = new Point(1.0f, nearestX, 0.0f, nearestY);
 		break;
 	case Axis::Z:
-		point = new Point(nearestX, nearestY, 0.0f);
+		point = new Point(1.0f, nearestX, nearestY, 0.0f);
 	}
 
 	m_scene->m_gui2DObjects.push_back(point);

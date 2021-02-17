@@ -1,13 +1,13 @@
 #include "Point.h"
 #include "../ResourceManager.h"
 
-Point::Point(float x, float y, float z)
-	: Renderable()
+Point::Point(float size, float x, float y, float z)
+	: Renderable(), m_size(size)
 {
 	m_drawMode = GL_TRIANGLES;
 	m_shouldScale = true;
 	m_verticesCount = 36;
-	float halfLength = 1.0f;
+	float halfLength = size / 2.0f;
 	float vertices[]{
 		// Face 1
 		-halfLength, -halfLength, -halfLength,
@@ -90,7 +90,7 @@ Point::Point(float x, float y, float z)
 	m_scaleVec.setZ(5.0f);
 }
 
-Point::Point(QVector3D position)
-	: Point(position.x(), position.y(), position.z())
+Point::Point(float size, QVector3D position)
+	: Point(size, position.x(), position.y(), position.z())
 {
 }

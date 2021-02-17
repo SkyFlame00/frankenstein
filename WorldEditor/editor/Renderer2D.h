@@ -17,7 +17,7 @@ public:
 	~Renderer2D();
 
 	void setup(float nearPlane, float farPlane);
-	void render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects);
+	void render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float zoomFactor);
 	void setFrustrum(float width, float height);
 	void setZoom(SceneZoom zoom);
 

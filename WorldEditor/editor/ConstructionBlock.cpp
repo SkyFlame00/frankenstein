@@ -2,6 +2,11 @@
 #include "ResourceManager.h"
 #include <algorithm>
 #include <math.h>
+#include "grid2d/Point.h"
+#include "../common/helpers.h"
+
+#include <QTime>
+#include "../gui/Debug.h"
 
 ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
 {
@@ -97,129 +102,202 @@ void ConstructionBlock::get2DBounds(Axis axis, float* horStart, float* horEnd, f
 	}
 }
 
-void ConstructionBlock::startDrag(Axis axis, QVector2D pos, float zoomFactor)
+ConstructionBlock::ResizePointsBoundaries* ConstructionBlock::getResizePointsBoundaries(Axis axis, float zoomFactor)
+{
+	ConstructionBlock::ResizePointsBoundaries* b = new ConstructionBlock::ResizePointsBoundaries;
+	float horBoundStart, horBoundEnd, verBoundStart, verBoundEnd;
+	get2DBounds(axis, &horBoundStart, &horBoundEnd, &verBoundStart, &verBoundEnd);
+
+	b->leftTop.horStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->leftTop.horEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+	b->leftTop.verStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->leftTop.verEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+
+	b->centerTop.horStart = (horBoundStart + horBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->centerTop.horEnd = (horBoundStart + horBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->centerTop.verStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->centerTop.verEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+
+	b->rightTop.horStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->rightTop.horEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+	b->rightTop.verStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->rightTop.verEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+
+	b->rightCenter.horStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->rightCenter.horEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+	b->rightCenter.verStart = (verBoundStart + verBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->rightCenter.verEnd = (verBoundStart + verBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
+
+	b->rightBottom.horStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
+	b->rightBottom.horEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+	b->rightBottom.verStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->rightBottom.verEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+
+	b->centerBottom.horStart = (horBoundStart + horBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->centerBottom.horEnd = (horBoundStart + horBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->centerBottom.verStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->centerBottom.verEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+
+	b->leftBottom.horStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->leftBottom.horEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+	b->leftBottom.verStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->leftBottom.verEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+
+	b->leftCenter.horStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
+	b->leftCenter.horEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
+	b->leftCenter.verStart = (verBoundStart + verBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
+	b->leftCenter.verEnd = (verBoundStart + verBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
+
+	return b;
+}
+
+Qt::CursorShape ConstructionBlock::checkHover(float x, float y, Axis axis, float zoomFactor)
+{
+	ConstructionBlock::ResizePointsBoundaries* b = getResizePointsBoundaries(axis, zoomFactor);
+	Qt::CursorShape cursor = Qt::ArrowCursor;
+
+	int timePassed = -QTime::currentTime().secsTo(Debug::m_timeStart);
+
+	qInfo() << "Time passed: " << timePassed;
+
+	if (b->leftTop.horStart <= x && x <= b->leftTop.horEnd &&
+		b->leftTop.verStart <= y && y <= b->leftTop.verEnd)
+	{
+		cursor = Qt::SizeFDiagCursor;
+	}
+
+	if (b->centerTop.horStart <= x && x <= b->centerTop.horEnd &&
+		b->centerTop.verStart <= y && y <= b->centerTop.verEnd)
+	{
+		cursor = Qt::SizeVerCursor;
+	}
+
+	if (b->rightTop.horStart <= x && x <= b->rightTop.horEnd &&
+		b->rightTop.verStart <= y && y <= b->rightTop.verEnd)
+	{
+		cursor = Qt::SizeBDiagCursor;
+	}
+
+	if (b->rightCenter.horStart <= x && x <= b->rightCenter.horEnd &&
+		b->rightCenter.verStart <= y && y <= b->rightCenter.verEnd)
+	{
+		cursor = Qt::SizeHorCursor;
+	}
+
+	if (b->rightBottom.horStart <= x && x <= b->rightBottom.horEnd &&
+		b->rightBottom.verStart <= y && y <= b->rightBottom.verEnd)
+	{
+		cursor = Qt::SizeFDiagCursor;
+	}
+
+	if (b->centerBottom.horStart <= x && x <= b->centerBottom.horEnd &&
+		b->centerBottom.verStart <= y && y <= b->centerBottom.verEnd)
+	{
+		cursor = Qt::SizeVerCursor;
+	}
+
+	if (b->leftBottom.horStart <= x && x <= b->leftBottom.horEnd &&
+		b->leftBottom.verStart <= y && y <= b->leftBottom.verEnd)
+	{
+		cursor = Qt::SizeBDiagCursor;
+	}
+
+	if (b->leftCenter.horStart <= x && x <= b->leftCenter.horEnd &&
+		b->leftCenter.verStart <= y && y <= b->leftCenter.verEnd)
+	{
+		cursor = Qt::SizeHorCursor;
+	}
+
+	return cursor;
+}
+
+BlockToolState ConstructionBlock::startDrag(Axis axis, QVector2D pos, float zoomFactor)
 {
 	float horBoundStart, horBoundEnd, verBoundStart, verBoundEnd;
 	float hor = pos.x();
 	float ver = pos.y();
 	get2DBounds(axis, &horBoundStart, &horBoundEnd, &verBoundStart, &verBoundEnd);
+	m_lastPos = pos;
 	
 	if (horBoundStart <= hor && hor <= horBoundEnd &&
 		verBoundStart <= ver && ver <= verBoundEnd)
 	{
 		m_mode = Mode::MOVE;
-		m_lastPos = pos;
 		m_moveDelta = 0.0f;
-		return;
+		return BlockToolState::MOVE;
 	}
 
-	float leftTopHorStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float leftTopHorEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-	float leftTopVerStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float leftTopVerEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
+	ConstructionBlock::ResizePointsBoundaries* b = getResizePointsBoundaries(axis, zoomFactor);
 
-	if (leftTopHorStart <= hor && hor <= leftTopHorEnd &&
-		leftTopVerStart <= ver && ver <= leftTopVerEnd)
+	if (b->leftTop.horStart <= hor && hor <= b->leftTop.horEnd &&
+		b->leftTop.verStart <= ver && ver <= b->leftTop.verEnd)
 	{
 		m_moveDeltaX = 0.0f;
 		m_moveDeltaY = 0.0f;
 		m_resizeDirection = ResizeDirection::LEFT_TOP;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float centerTopHorStart = (horBoundStart + horBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
-	float centerTopHorEnd = (horBoundStart + horBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
-	float centerTopVerStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float centerTopVerEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
-
-	if (centerTopHorStart <= hor && hor <= centerTopHorEnd &&
-		centerTopVerStart <= ver && ver <= centerTopVerEnd)
+	if (b->centerTop.horStart <= hor && hor <= b->centerTop.horEnd &&
+		b->centerTop.verStart <= ver && ver <= b->centerTop.verEnd)
 	{
 		m_moveDelta = 0.0f;
 		m_resizeDirection = ResizeDirection::CENTER_TOP;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float rightTopHorStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float rightTopHorEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
-	float rightTopVerStart = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float rightTopVerEnd = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
-
-	if (rightTopHorStart <= hor && hor <= rightTopHorEnd &&
-		rightTopVerStart <= ver && ver <= rightTopVerEnd)
+	if (b->rightTop.horStart <= hor && hor <= b->rightTop.horEnd &&
+		b->rightTop.verStart <= ver && ver <= b->rightTop.verEnd)
 	{
 		m_moveDeltaX = 0.0f;
 		m_moveDeltaY = 0.0f;
 		m_resizeDirection = ResizeDirection::RIGHT_TOP;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float rightCenterHorStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float rightCenterHorEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
-	float rightCenterVerStart = (verBoundStart + verBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
-	float rightCenterVerEnd = (verBoundStart + verBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
-
-	if (rightCenterHorStart <= hor && hor <= rightCenterHorEnd &&
-		rightCenterVerStart <= ver && ver <= rightCenterVerEnd)
+	if (b->rightCenter.horStart <= hor && hor <= b->rightCenter.horEnd &&
+		b->rightCenter.verStart <= ver && ver <= b->rightCenter.verEnd)
 	{
 		m_moveDelta = 0.0f;
 		m_resizeDirection = ResizeDirection::RIGHT_CENTER;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float rightBottomHorStart = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor;
-	float rightBottomHorEnd = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor;
-	float rightBottomVerStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float rightBottomVerEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-
-	if (rightBottomHorStart <= hor && hor <= rightBottomHorEnd &&
-		rightBottomVerStart <= ver && ver <= rightBottomVerEnd)
+	if (b->rightBottom.horStart <= hor && hor <= b->rightBottom.horEnd &&
+		b->rightBottom.verStart <= ver && ver <= b->rightBottom.verEnd)
 	{
 		m_moveDeltaX = 0.0f;
 		m_moveDeltaY = 0.0f;
 		m_resizeDirection = ResizeDirection::RIGHT_BOTTOM;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float centerBottomHorStart = (horBoundStart + horBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
-	float centerBottomHorEnd = (horBoundStart + horBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
-	float centerBottomVerStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float centerBottomVerEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-
-	if (centerBottomHorStart <= hor && hor <= centerBottomHorEnd &&
-		centerBottomVerStart <= ver && ver <= centerBottomVerEnd)
+	if (b->centerBottom.horStart <= hor && hor <= b->centerBottom.horEnd &&
+		b->centerBottom.verStart <= ver && ver <= b->centerBottom.verEnd)
 	{
 		m_moveDelta = 0.0f;
 		m_resizeDirection = ResizeDirection::CENTER_BOTTOM;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float leftBottomHorStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float leftBottomHorEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-	float leftBottomVerStart = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float leftBottomVerEnd = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-
-	if (leftBottomHorStart <= hor && hor <= leftBottomHorEnd &&
-		leftBottomVerStart <= ver && ver <= leftBottomVerEnd)
+	if (b->leftBottom.horStart <= hor && hor <= b->leftBottom.horEnd &&
+		b->leftBottom.verStart <= ver && ver <= b->leftBottom.verEnd)
 	{
 		m_moveDeltaX = 0.0f;
 		m_moveDeltaY = 0.0f;
 		m_resizeDirection = ResizeDirection::LEFT_BOTTOM;
-		return;
+		return BlockToolState::RESIZE;
 	}
 
-	float leftCenterHorStart = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor;
-	float leftCenterHorEnd = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor;
-	float leftCenterVerStart = (verBoundStart + verBoundEnd) / 2 - RESIZE_POINT_SIZE * zoomFactor / 2;
-	float leftCenterVerEnd = (verBoundStart + verBoundEnd) / 2 + RESIZE_POINT_SIZE * zoomFactor / 2;
-
-	if (leftCenterHorStart <= hor && hor <= leftCenterHorEnd &&
-		leftCenterVerStart <= ver && ver <= leftCenterVerEnd)
+	if (b->leftCenter.horStart <= hor && hor <= b->leftCenter.horEnd &&
+		b->leftCenter.verStart <= ver && ver <= b->leftCenter.verEnd)
 	{
 		m_moveDelta = 0.0f;
 		m_resizeDirection = ResizeDirection::LEFT_CENTER;
-		return;
+		return BlockToolState::RESIZE;
 	}
+
+	return BlockToolState::READY_TO_EDIT;
 }
 
 void ConstructionBlock::doResizeStep(Axis axis, QVector2D pos, float step)
@@ -231,277 +309,327 @@ void ConstructionBlock::doResizeStep(Axis axis, QVector2D pos, float step)
 	float horBoundStart, horBoundEnd, verBoundStart, verBoundEnd;
 	get2DBounds(axis, &horBoundStart, &horBoundEnd, &verBoundStart, &verBoundEnd);
 
-	//if (m_mode == Mode::RESIZE)
+	/* LEFT TOP */
+	if (m_resizeDirection == ResizeDirection::LEFT_TOP)
 	{
-		/* LEFT TOP */
-		if (m_resizeDirection == ResizeDirection::LEFT_TOP)
+		m_moveDeltaX += hor - lastHor;
+		m_moveDeltaY += ver - lastVer;
+		
+		if (std::abs(m_moveDeltaX) >= step)
 		{
-			m_moveDeltaX += hor - lastHor;
-			m_moveDeltaY += ver - lastVer;
-			
-			if (m_moveDeltaX >= step)
+			float steps = Helpers::trunc(m_moveDeltaX / step) * step;
+			m_moveDeltaX -= steps;
+
+			if (steps > 0)
 			{
-				float steps = m_moveDeltaX / step;
-				m_moveDeltaX -= steps;
+				float length = std::abs(horBoundEnd - horBoundStart);
 
-				if (steps < 0)
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
 				{
-					float length = std::abs(horBoundEnd - horBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
+					steps = 0.0f;
 				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
 
+			if (steps != 0.0f) 
 				calcResize(axis, true, true, steps);
-			}
-
-			if (m_moveDeltaY >= step)
-			{
-				float steps = m_moveDeltaY / step;
-				m_moveDeltaY -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(verBoundEnd - verBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, false, false, steps);
-			}
 		}
-		/* CENTER TOP */
-		else if (m_resizeDirection == ResizeDirection::CENTER_TOP)
+
+		if (std::abs(m_moveDeltaY) >= step)
 		{
-			m_moveDelta += ver - lastVer;
-
-			if (m_moveDelta < step)
-			{
-				return;
-			}
-
-			float steps = m_moveDelta / step;
-			m_moveDelta -= steps;
+			float steps = Helpers::trunc(m_moveDeltaY / step) * step;
+			m_moveDeltaY -= steps;
 
 			if (steps < 0)
 			{
 				float length = std::abs(verBoundEnd - verBoundStart);
 
-				if (length + steps < 1.0f)
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
 				{
-					steps = length - 1;
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
 				}
 			}
 
-			calcResize(axis, false, false, steps);
-		}
-		/* RIGHT TOP */
-		else if (m_resizeDirection == ResizeDirection::RIGHT_TOP)
-		{
-			m_moveDeltaX += hor - lastHor;
-			m_moveDeltaY += ver - lastVer;
-
-			if (m_moveDeltaX >= step)
-			{
-				float steps = m_moveDeltaX / step;
-				m_moveDeltaX -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(horBoundEnd - horBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, true, false, steps);
-			}
-
-			if (m_moveDeltaY >= step)
-			{
-				float steps = m_moveDeltaY / step;
-				m_moveDeltaY -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(verBoundEnd - verBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
+			if (steps != 0.0f)
 				calcResize(axis, false, false, steps);
-			}
-		}
-		/* RIGHT CENTER */
-		else if (m_resizeDirection == ResizeDirection::RIGHT_CENTER)
-		{
-			m_moveDelta += ver - lastVer;
-
-			if (m_moveDelta < step)
-			{
-				return;
-			}
-
-			float steps = m_moveDelta / step;
-			m_moveDelta -= steps;
-
-			if (steps < 0)
-			{
-				float length = std::abs(horBoundEnd - horBoundStart);
-
-				if (length + steps < 1.0f)
-				{
-					steps = length - 1;
-				}
-			}
-
-			calcResize(axis, true, false, steps);
-		}
-		/* RIGHT BOTTOM */
-		else if (m_resizeDirection == ResizeDirection::RIGHT_BOTTOM)
-		{
-			m_moveDeltaX += hor - lastHor;
-			m_moveDeltaY += ver - lastVer;
-
-			if (m_moveDeltaX >= step)
-			{
-				float steps = m_moveDeltaX / step;
-				m_moveDeltaX -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(horBoundEnd - horBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, true, false, steps);
-			}
-
-			if (m_moveDeltaY >= step)
-			{
-				float steps = m_moveDeltaY / step;
-				m_moveDeltaY -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(verBoundEnd - verBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, false, true, steps);
-			}
-		}
-		/* CENTER BOTTOM */
-		else if (m_resizeDirection == ResizeDirection::CENTER_BOTTOM)
-		{
-			m_moveDelta += ver - lastVer;
-
-			if (m_moveDelta < step)
-			{
-				return;
-			}
-
-			float steps = m_moveDelta / step;
-			m_moveDelta -= steps;
-
-			if (steps < 0)
-			{
-				float length = std::abs(verBoundEnd - verBoundStart);
-
-				if (length + steps < 1.0f)
-				{
-					steps = length - 1;
-				}
-			}
-
-			calcResize(axis, false, true, steps);
-		}
-		/* LEFT BOTTOM */
-		else if (m_resizeDirection == ResizeDirection::LEFT_BOTTOM)
-		{
-			m_moveDeltaX += hor - lastHor;
-			m_moveDeltaY += ver - lastVer;
-
-			if (m_moveDeltaX >= step)
-			{
-				float steps = m_moveDeltaX / step;
-				m_moveDeltaX -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(horBoundEnd - horBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, true, true, steps);
-			}
-
-			if (m_moveDeltaY >= step)
-			{
-				float steps = m_moveDeltaY / step;
-				m_moveDeltaY -= steps;
-
-				if (steps < 0)
-				{
-					float length = std::abs(verBoundEnd - verBoundStart);
-
-					if (length + steps < 1.0f)
-					{
-						steps = length - 1;
-					}
-				}
-
-				calcResize(axis, false, true, steps);
-			}
-		}
-		/* LEFT CENTER */
-		else if (m_resizeDirection == ResizeDirection::LEFT_CENTER)
-		{
-			m_moveDelta += ver - lastVer;
-
-			if (m_moveDelta < step)
-			{
-				return;
-			}
-
-			float steps = m_moveDelta / step;
-			m_moveDelta -= steps;
-
-			if (steps < 0)
-			{
-				float length = std::abs(horBoundEnd - horBoundStart);
-
-				if (length + steps < 1.0f)
-				{
-					steps = length - 1;
-				}
-			}
-
-			calcResize(axis, true, true, steps);
 		}
 	}
+	/* CENTER TOP */
+	else if (m_resizeDirection == ResizeDirection::CENTER_TOP)
+	{
+		m_moveDelta += ver - lastVer;
+
+		if (std::abs(m_moveDelta) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDelta / step) * step;
+			m_moveDelta -= steps;
+
+			if (steps < 0)
+			{
+				float length = std::abs(verBoundEnd - verBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, false, false, steps);
+		}
+	}
+	/* RIGHT TOP */
+	else if (m_resizeDirection == ResizeDirection::RIGHT_TOP)
+	{
+		m_moveDeltaX += hor - lastHor;
+		m_moveDeltaY += ver - lastVer;
+
+		if (std::abs(m_moveDeltaX) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaX / step) * step;
+			m_moveDeltaX -= steps;
+
+			if (steps < 0)
+			{
+				float length = std::abs(horBoundEnd - horBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, true, false, steps);
+		}
+
+		if (std::abs(m_moveDeltaY) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaY / step) * step;
+			m_moveDeltaY -= steps;
+
+			if (steps < 0)
+			{
+				float length = std::abs(verBoundEnd - verBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, false, false, steps);
+		}
+	}
+	/* RIGHT CENTER */
+	else if (m_resizeDirection == ResizeDirection::RIGHT_CENTER)
+	{
+		m_moveDelta += hor - lastHor;
+
+		if (std::abs(m_moveDelta) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDelta / step) * step;
+			m_moveDelta -= steps;
+
+			if (steps < 0)
+			{
+				float length = std::abs(horBoundEnd - horBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, true, false, steps);
+		}
+	}
+	/* RIGHT BOTTOM */
+	else if (m_resizeDirection == ResizeDirection::RIGHT_BOTTOM)
+	{
+		m_moveDeltaX += hor - lastHor;
+		m_moveDeltaY += ver - lastVer;
+
+		if (std::abs(m_moveDeltaX) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaX / step) * step;
+			m_moveDeltaX -= steps;
+
+			if (steps < 0)
+			{
+				float length = std::abs(horBoundEnd - horBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length + steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, true, false, steps);
+		}
+
+		if (std::abs(m_moveDeltaY) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaY / step) * step;
+			m_moveDeltaY -= steps;
+
+			if (steps > 0)
+			{
+				float length = std::abs(verBoundEnd - verBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, false, true, steps);
+		}
+	}
+	/* CENTER BOTTOM */
+	else if (m_resizeDirection == ResizeDirection::CENTER_BOTTOM)
+	{
+		m_moveDelta += ver - lastVer;
+
+		if (std::abs(m_moveDelta) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDelta / step) * step;
+			m_moveDelta -= steps;
+
+			if (steps > 0)
+			{
+				float length = std::abs(verBoundEnd - verBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, false, true, steps);
+		}
+	}
+	/* LEFT BOTTOM */
+	else if (m_resizeDirection == ResizeDirection::LEFT_BOTTOM)
+	{
+		m_moveDeltaX += hor - lastHor;
+		m_moveDeltaY += ver - lastVer;
+
+		if (std::abs(m_moveDeltaX) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaX / step) * step;
+			m_moveDeltaX -= steps;
+
+			if (steps > 0)
+			{
+				float length = std::abs(horBoundEnd - horBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, true, true, steps);
+		}
+
+		if (std::abs(m_moveDeltaY) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDeltaY / step) * step;
+			m_moveDeltaY -= steps;
+
+			if (steps > 0)
+			{
+				float length = std::abs(verBoundEnd - verBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, false, true, steps);
+		}
+	}
+	/* LEFT CENTER */
+	else if (m_resizeDirection == ResizeDirection::LEFT_CENTER)
+	{
+		m_moveDelta += hor - lastHor;
+
+		if (std::abs(m_moveDelta) >= step)
+		{
+			float steps = Helpers::trunc(m_moveDelta / step) * step;
+			m_moveDelta -= steps;
+
+			if (steps > 0)
+			{
+				float length = std::abs(horBoundEnd - horBoundStart);
+
+				if (Helpers::trunc(length) <= Helpers::trunc(step))
+				{
+					steps = 0.0f;
+				}
+				else if (length - steps < step)
+				{
+					steps = length - step;
+				}
+			}
+
+			if (steps != 0.0f)
+				calcResize(axis, true, true, steps);
+		}
+	}
+
 
 	m_lastPos = pos;
 }
@@ -558,8 +686,11 @@ void ConstructionBlock::calcResize(Axis axis, bool isHorizontal, bool isReversed
 		case Axis::Z:
 			if (isHorizontal)
 			{
+				float xx = v.x();
 				float factor = std::abs((v.x() - horStart) / (horEnd - horStart));
 				v.setX(v.x() + steps * factor);
+				float xx1 = v.x();
+				float x = 5;
 			}
 			else
 			{
@@ -621,9 +752,83 @@ void ConstructionBlock::calcResize(Axis axis, bool isHorizontal, bool isReversed
 	}
 
 	createLinesVertices();
+	m_vbo.bind();
+	m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
 }
 
-void ConstructionBlock::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
+QList<QVector3D>* ConstructionBlock::getResizePointsTranslationVectors(Axis axis, float zoomFactor, QVector3D zoomVec)
+{
+	auto getPositionByAxis = [&axis](float hor, float ver) {
+		switch (axis)
+		{
+		case Axis::X:
+			return QVector3D(0.0f, ver, hor);
+		case Axis::Y:
+			return QVector3D(hor, 0.0f, ver);
+		case Axis::Z:
+			return QVector3D(hor, ver, 0.0f);
+		}
+	};
+
+	QList<QVector3D>* vectors = new QList<QVector3D>;
+	QVector3D origin;
+	float hor, ver;
+	float horBoundStart, horBoundEnd, verBoundStart, verBoundEnd;
+
+	get2DBounds(axis, &horBoundStart, &horBoundEnd, &verBoundStart, &verBoundEnd);
+
+	/* LEFT TOP */
+	hor = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* CENTER TOP */
+	hor = (horBoundStart + horBoundEnd) / 2;
+	ver = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* RIGHT TOP */
+	hor = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = verBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* RIGHT CENTER */
+	hor = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = (verBoundStart + verBoundEnd) / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* RIGHT BOTTOM */
+	hor = horBoundEnd + RESIZE_POINT_MARGIN * zoomFactor + RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* CENTER BOTTOM */
+	hor = (horBoundStart + horBoundEnd) / 2;
+	ver = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* LEFT BOTTOM */
+	hor = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = verBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	/* LEFT CENTER */
+	hor = horBoundStart - RESIZE_POINT_MARGIN * zoomFactor - RESIZE_POINT_SIZE * zoomFactor / 2;
+	ver = (verBoundStart + verBoundEnd) / 2;
+	origin = getPositionByAxis(hor, ver);
+	vectors->push_back(QVector3D(origin.x() * zoomVec.x(), origin.y() * zoomVec.y(), origin.z() * zoomVec.z()));
+
+	return vectors;
+}
+
+void ConstructionBlock::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
 {
 	QMatrix4x4 model;
 	model.setToIdentity();
@@ -637,4 +842,28 @@ void ConstructionBlock::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& c
 
 	m_vao.bind();
 	$->glDrawArrays(GL_LINES, 0, verticesCount());
+
+	if (m_isEditingMode)
+	{
+		Point point(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f);
+		
+		QList<QVector3D>* translationVectors = getResizePointsTranslationVectors(axis, factor, zoomVec);
+
+		for (auto& vec : *translationVectors)
+		{
+			model.setToIdentity();
+			model.translate(vec);
+
+			point.m_program->bind();
+			point.m_program->setUniformValue("proj", proj);
+			point.m_program->setUniformValue("view", camera.getViewMatrix());
+			point.m_program->setUniformValue("model", model);
+			point.m_program->setUniformValue("color", 1.0f, 0.1f, 0.1f);
+
+			point.m_vao.bind();
+			$->glDrawArrays(GL_TRIANGLES, 0, point.verticesCount());
+		}
+
+		delete translationVectors;
+	}
 }

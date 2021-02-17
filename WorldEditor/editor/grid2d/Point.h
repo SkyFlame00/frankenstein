@@ -6,10 +6,12 @@
 class Point : public Renderable
 {
 public:
-	Point(float x, float y, float z);
-	Point(QVector3D position);
+	Point(float size, float x, float y, float z);
+	Point(float size, QVector3D position);
 
 	inline int verticesCount() { return m_verticesCount; };
+
+	float m_size = 0.0f;
 
 private:
 	int m_verticesCount = 0;

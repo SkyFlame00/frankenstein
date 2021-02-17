@@ -36,7 +36,7 @@ void Renderer2D::setZoom(SceneZoom zoom)
 	m_zoomVec.setZ(m_axis == Axis::Z ? 0.0f : val);
 }
 
-void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects)
+void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float factor)
 {
 	$->glClearColor(0.0, 0.0, 0.0, 1.0);
 	$->glClear(GL_COLOR_BUFFER_BIT);
@@ -54,7 +54,7 @@ void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable
 
 	for (auto& guiObject : guiObjects)
 	{
-		guiObject->render2D(m_projMatrix, m_zoomVec, *m_camera);
+		guiObject->render2D(m_projMatrix, m_zoomVec, *m_camera, m_axis, factor);
 	}
 
 	//for (auto& object : objects)
