@@ -4,9 +4,7 @@
 #include <math.h>
 #include "grid2d/Point.h"
 #include "../common/helpers.h"
-
-#include <QTime>
-#include "../gui/Debug.h"
+#include "../common/GlobalData.h"
 
 ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
 {
@@ -23,7 +21,7 @@ ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
 	m_vertices.push_back(QVector3D(startPoint.x(), startPoint.y(), endPoint.z()));
 	m_vertices.push_back(endPoint);
 	m_vertices.push_back(QVector3D(startPoint.x(), endPoint.y(), endPoint.z()));
-	m_vertices.push_back(QVector3D(startPoint.x(), endPoint.y(), startPoint.y()));
+	m_vertices.push_back(QVector3D(startPoint.x(), endPoint.y(), startPoint.z()));
 	m_vertices.push_back(QVector3D(endPoint.x(), endPoint.y(), startPoint.z()));
 
 	m_indices[0] = 0; // Line 1
@@ -53,20 +51,42 @@ ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
 
 	createLinesVertices();
 
-	m_vao.create();
-	m_vao.bind();
 	m_vbo.create();
 	m_vbo.bind();
 	m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
-	$->glEnableVertexAttribArray(0);
-	$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
-	m_vbo.release();
-	m_vao.release();
+
+	for (const auto& [context, map] : GlobalData::openglContexts)
+	{
+		context->makeCurrent(context->surface());
+
+		QOpenGLVertexArrayObject* vao = new QOpenGLVertexArrayObject;
+		vao->create();
+		vao->bind();
+		m_vbo.bind();
+		$->glEnableVertexAttribArray(0);
+		$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
+
+		auto res = GlobalData::openglContexts.find(context);
+
+		if (res == GlobalData::openglContexts.end())
+		{
+			qInfo() << "ConstructionBlock::ConstructionBlock: Corresponding context was not found";
+		}
+
+		res->second->insert(std::make_pair(this, vao));
+	}
+
 	m_program = ResourceManager::getProgram("plain_with_uniform_color", "plain_with_uniform_color");
 }
 
 ConstructionBlock::~ConstructionBlock()
 {
+	for (const auto& [context, map] : GlobalData::openglContexts)
+	{
+		auto res = GlobalData::openglContexts.find(context);
+		auto vaoRes = res->second->find(this);
+		res->second->erase(this);
+	}
 }
 
 void ConstructionBlock::createLinesVertices()
@@ -154,61 +174,64 @@ ConstructionBlock::ResizePointsBoundaries* ConstructionBlock::getResizePointsBou
 Qt::CursorShape ConstructionBlock::checkHover(float x, float y, Axis axis, float zoomFactor)
 {
 	ConstructionBlock::ResizePointsBoundaries* b = getResizePointsBoundaries(axis, zoomFactor);
-	Qt::CursorShape cursor = Qt::ArrowCursor;
+	float horBoundStart, horBoundEnd, verBoundStart, verBoundEnd;
+	get2DBounds(axis, &horBoundStart, &horBoundEnd, &verBoundStart, &verBoundEnd);
 
-	int timePassed = -QTime::currentTime().secsTo(Debug::m_timeStart);
-
-	qInfo() << "Time passed: " << timePassed;
+	if (horBoundStart <= x && x <= horBoundEnd &&
+		verBoundStart <= y && y <= verBoundEnd)
+	{
+		return Qt::OpenHandCursor;
+	}
 
 	if (b->leftTop.horStart <= x && x <= b->leftTop.horEnd &&
 		b->leftTop.verStart <= y && y <= b->leftTop.verEnd)
 	{
-		cursor = Qt::SizeFDiagCursor;
+		return Qt::SizeFDiagCursor;
 	}
 
 	if (b->centerTop.horStart <= x && x <= b->centerTop.horEnd &&
 		b->centerTop.verStart <= y && y <= b->centerTop.verEnd)
 	{
-		cursor = Qt::SizeVerCursor;
+		return Qt::SizeVerCursor;
 	}
 
 	if (b->rightTop.horStart <= x && x <= b->rightTop.horEnd &&
 		b->rightTop.verStart <= y && y <= b->rightTop.verEnd)
 	{
-		cursor = Qt::SizeBDiagCursor;
+		return Qt::SizeBDiagCursor;
 	}
 
 	if (b->rightCenter.horStart <= x && x <= b->rightCenter.horEnd &&
 		b->rightCenter.verStart <= y && y <= b->rightCenter.verEnd)
 	{
-		cursor = Qt::SizeHorCursor;
+		return Qt::SizeHorCursor;
 	}
 
 	if (b->rightBottom.horStart <= x && x <= b->rightBottom.horEnd &&
 		b->rightBottom.verStart <= y && y <= b->rightBottom.verEnd)
 	{
-		cursor = Qt::SizeFDiagCursor;
+		return Qt::SizeFDiagCursor;
 	}
 
 	if (b->centerBottom.horStart <= x && x <= b->centerBottom.horEnd &&
 		b->centerBottom.verStart <= y && y <= b->centerBottom.verEnd)
 	{
-		cursor = Qt::SizeVerCursor;
+		return Qt::SizeVerCursor;
 	}
 
 	if (b->leftBottom.horStart <= x && x <= b->leftBottom.horEnd &&
 		b->leftBottom.verStart <= y && y <= b->leftBottom.verEnd)
 	{
-		cursor = Qt::SizeBDiagCursor;
+		return Qt::SizeBDiagCursor;
 	}
 
 	if (b->leftCenter.horStart <= x && x <= b->leftCenter.horEnd &&
 		b->leftCenter.verStart <= y && y <= b->leftCenter.verEnd)
 	{
-		cursor = Qt::SizeHorCursor;
+		return Qt::SizeHorCursor;
 	}
 
-	return cursor;
+	return Qt::ArrowCursor;
 }
 
 BlockToolState ConstructionBlock::startDrag(Axis axis, QVector2D pos, float zoomFactor)
@@ -222,8 +245,8 @@ BlockToolState ConstructionBlock::startDrag(Axis axis, QVector2D pos, float zoom
 	if (horBoundStart <= hor && hor <= horBoundEnd &&
 		verBoundStart <= ver && ver <= verBoundEnd)
 	{
-		m_mode = Mode::MOVE;
-		m_moveDelta = 0.0f;
+		m_moveDeltaX = 0.0f;
+		m_moveDeltaY = 0.0f;
 		return BlockToolState::MOVE;
 	}
 
@@ -630,7 +653,6 @@ void ConstructionBlock::doResizeStep(Axis axis, QVector2D pos, float step)
 		}
 	}
 
-
 	m_lastPos = pos;
 }
 
@@ -686,11 +708,8 @@ void ConstructionBlock::calcResize(Axis axis, bool isHorizontal, bool isReversed
 		case Axis::Z:
 			if (isHorizontal)
 			{
-				float xx = v.x();
 				float factor = std::abs((v.x() - horStart) / (horEnd - horStart));
 				v.setX(v.x() + steps * factor);
-				float xx1 = v.x();
-				float x = 5;
 			}
 			else
 			{
@@ -828,8 +847,95 @@ QList<QVector3D>* ConstructionBlock::getResizePointsTranslationVectors(Axis axis
 	return vectors;
 }
 
-void ConstructionBlock::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
+void ConstructionBlock::doMoveStep(Axis axis, QVector2D pos, float step)
 {
+	float stepsX = 0.0f, stepsY = 0.0f;
+	m_moveDeltaX += pos.x() - m_lastPos.x();
+	m_moveDeltaY += pos.y() - m_lastPos.y();
+
+	if (std::abs(m_moveDeltaX) >= step)
+	{
+		stepsX = Helpers::trunc(m_moveDeltaX / step) * step;
+		m_moveDeltaX -= stepsX;
+	}
+
+	if (std::abs(m_moveDeltaY) >= step)
+	{
+		stepsY = Helpers::trunc(m_moveDeltaY / step) * step;
+		m_moveDeltaY -= stepsY;
+	}
+
+	if (std::abs(stepsX) > 0.0f || std::abs(stepsY) > 0.0f)
+	{
+		for (auto& v : m_vertices)
+		{
+			switch (axis)
+			{
+			case Axis::X:
+				v.setZ(v.z() + stepsX);
+				v.setY(v.y() + stepsY);
+				break;
+			case Axis::Y:
+				v.setX(v.x() + stepsX);
+				v.setZ(v.z() + stepsY);
+				break;
+			case Axis::Z:
+				v.setX(v.x() + stepsX);
+				v.setY(v.y() + stepsY);
+			}
+		}
+		
+		switch (axis)
+		{
+		case Axis::X:
+			m_boundingBox.startZ += stepsX;
+			m_boundingBox.endZ += stepsX;
+			m_boundingBox.startY += stepsY;
+			m_boundingBox.endY += stepsY;
+			break;
+		case Axis::Y:
+			m_boundingBox.startX += stepsX;
+			m_boundingBox.endX += stepsX;
+			m_boundingBox.startZ += stepsY;
+			m_boundingBox.endZ += stepsY;
+			break;
+		case Axis::Z:
+			m_boundingBox.startX += stepsX;
+			m_boundingBox.endX += stepsX;
+			m_boundingBox.startY += stepsY;
+			m_boundingBox.endY += stepsY;
+		}
+
+		createLinesVertices();
+		m_vbo.bind();
+		m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
+	}
+	
+	m_lastPos = pos;
+}
+
+void ConstructionBlock::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
+{
+	QOpenGLVertexArrayObject* vao;
+	auto res1 = GlobalData::openglContexts.find(context);
+
+	if (res1 == GlobalData::openglContexts.end())
+	{
+		qInfo() << "ConstructionBlock::render2D: Corresponding VAO map was not found";
+		return;
+	}
+
+	auto vaoMap = res1->second;
+	auto res2 = vaoMap->find(this);
+
+	if (res2 == vaoMap->end())
+	{
+		qInfo() << "ConstructionBlock::render2D: Corresponding VAO was not found";
+		return;
+	}
+
+	vao = res2->second;
+
 	QMatrix4x4 model;
 	model.setToIdentity();
 	model.scale(zoomVec);
@@ -840,7 +946,7 @@ void ConstructionBlock::render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& c
 	m_program->setUniformValue("model", model);
 	m_program->setUniformValue("color", 1.0f, 0.1f, 0.1f);
 
-	m_vao.bind();
+	vao->bind();
 	$->glDrawArrays(GL_LINES, 0, verticesCount());
 
 	if (m_isEditingMode)

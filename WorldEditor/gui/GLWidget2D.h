@@ -58,6 +58,7 @@ public:
 	void placePoint(int screenX, int screenY);
 	void processToolMode();
 	float getZoomFactor();
+	bool isCorrectPoints(QVector3D p1, QVector3D p2);
 
 private:
 	const SceneZoom REFERENCE_ZOOM = SceneZoom::X1;

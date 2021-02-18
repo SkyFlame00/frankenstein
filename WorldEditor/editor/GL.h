@@ -18,7 +18,6 @@ private:
 
 	static GL* m_functions;
 	static bool m_isInitialized;
-	
 };
 
 class OpenGLFunctions : public QOpenGLExtraFunctions

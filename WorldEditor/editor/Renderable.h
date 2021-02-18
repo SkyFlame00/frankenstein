@@ -7,6 +7,7 @@
 #include <QVector3D>
 #include "GL.h"
 #include "Camera.h"
+#include <QOpenGLContext>
 
 class Renderable : public OpenGLFunctions
 {
@@ -17,7 +18,8 @@ public:
 	bool inline shouldDraw() { return m_shouldDraw; }
 	GLenum inline getDrawMode() { return m_drawMode; }
 	bool inline shouldScale() { return m_shouldScale; }
-	virtual void render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
+	virtual void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
+	virtual void render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera);
 
 	QOpenGLVertexArrayObject m_vao;
 	QOpenGLBuffer m_vbo;

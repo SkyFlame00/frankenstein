@@ -11,13 +11,6 @@
 class ConstructionBlock : public Renderable
 {
 public:
-	enum class Mode
-	{
-		NONE,
-		RESIZE,
-		MOVE
-	};
-
 	enum class ResizeDirection
 	{
 		LEFT_TOP,
@@ -53,7 +46,7 @@ public:
 	ConstructionBlock(QVector3D startPoint, QVector3D endPoint);
 	~ConstructionBlock();
 	inline int verticesCount() { return m_linesVerticesCount; }
-	void render2D(QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor) override;
+	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor) override;
 	void createLinesVertices();
 	BlockToolState startDrag(Axis axis, QVector2D pos, float zoomFactor);
 	void doResizeStep(Axis axis, QVector2D pos, float step);
@@ -63,7 +56,6 @@ public:
 	Qt::CursorShape checkHover(float x, float y, Axis axis, float zoomFactor);
 	ResizePointsBoundaries* getResizePointsBoundaries(Axis axis, float zoomFactor);
 
-	Mode m_mode = Mode::NONE;
 	ResizeDirection m_resizeDirection;
 	bool m_isEditingMode = false;
 

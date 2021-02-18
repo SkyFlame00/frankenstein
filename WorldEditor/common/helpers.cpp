@@ -1,7 +1,5 @@
 #include "helpers.h"
 
-
-
 float Helpers::trunc(float num, int digits)
 {
 	float factor = std::pow(10, digits);

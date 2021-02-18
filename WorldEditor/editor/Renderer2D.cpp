@@ -36,8 +36,12 @@ void Renderer2D::setZoom(SceneZoom zoom)
 	m_zoomVec.setZ(m_axis == Axis::Z ? 0.0f : val);
 }
 
-void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float factor)
+void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float factor)
 {
+	QMatrix4x4 model;
+	model.setToIdentity();
+	model.translate(0.0f, 0.0f, -1.0f);
+	
 	$->glClearColor(0.0, 0.0, 0.0, 1.0);
 	$->glClear(GL_COLOR_BUFFER_BIT);
 
@@ -46,6 +50,7 @@ void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable
 		program->bind();
 		program->setUniformValue("proj", m_projMatrix);
 		program->setUniformValue("view", m_camera->getViewMatrix());
+		program->setUniformValue("model", model);
 		program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
 
 		grid2D.m_vao.bind();
@@ -54,24 +59,24 @@ void Renderer2D::render(Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable
 
 	for (auto& guiObject : guiObjects)
 	{
-		guiObject->render2D(m_projMatrix, m_zoomVec, *m_camera, m_axis, factor);
+		guiObject->render2D(context, m_projMatrix, m_zoomVec, *m_camera, m_axis, factor);
 	}
 
-	//for (auto& object : objects)
-	//{
-	//	auto program = object->m_program;
+	for (auto& object : objects)
+	{
+		auto program = object->m_program;
 
-	//	QMatrix4x4 model;
-	//	model.setToIdentity();
-	//	model.scale(m_zoomVec);
+		QMatrix4x4 model;
+		model.setToIdentity();
+		model.scale(m_zoomVec);
 
-	//	program->bind();
-	//	program->setUniformValue("proj", m_projMatrix);
-	//	program->setUniformValue("view", m_camera->getViewMatrix());
-	//	program->setUniformValue("model", model);
-	//	program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
-	//	
-	//	object->m_vao.bind();
-	//	$->glDrawArrays(GL_LINES, 0, object->verticesCount());
-	//}
+		program->bind();
+		program->setUniformValue("proj", m_projMatrix);
+		program->setUniformValue("view", m_camera->getViewMatrix());
+		program->setUniformValue("model", model);
+		program->setUniformValue("color", 1.0f, 1.0f, 1.0f);
+		
+		object->m_vao.bind();
+		$->glDrawArrays(GL_LINES, 0, object->verticesCount());
+	}
 }

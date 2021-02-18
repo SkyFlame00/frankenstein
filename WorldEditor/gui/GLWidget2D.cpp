@@ -17,15 +17,20 @@ GLWidget2D::GLWidget2D(Camera* camera, Renderer2D* renderer, Scene* scene, QWidg
 
 GLWidget2D::~GLWidget2D()
 {
+	delete m_grid;
 }
 
 void GLWidget2D::initializeGL()
 {
+	GlobalData::openglContexts[context()] = new GlobalData::ContextVAOMap;
+
 	m_axis = Axis::Z;
 	m_grid = new Grid2D(m_axis, m_zoom);
 	m_renderer->m_axis = m_axis;
 	m_renderer->setup(-1.0f, m_grid->HALF_LENGTH * 2);
 	m_renderer->setZoom(m_zoom);
+
+	update();
 }
 
 void GLWidget2D::paintGL()
@@ -35,7 +40,7 @@ void GLWidget2D::paintGL()
 
 	QList<Brush*> objects;
 
-	m_renderer->render(*m_grid, objects, m_scene->m_gui2DObjects, getZoomFactor());
+	m_renderer->render(context(), *m_grid, objects, m_scene->m_gui2DObjects, getZoomFactor());
 
 	clearInputData();
 	update();
@@ -103,44 +108,49 @@ void GLWidget2D::processInputData()
 	{
 		processToolMode();
 	}
-
-	//if (m_inputData.leftMouseDown == ButtonDownState::ACTIVE)
-	//{
-	//	//placePoint(m_inputData.mouseX, m_inputData.mouseY);
-	//	m_inputData.leftMouseDown = ButtonDownState::PROCESSED;
-	//}
 	
 	m_camera->updateCameraVectors();
+}
+
+bool GLWidget2D::isCorrectPoints(QVector3D p1, QVector3D p2)
+{
+	switch (m_axis)
+	{
+	case Axis::X:
+		return Helpers::trunc(p1.z()) != Helpers::trunc(p2.z()) &&
+			Helpers::trunc(p1.y()) != Helpers::trunc(p2.y());
+	case Axis::Y:
+		return Helpers::trunc(p1.x()) != Helpers::trunc(p2.x()) &&
+			Helpers::trunc(p1.z()) != Helpers::trunc(p2.z());
+	case Axis::Z:
+		return Helpers::trunc(p1.x()) != Helpers::trunc(p2.x()) &&
+			Helpers::trunc(p1.y()) != Helpers::trunc(p2.y());
+	}
 }
 
 void GLWidget2D::processToolMode()
 {
 	auto globalData = GlobalData::getInstance();
 	auto blockToolData = &globalData->m_blockToolData;
+	float x, y;
+	float nearestX, nearestY;
+	getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
+	getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
 
 	if (blockToolData->state == BlockToolState::CREATING)
 	{
 		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
-			float nearestX, nearestY;
-			getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
-
-			QVector3D pointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY);
-
+			QVector3D pointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY, 1.0f);
 			m_dragData.startPoint = new Point(1.0f, pointPos);
 			m_scene->m_gui2DObjects.push_back(m_dragData.startPoint);
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
 		{
-			float nearestX, nearestY;
-			getNearestPointFromScreen(m_inputData.mouseX, m_inputData.mouseY, &nearestX, &nearestY);
-			QVector3D endPointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY);
+			QVector3D endPointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY, -1.0f);
 			QVector3D startPointPos = m_dragData.startPoint->m_origin;
 
-			if (
-				Helpers::trunc(endPointPos.x()) != Helpers::trunc(startPointPos.x()) ||
-				Helpers::trunc(endPointPos.y()) != Helpers::trunc(startPointPos.y()) ||
-				Helpers::trunc(endPointPos.z()) != Helpers::trunc(startPointPos.z()))
+			if (isCorrectPoints(startPointPos, endPointPos))
 			{
 				m_dragData.endPoint = new Point(1.0f, endPointPos);
 				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
@@ -148,11 +158,13 @@ void GLWidget2D::processToolMode()
 				if (blockToolData->blockInstance)
 				{
 					m_scene->m_gui2DObjects.removeOne(blockToolData->blockInstance);
+					m_scene->m_gui3DObjects.removeOne(blockToolData->blockInstance);
 					delete blockToolData->blockInstance;
 				}
-				
+
 				blockToolData->blockInstance = new ConstructionBlock(startPointPos, endPointPos);
 				m_scene->m_gui2DObjects.push_back(blockToolData->blockInstance);
+				m_scene->m_gui3DObjects.push_back(blockToolData->blockInstance);
 			}
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
@@ -178,14 +190,13 @@ void GLWidget2D::processToolMode()
 	}
 	else if (blockToolData->state == BlockToolState::READY_TO_EDIT)
 	{
-		float x, y;
-		getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
 		Qt::CursorShape cursor = blockToolData->blockInstance->checkHover(x, y, m_axis, getZoomFactor());
 		setCursor(cursor);
 		
 		if (m_inputData.keyEscape == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
 			m_scene->m_gui2DObjects.removeOne(blockToolData->blockInstance);
+			m_scene->m_gui3DObjects.removeOne(blockToolData->blockInstance);
 			delete blockToolData->blockInstance;
 			blockToolData->blockInstance = nullptr;
 			blockToolData->state = BlockToolState::CREATING;
@@ -194,31 +205,35 @@ void GLWidget2D::processToolMode()
 		{
 			BlockToolState state = blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
 			blockToolData->state = state;
+
+			if (state == BlockToolState::MOVE)
+				setCursor(Qt::ClosedHandCursor);
 		}
 	}
 	else if (blockToolData->state == BlockToolState::RESIZE)
 	{
 		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
 		{
-			float x, y;
 			float step = static_cast<float>(m_grid->getStep());
-			getMouseCoordinates(m_inputData.mouseX, m_inputData.mouseY, &x, &y);
 			blockToolData->blockInstance->doResizeStep(m_axis, QVector2D(x, y), step);
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
 		{
 			blockToolData->state = BlockToolState::READY_TO_EDIT;
+			setCursor(Qt::ArrowCursor);
 		}
 	}
 	else if (blockToolData->state == BlockToolState::MOVE)
 	{
 		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
 		{
-			//blockToolData.blockInstance->doMoveStep();
+			float step = static_cast<float>(m_grid->getStep());
+			blockToolData->blockInstance->doMoveStep(m_axis, QVector2D(x, y), step);
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
 		{
 			blockToolData->state = BlockToolState::READY_TO_EDIT;
+			setCursor(Qt::ArrowCursor);
 		}
 	}
 }

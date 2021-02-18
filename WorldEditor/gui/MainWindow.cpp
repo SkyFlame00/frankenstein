@@ -11,6 +11,7 @@
 #include <QVector3D>
 
 #include "../common/types.h"
+#include "../common/GlobalData.h"
 
 MainWindow::MainWindow()
 {

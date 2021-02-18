@@ -2,6 +2,7 @@
 
 #include "../editor/GL.h"
 #include "Debug.h"
+#include "../common/GlobalData.h"
 
 GLWidget3D::GLWidget3D(Camera* camera, Renderer3D* renderer, Scene* scene, QWidget* parent)
 	: QOpenGLWidget(parent), m_camera(camera), m_renderer(renderer), m_scene(scene)
@@ -14,6 +15,8 @@ GLWidget3D::~GLWidget3D()
 
 void GLWidget3D::initializeGL()
 {
+	GlobalData::openglContexts[context()] = new GlobalData::ContextVAOMap;
+
 	m_scene->setup();
 	m_timer.start();
 
@@ -26,7 +29,7 @@ void GLWidget3D::paintGL()
 
 	processInputData();
 	updateCamera();
-	m_renderer->render(m_scene->getObjects());
+	m_renderer->render(context(), m_scene->getObjects(), m_scene->m_gui3DObjects);
 	clearInputData();
 
 	m_timer.restart();
@@ -36,7 +39,8 @@ void GLWidget3D::paintGL()
 
 void GLWidget3D::processInputData()
 {
-
+	auto globalData = GlobalData::getInstance();
+	auto blockToolData = &globalData->m_blockToolData;
 }
 
 void GLWidget3D::updateCamera()

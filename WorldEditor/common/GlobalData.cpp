@@ -2,6 +2,10 @@
 #include <QDebug>
 
 GlobalData* GlobalData::m_instance = nullptr;
+//QOpenGLWidget* GlobalData::widget3D = nullptr;
+//QOpenGLWidget* GlobalData::widget2D = nullptr;
+//QOpenGLContext* GlobalData::dummyContext = nullptr;
+std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
 
 GlobalData::GlobalData()
 {
