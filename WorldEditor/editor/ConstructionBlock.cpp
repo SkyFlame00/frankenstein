@@ -51,30 +51,9 @@ ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
 
 	createLinesVertices();
 
-	m_vbo.create();
-	m_vbo.bind();
+	m_vbo.addAttribute<float>(3);
 	m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
-
-	for (const auto& [context, map] : GlobalData::openglContexts)
-	{
-		context->makeCurrent(context->surface());
-
-		QOpenGLVertexArrayObject* vao = new QOpenGLVertexArrayObject;
-		vao->create();
-		vao->bind();
-		m_vbo.bind();
-		$->glEnableVertexAttribArray(0);
-		$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
-
-		auto res = GlobalData::openglContexts.find(context);
-
-		if (res == GlobalData::openglContexts.end())
-		{
-			qInfo() << "ConstructionBlock::ConstructionBlock: Corresponding context was not found";
-		}
-
-		res->second->insert(std::make_pair(this, vao));
-	}
+	createVAO(m_vbo);
 
 	m_program = ResourceManager::getProgram("plain_with_uniform_color", "plain_with_uniform_color");
 }
@@ -771,7 +750,6 @@ void ConstructionBlock::calcResize(Axis axis, bool isHorizontal, bool isReversed
 	}
 
 	createLinesVertices();
-	m_vbo.bind();
 	m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
 }
 
@@ -907,7 +885,6 @@ void ConstructionBlock::doMoveStep(Axis axis, QVector2D pos, float step)
 		}
 
 		createLinesVertices();
-		m_vbo.bind();
 		m_vbo.allocate(&m_linesVertices[0], m_linesVerticesCount * 3 * sizeof(float));
 	}
 	

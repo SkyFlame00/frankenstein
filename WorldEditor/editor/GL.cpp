@@ -1,7 +1,6 @@
 #include "GL.h"
 
 #include <QDebug>
-#include "../common/GlobalData.h"
 
 GL* GL::m_functions = nullptr;
 QOpenGLContext* GL::openGLContext = nullptr;
@@ -29,7 +28,6 @@ GL::GL()
 	format.setProfile(QSurfaceFormat::CoreProfile);
 
 	openGLContext = new QOpenGLContext();
-	//GlobalData::dummyContext = openGLContext;
 
 	openGLContext->setFormat(format);
 	if (!openGLContext->create()) {

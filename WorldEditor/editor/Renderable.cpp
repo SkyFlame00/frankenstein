@@ -46,6 +46,28 @@ void Renderable::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& 
 	$->glDrawArrays(getDrawMode(), 0, verticesCount());
 }
 
+void Renderable::createVAO(VertexBufferObject vbo)
+{
+	for (const auto& [context, map] : GlobalData::openglContexts)
+	{
+		context->makeCurrent(context->surface());
+
+		QOpenGLVertexArrayObject* vao = new QOpenGLVertexArrayObject;
+		vao->create();
+		vao->bind();
+		vbo.apply();
+
+		auto res = GlobalData::openglContexts.find(context);
+
+		if (res == GlobalData::openglContexts.end())
+		{
+			qInfo() << "ConstructionBlock::ConstructionBlock: Corresponding context was not found";
+		}
+
+		res->second->insert(std::make_pair(this, vao));
+	}
+}
+
 void Renderable::render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera)
 {
 	if (!shouldDraw())

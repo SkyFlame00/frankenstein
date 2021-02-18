@@ -152,8 +152,9 @@ void GLWidget2D::processToolMode()
 
 			if (isCorrectPoints(startPointPos, endPointPos))
 			{
-				m_dragData.endPoint = new Point(1.0f, endPointPos);
 				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
+				m_scene->m_gui2DObjects.removeOne(m_dragData.endPoint);
+				m_dragData.endPoint = new Point(1.0f, endPointPos);
 
 				if (blockToolData->blockInstance)
 				{
@@ -165,6 +166,17 @@ void GLWidget2D::processToolMode()
 				blockToolData->blockInstance = new ConstructionBlock(startPointPos, endPointPos);
 				m_scene->m_gui2DObjects.push_back(blockToolData->blockInstance);
 				m_scene->m_gui3DObjects.push_back(blockToolData->blockInstance);
+			}
+			else if (!blockToolData->blockInstance)
+			{
+				if (m_dragData.endPoint)
+				{
+					m_scene->m_gui2DObjects.removeOne(m_dragData.endPoint);
+					delete m_dragData.endPoint;
+				}
+
+				m_dragData.endPoint = new Point(1.0f, endPointPos);
+				m_scene->m_gui2DObjects.push_back(m_dragData.endPoint);
 			}
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)

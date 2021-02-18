@@ -2,6 +2,7 @@
 
 #include <QVector3D>
 #include "../Renderable.h"
+#include "../VertexBufferObject.h"
 
 class Point : public Renderable
 {
@@ -15,4 +16,5 @@ public:
 
 private:
 	int m_verticesCount = 0;
+	VertexBufferObject m_vbo;
 };

@@ -1,5 +1,6 @@
 #include "Point.h"
 #include "../ResourceManager.h"
+#include "../../common/GlobalData.h"
 
 Point::Point(float size, float x, float y, float z)
 	: Renderable(), m_size(size)
@@ -64,19 +65,10 @@ Point::Point(float size, float x, float y, float z)
 		-halfLength, -halfLength, -halfLength
 	};
 
-	m_vao.create();
-	m_vao.bind();
-
-	m_vbo.create();
-	m_vbo.bind();
-
+	m_vbo.addAttribute<float>(static_cast<GLuint>(3));
 	m_vbo.allocate(&vertices[0], m_verticesCount * 3 * sizeof(float));
 
-	$->glEnableVertexAttribArray(0);
-	$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
-
-	m_vbo.release();
-	m_vao.release();
+	createVAO(m_vbo);
 
 	m_program = ResourceManager::getProgram("point", "point");
 	m_program->bind();

@@ -24,10 +24,6 @@ public:
 		QVector3D startPoint, endPoint;
 		bool shouldCreate = false;
 	} m_blockToolData;
-
-	//static QOpenGLWidget* widget3D;
-	//static QOpenGLWidget* widget2D;
-	//static QOpenGLContext* dummyContext;
 	static std::unordered_map<QOpenGLContext*, ContextVAOMap*> openglContexts;
 
 private:

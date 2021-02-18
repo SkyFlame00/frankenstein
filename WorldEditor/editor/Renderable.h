@@ -8,6 +8,7 @@
 #include "GL.h"
 #include "Camera.h"
 #include <QOpenGLContext>
+#include "VertexBufferObject.h"
 
 class Renderable : public OpenGLFunctions
 {
@@ -20,6 +21,7 @@ public:
 	bool inline shouldScale() { return m_shouldScale; }
 	virtual void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
 	virtual void render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera);
+	virtual void createVAO(VertexBufferObject vbo);
 
 	QOpenGLVertexArrayObject m_vao;
 	QOpenGLBuffer m_vbo;

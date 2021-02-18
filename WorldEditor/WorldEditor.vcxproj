@@ -115,6 +115,7 @@
     <ClCompile Include="editor\ResourceManager.cpp" />
     <ClCompile Include="editor\Renderer2D.cpp" />
     <ClCompile Include="editor\grid2d\Point.cpp" />
+    <ClCompile Include="editor\VertexBufferObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -138,6 +139,7 @@
     <ClInclude Include="editor\Renderer2D.h" />
     <ClInclude Include="editor\Renderable.h" />
     <ClInclude Include="editor\grid2d\Point.h" />
+    <ClInclude Include="editor\VertexBufferObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

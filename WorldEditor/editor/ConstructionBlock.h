@@ -7,6 +7,7 @@
 #include "Renderable.h"
 #include "../common/types.h"
 #include "Camera.h"
+#include "VertexBufferObject.h"
 
 class ConstructionBlock : public Renderable
 {
@@ -63,6 +64,7 @@ private:
 	const float RESIZE_POINT_MARGIN = 15.0f;
 	const float RESIZE_POINT_SIZE = 12.0f;
 
+	VertexBufferObject m_vbo;
 	int m_linesVerticesCount = 12 * 2;
 	struct {
 		float startX, endX;
