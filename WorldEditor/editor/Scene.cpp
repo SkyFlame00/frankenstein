@@ -1,18 +1,16 @@
 #include "Scene.h"
 
 Scene::Scene()
+{	
+}
+
+Scene::~Scene()
 {
-	
 }
 
 void Scene::setup()
 {
 	m_objects.append(new Brush);
-}
-
-Scene::~Scene()
-{
-	/* REMOVE OBJECTS */
 }
 
 QList<Brush*>& Scene::getObjects()

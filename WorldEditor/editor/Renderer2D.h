@@ -16,7 +16,7 @@ public:
 	Renderer2D(Camera* camera, float width, float height);
 	~Renderer2D();
 
-	void setup(float nearPlane, float farPlane);
+	void setup(Axis axis, float nearPlane, float farPlane);
 	void render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float zoomFactor);
 	void setFrustrum(float width, float height);
 	void setZoom(SceneZoom zoom);

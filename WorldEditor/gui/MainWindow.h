@@ -35,12 +35,12 @@ private:
 
 	QWidget* m_centralWidget;
 	GLWidget3D* m_glWidget3D;
-	GLWidget2D* m_glWidget2D;
+	GLWidget2D* m_glWidget2D_X, *m_glWidget2D_Y, *m_glWidget2D_Z;
 	Camera* m_camera3D;
-	Camera* m_camera2D;
+	Camera* m_camera2D_X, *m_camera2D_Y, *m_camera2D_Z;
 	Scene* m_scene;
 	Renderer3D* m_renderer3D;
-	Renderer2D* m_renderer2D;
+	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
 
 private slots:
 };

@@ -11,17 +11,15 @@ Brush::Brush()
 	};
 	m_verticesCount = 3;
 
-	m_vao.create();
-	m_vao.bind();
-
-	m_vbo.create();
-	m_vbo.bind();
-	m_vbo.allocate(m_vertices, 9 * sizeof(float));
-	$->glEnableVertexAttribArray(0);
-	$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
-
-	m_vbo.release();
-	m_vao.release();
+	GLCall(m_vao.create());
+	GLCall(m_vao.bind());
+	GLCall(m_vbo.create());
+	GLCall(m_vbo.bind());
+	GLCall(m_vbo.allocate(m_vertices, 9 * sizeof(float)));
+	GLCall($->glEnableVertexAttribArray(0));
+	GLCall($->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0));
+	GLCall(m_vbo.release());
+	GLCall(m_vao.release());
 
 	/* Shader */
 	m_program = ResourceManager::getProgram("test", "test");

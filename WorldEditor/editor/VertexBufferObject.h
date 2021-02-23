@@ -14,6 +14,7 @@ public:
 	};
 
 	VertexBufferObject();
+	~VertexBufferObject();
 
 	void allocate(void* data, GLuint size);
 	void apply();

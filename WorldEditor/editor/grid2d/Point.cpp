@@ -65,13 +65,11 @@ Point::Point(float size, float x, float y, float z)
 		-halfLength, -halfLength, -halfLength
 	};
 
-	m_vbo.addAttribute<float>(static_cast<GLuint>(3));
+	m_vbo.addAttribute<float>(3);
 	m_vbo.allocate(&vertices[0], m_verticesCount * 3 * sizeof(float));
-
 	createVAO(m_vbo);
 
 	m_program = ResourceManager::getProgram("point", "point");
-	m_program->bind();
 
 	m_origin.setX(x);
 	m_origin.setY(y);
@@ -85,4 +83,9 @@ Point::Point(float size, float x, float y, float z)
 Point::Point(float size, QVector3D position)
 	: Point(size, position.x(), position.y(), position.z())
 {
+}
+
+Point::~Point()
+{
+	Renderable::~Renderable();
 }

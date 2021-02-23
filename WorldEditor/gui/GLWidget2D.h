@@ -9,6 +9,8 @@
 #include "../common/types.h"
 #include "../editor/Grid2D.h"
 #include "../editor/grid2d/Point.h"
+#include <QOpenGLDebugLogger>
+#include <QOpenGLExtraFunctions>
 
 class GLWidget2D : public QOpenGLWidget
 {
@@ -38,9 +40,25 @@ public:
 		Point* endPoint = nullptr;
 	} m_dragData;
 
-	GLWidget2D(Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent = nullptr);
+	GLWidget2D(Axis axis, Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent = nullptr);
 	~GLWidget2D();
 
+private:
+	const SceneZoom REFERENCE_ZOOM = SceneZoom::X1;
+
+	Camera* m_camera;
+	Scene* m_scene;
+	Renderer2D* m_renderer;
+	Grid2D* m_grid;
+	Axis m_axis;
+	float m_frustrumWidth;
+	float m_frustrumHeight;
+	SceneZoom m_zoom = SceneZoom::X32;
+	bool m_inited = false;
+	QOpenGLDebugLogger* glLogger;
+
+	void zoomIn();
+	void zoomOut();
 	void initializeGL() override;
 	void paintGL() override;
 	void processInputData();
@@ -58,22 +76,8 @@ public:
 	void placePoint(int screenX, int screenY);
 	void processToolMode();
 	float getZoomFactor();
-	bool isCorrectPoints(QVector3D p1, QVector3D p2);
-
-private:
-	const SceneZoom REFERENCE_ZOOM = SceneZoom::X1;
-
-	Camera* m_camera;
-	Scene* m_scene;
-	Renderer2D* m_renderer;
-	Grid2D* m_grid;
-	Axis m_axis;
-	float m_frustrumWidth;
-	float m_frustrumHeight;
-	SceneZoom m_zoom = SceneZoom::X32;
-
-	void zoomIn();
-	void zoomOut();
+	bool isSamePoint(QVector3D p1, QVector3D p2);
+	bool hasSameCoordinate(QVector3D p1, QVector3D p2);
 };
 
 

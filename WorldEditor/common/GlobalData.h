@@ -16,6 +16,7 @@ public:
 
 	static void init();
 	static inline GlobalData* getInstance() { return m_instance; }
+	static QOpenGLVertexArrayObject* getRenderableVAO(QOpenGLContext& context, Renderable& renderable);
 
 	EdtitorMode m_editorMode = EdtitorMode::BLOCK_MODE;
 	struct {

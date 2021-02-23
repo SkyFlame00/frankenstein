@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QDir>
 #include <QDebug>
+#include "GL.h"
 
 QString ResourceManager::m_shadersDirPath;
 QMap<QString, QString> ResourceManager::m_vsMap;
@@ -75,9 +76,9 @@ QOpenGLShaderProgram* ResourceManager::getProgram(const QString& vertexShaderNam
 
 	QOpenGLShaderProgram *program = new QOpenGLShaderProgram;
 
-	program->addShaderFromSourceCode(QOpenGLShader::Vertex, vsSourceCode);
-	program->addShaderFromSourceCode(QOpenGLShader::Fragment, fsSourceCode);
-	program->link();
+	GLCall(program->addShaderFromSourceCode(QOpenGLShader::Vertex, vsSourceCode));
+	GLCall(program->addShaderFromSourceCode(QOpenGLShader::Fragment, fsSourceCode));
+	GLCall(program->link());
 
 	shaderTriplets.append({ vertexShaderName, fragmentShaderName, program });
 

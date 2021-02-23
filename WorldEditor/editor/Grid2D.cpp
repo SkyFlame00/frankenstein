@@ -2,28 +2,19 @@
 #include "ResourceManager.h"
 #include "../common/helpers.h"
 
+const float Grid2D::HALF_LENGTH = 4096.0f;
+
 Grid2D::Grid2D(Axis axis, SceneZoom zoom)
 	: m_axis(axis), m_zoom(zoom)
 {
-	m_vao.create();
-	m_vao.bind();
-
-	m_vbo.create();
-	m_vbo.bind();
-
-	$->glEnableVertexAttribArray(0);
-	$->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
-
-	m_vbo.release();
-	m_vao.release();
-
 	m_program = ResourceManager::getProgram("test", "test");
-	m_program->bind();
+	m_vbo.addAttribute<float>(3);
+	createVAO(m_vbo);
 }
 
 Grid2D::~Grid2D()
 {
-	delete m_program;
+	Renderable::~Renderable();
 }
 
 void Grid2D::increaseScale()
@@ -196,7 +187,7 @@ void Grid2D::updateView(QVector3D position, float width, float height)
 		horizontalLines.push_back({ horEnd, verPos });
 	}
 
-	m_verticesCount = (verticalLines.size() + horizontalLines.size()) * 2;
+	m_verticesCount = (verticalLines.size() + horizontalLines.size());
 	int size = m_verticesCount * 3;
 	float* vertices = new float[size];
 	int n = 0;
@@ -213,10 +204,8 @@ void Grid2D::updateView(QVector3D position, float width, float height)
 		n += 3;
 	}
 
-	m_vbo.bind();
 	m_vbo.allocate(vertices, size * sizeof(float));
 	delete[] vertices;
-	m_shouldDraw = true;
 }
 
 void Grid2D::addVertex(float* vertices, int i, float horPos, float verPos)
@@ -224,13 +213,15 @@ void Grid2D::addVertex(float* vertices, int i, float horPos, float verPos)
 	switch (m_axis)
 	{
 	case Axis::X:
-		vertices[i] = -HALF_LENGTH;
+		// See Renderer2D::setup for explanation of why HALF_LENGTH is positive
+		vertices[i] = HALF_LENGTH;
 		vertices[i + 1] = verPos;
 		vertices[i + 2] = horPos;
 		break;
 	case Axis::Y:
+		// Same as X
 		vertices[i] = horPos;
-		vertices[i + 1] = -HALF_LENGTH;
+		vertices[i + 1] = HALF_LENGTH;
 		vertices[i + 2] = verPos;
 		break;
 	case Axis::Z:

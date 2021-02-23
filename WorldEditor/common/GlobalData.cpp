@@ -22,3 +22,25 @@ void GlobalData::init()
 
 	m_instance = new GlobalData;
 }
+
+QOpenGLVertexArrayObject* GlobalData::getRenderableVAO(QOpenGLContext& context, Renderable& renderable)
+{
+	auto vaoMapIt = openglContexts.find(&context);
+
+	if (vaoMapIt == openglContexts.end())
+	{
+		qInfo() << "ConstructionBlock::render2D: Corresponding VAO map was not found";
+		return nullptr;
+	}
+
+	auto vaoMap = vaoMapIt->second;
+	auto vaoIt = vaoMap->find(&renderable);
+
+	if (vaoIt == vaoMap->end())
+	{
+		qInfo() << "ConstructionBlock::render2D: Corresponding VAO was not found";
+		return nullptr;
+	}
+
+	return vaoIt->second;
+}

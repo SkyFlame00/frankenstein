@@ -10,12 +10,15 @@ Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch,
     updateCameraVectors();
 }
 
-void Camera::updateCameraVectors()
+void Camera::updateCameraVectors(bool shouldUpdateFrontVec)
 {
-    m_front.setX(qCos(qDegreesToRadians(m_yaw)) * qCos(qDegreesToRadians(m_pitch)));
-    m_front.setY(qSin(qDegreesToRadians(m_pitch)));
-    m_front.setZ(qSin(qDegreesToRadians(m_yaw)) * qCos(qDegreesToRadians(m_pitch)));
-    m_front.normalize();
+    if (shouldUpdateFrontVec)
+    {
+        m_front.setX(qCos(qDegreesToRadians(m_yaw)) * qCos(qDegreesToRadians(m_pitch)));
+        m_front.setY(qSin(qDegreesToRadians(m_pitch)));
+        m_front.setZ(qSin(qDegreesToRadians(m_yaw)) * qCos(qDegreesToRadians(m_pitch)));
+        m_front.normalize();
+    }
 
     m_right = QVector3D::crossProduct(m_front, m_worldUp);
     m_right.normalize();

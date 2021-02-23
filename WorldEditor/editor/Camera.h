@@ -30,10 +30,12 @@ public:
 	QMatrix4x4 getViewMatrix();
 	void processKeyboard(Camera::Direction direction, float deltaTime);
 	void processMouseMovement(float xoffset, float yoffset);
-	void updateCameraVectors();
+	void updateCameraVectors(bool shouldUpdateFrontVec = true);
 	inline QVector3D getPosition() { return m_position; }
 	inline void setPosition(QVector3D position) { m_position = position; }
 	void moveRelativelyToAxis(Axis axis, float horShift, float verShift);
+	void inline setWorldUpVec(QVector3D vec) { m_worldUp = vec; }
+	void inline setFrontVec(QVector3D vec) { m_front = vec; }
 
 private:
 	QVector3D m_position;

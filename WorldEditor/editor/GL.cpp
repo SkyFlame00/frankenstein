@@ -1,5 +1,4 @@
 #include "GL.h"
-
 #include <QDebug>
 
 GL* GL::m_functions = nullptr;
@@ -42,4 +41,44 @@ GL::GL()
 	initializeOpenGLFunctions();
 	
 	m_isInitialized = true;
+}
+
+void GL::clearError()
+{
+	while (m_functions->glGetError() != GL_NO_ERROR);
+}
+
+bool GL::logCall(const char* function, const char* file, int line)
+{
+	auto getErrorMessage = [](GLenum error) {
+		switch (error)
+		{
+		case GL_INVALID_ENUM:
+			return "OPENGL_ERROR: GL_INVALID_ENUM";
+		case GL_INVALID_VALUE:
+			return "OPENGL_ERROR: GL_INVALID_VALUE";
+		case GL_INVALID_OPERATION:
+			return "OPENGL_ERROR: GL_INVALID_OPERATION";
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			return "OPENGL_ERROR: GL_INVALID_FRAMEBUFFER_OPERATION";
+		case GL_OUT_OF_MEMORY:
+			return "OPENGL_ERROR: GL_OUT_OF_MEMORY";
+		case GL_STACK_UNDERFLOW:
+			return "OPENGL_ERROR: GL_STACK_UNDERFLOW";
+		case GL_STACK_OVERFLOW:
+			return "OPENGL_ERROR: GL_STACK_OVERFLOW";
+		default:
+		case GL_NO_ERROR:
+			return "No error";
+		}
+	};
+
+	while (GLenum error = m_functions->glGetError())
+	{
+		qWarning() << "[OpenGL Error] (" << getErrorMessage(error) << "): " << function <<
+			" " << file << ":" << line;
+		return false;
+	}
+
+	return true;
 }

@@ -10,24 +10,23 @@
 #include "../common/GlobalData.h"
 #include "../editor/ConstructionBlock.h"
 
-GLWidget2D::GLWidget2D(Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent)
-	: QOpenGLWidget(parent), m_camera(camera), m_renderer(renderer), m_scene(scene)
+GLWidget2D::GLWidget2D(Axis axis, Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent)
+	: QOpenGLWidget(parent), m_axis(axis), m_camera(camera), m_renderer(renderer), m_scene(scene)
 {
 }
 
 GLWidget2D::~GLWidget2D()
 {
-	delete m_grid;
+	/* DELETE GRID */
 }
 
 void GLWidget2D::initializeGL()
 {
 	GlobalData::openglContexts[context()] = new GlobalData::ContextVAOMap;
 
-	m_axis = Axis::Z;
 	m_grid = new Grid2D(m_axis, m_zoom);
 	m_renderer->m_axis = m_axis;
-	m_renderer->setup(-1.0f, m_grid->HALF_LENGTH * 2);
+	m_renderer->setup(m_axis, -1.0f, m_grid->HALF_LENGTH * 2);
 	m_renderer->setZoom(m_zoom);
 
 	update();
@@ -35,13 +34,13 @@ void GLWidget2D::initializeGL()
 
 void GLWidget2D::paintGL()
 {
-	processInputData();
-	m_grid->updateView(m_camera->getPosition(), m_frustrumWidth, m_frustrumHeight);
+	makeCurrent();
 
 	QList<Brush*> objects;
 
+	processInputData();
+	m_grid->updateView(m_camera->getPosition(), m_frustrumWidth, m_frustrumHeight);
 	m_renderer->render(context(), *m_grid, objects, m_scene->m_gui2DObjects, getZoomFactor());
-
 	clearInputData();
 	update();
 }
@@ -71,8 +70,8 @@ void GLWidget2D::processInputData()
 	}
 
 	float newFactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;
-	float factor = newFactor / prevFactor;
-	m_camera->setPosition(m_camera->getPosition() * factor);
+	float adjustingFactor = newFactor / prevFactor;
+	m_camera->setPosition(m_camera->getPosition() * adjustingFactor);
 
 	bool isWidgetActive = m_inputData.isMouseOver;
 	float velocity = 10.0f;
@@ -108,23 +107,37 @@ void GLWidget2D::processInputData()
 	{
 		processToolMode();
 	}
-	
-	m_camera->updateCameraVectors();
 }
 
-bool GLWidget2D::isCorrectPoints(QVector3D p1, QVector3D p2)
+bool GLWidget2D::isSamePoint(QVector3D p1, QVector3D p2)
 {
 	switch (m_axis)
 	{
 	case Axis::X:
-		return Helpers::trunc(p1.z()) != Helpers::trunc(p2.z()) &&
-			Helpers::trunc(p1.y()) != Helpers::trunc(p2.y());
+		return Helpers::trunc(p1.z()) == Helpers::trunc(p2.z()) &&
+			Helpers::trunc(p1.y()) == Helpers::trunc(p2.y());
 	case Axis::Y:
-		return Helpers::trunc(p1.x()) != Helpers::trunc(p2.x()) &&
-			Helpers::trunc(p1.z()) != Helpers::trunc(p2.z());
+		return Helpers::trunc(p1.x()) == Helpers::trunc(p2.x()) &&
+			Helpers::trunc(p1.z()) == Helpers::trunc(p2.z());
 	case Axis::Z:
-		return Helpers::trunc(p1.x()) != Helpers::trunc(p2.x()) &&
-			Helpers::trunc(p1.y()) != Helpers::trunc(p2.y());
+		return Helpers::trunc(p1.x()) == Helpers::trunc(p2.x()) &&
+			Helpers::trunc(p1.y()) == Helpers::trunc(p2.y());
+	}
+}
+
+bool GLWidget2D::hasSameCoordinate(QVector3D p1, QVector3D p2)
+{
+	switch (m_axis)
+	{
+	case Axis::X:
+		return Helpers::trunc(p1.z()) == Helpers::trunc(p2.z()) ||
+			Helpers::trunc(p1.y()) == Helpers::trunc(p2.y());
+	case Axis::Y:
+		return Helpers::trunc(p1.x()) == Helpers::trunc(p2.x()) ||
+			Helpers::trunc(p1.z()) == Helpers::trunc(p2.z());
+	case Axis::Z:
+		return Helpers::trunc(p1.x()) == Helpers::trunc(p2.x()) ||
+			Helpers::trunc(p1.y()) == Helpers::trunc(p2.y());
 	}
 }
 
@@ -149,12 +162,13 @@ void GLWidget2D::processToolMode()
 		{
 			QVector3D endPointPos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY, -1.0f);
 			QVector3D startPointPos = m_dragData.startPoint->m_origin;
+			bool isSamePoint = this->isSamePoint(startPointPos, endPointPos);
+			bool isLyingOnSameAxis = hasSameCoordinate(startPointPos, endPointPos);
 
-			if (isCorrectPoints(startPointPos, endPointPos))
+			if (!isSamePoint && !isLyingOnSameAxis)
 			{
 				m_scene->m_gui2DObjects.removeOne(m_dragData.startPoint);
 				m_scene->m_gui2DObjects.removeOne(m_dragData.endPoint);
-				m_dragData.endPoint = new Point(1.0f, endPointPos);
 
 				if (blockToolData->blockInstance)
 				{
@@ -167,7 +181,7 @@ void GLWidget2D::processToolMode()
 				m_scene->m_gui2DObjects.push_back(blockToolData->blockInstance);
 				m_scene->m_gui3DObjects.push_back(blockToolData->blockInstance);
 			}
-			else if (!blockToolData->blockInstance)
+			else if (!blockToolData->blockInstance && !isSamePoint && isLyingOnSameAxis)
 			{
 				if (m_dragData.endPoint)
 				{

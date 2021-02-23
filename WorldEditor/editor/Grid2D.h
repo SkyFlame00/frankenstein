@@ -8,6 +8,7 @@
 #include <QOpenGLShaderProgram>
 #include "Renderable.h"
 #include "../common/types.h"
+#include "VertexBufferObject.h"
 
 class Grid2D : public Renderable
 {
@@ -17,7 +18,7 @@ public:
 		X1 = 1, X2 = 2, X4 = 4, X8 = 8, X16 = 16, X32 = 32
 	};
 
-	const float HALF_LENGTH = 4096.0f;
+	static const float HALF_LENGTH;
 	const float MIN_UNIT = 1.0f;
 	const std::unordered_map<UnitSize, std::unordered_map<SceneZoom, UnitSize>> SIZES {
 		{ UnitSize::X1,
@@ -118,9 +119,6 @@ public:
 		},
 	};
 
-	Axis m_axis;
-	SceneZoom m_zoom;
-
 	Grid2D(Axis axis, SceneZoom zoom);
 	~Grid2D();
 
@@ -131,14 +129,18 @@ public:
 	inline bool shouldDraw() { return m_shouldDraw; }
 	inline UnitSize getStep() { return m_step; }
 
+	Axis m_axis;
+	SceneZoom m_zoom;
+
 private:
+	UnitSize m_step = UnitSize::X1;
+	VertexBufferObject m_vbo;
 	int m_verticesCount = 0;
 	int m_gridLeft = -HALF_LENGTH;
 	int m_gridRight = HALF_LENGTH;
 	int m_gridTop = HALF_LENGTH;
 	int m_gridBottom = -HALF_LENGTH;
-	UnitSize m_step = UnitSize::X1;
 	bool m_shouldDraw = true;
-
+	
 	void addVertex(float *vertices, int i, float horPos, float verPos);
 };
