@@ -104,7 +104,8 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
-    <ClCompile Include="gui\GLWidget2D.cpp" />
+    <ClCompile Include="gui\GLWidget2D\BlockTool.cpp" />
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
     <ClCompile Include="gui\GLWidget3D.cpp" />
@@ -130,7 +131,7 @@
     <ClInclude Include="editor\GL.h" />
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
-    <ClInclude Include="gui\GLWidget2D.h" />
+    <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />
     <ClInclude Include="editor\Renderer3D.h" />

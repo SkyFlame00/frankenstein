@@ -123,36 +123,53 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	if (key == 'W')
 	{
 		m_glWidget3D->m_inputData.keyW = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyW = ButtonState::PRESSED;
+		m_glWidget2D_Y->m_inputData.keyW = ButtonState::PRESSED;
 		m_glWidget2D_Z->m_inputData.keyW = ButtonState::PRESSED;
 	}
-		
 	if (key == 'A')
 	{
 		m_glWidget3D->m_inputData.keyA = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyA = ButtonState::PRESSED;
+		m_glWidget2D_Y->m_inputData.keyA = ButtonState::PRESSED;
 		m_glWidget2D_Z->m_inputData.keyA = ButtonState::PRESSED;
 	}
 	if (key == 'S')
 	{
 		m_glWidget3D->m_inputData.keyS = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyS = ButtonState::PRESSED;
+		m_glWidget2D_Y->m_inputData.keyS = ButtonState::PRESSED;
 		m_glWidget2D_Z->m_inputData.keyS = ButtonState::PRESSED;
 	}
 	if (key == 'D')
 	{
 		m_glWidget3D->m_inputData.keyD = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyD = ButtonState::PRESSED;
+		m_glWidget2D_Y->m_inputData.keyD = ButtonState::PRESSED;
 		m_glWidget2D_Z->m_inputData.keyD = ButtonState::PRESSED;
 	}
 	if (key == '[')
 	{
-		m_glWidget2D_Z->m_inputData.keyOpenBracket = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyOpenBracket = ButtonState::PRESSED;
 		m_glWidget2D_Y->m_inputData.keyOpenBracket = ButtonState::PRESSED;
+		m_glWidget2D_Z->m_inputData.keyOpenBracket = ButtonState::PRESSED;
 	}
 	if (key == ']')
 	{
-		m_glWidget2D_Z->m_inputData.keyCloseBracket = ButtonState::PRESSED;
+		m_glWidget2D_X->m_inputData.keyCloseBracket = ButtonState::PRESSED;
 		m_glWidget2D_Y->m_inputData.keyCloseBracket = ButtonState::PRESSED;
+		m_glWidget2D_Z->m_inputData.keyCloseBracket = ButtonState::PRESSED;
 	}
 	if (key == Qt::Key_Escape)
 	{
+		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D_X->m_inputData.keyEscape = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Y->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D_Y->m_inputData.keyEscape = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
 		if (m_glWidget2D_Z->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
 		{
 			m_glWidget2D_Z->m_inputData.keyEscape = ButtonDownState::DOWN_NOT_PROCESSED;
@@ -169,25 +186,41 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 	if (key == 'W')
 	{
 		m_glWidget3D->m_inputData.keyW = ButtonState::RELEASED;
+		m_glWidget2D_X->m_inputData.keyW = ButtonState::RELEASED;
+		m_glWidget2D_Y->m_inputData.keyW = ButtonState::RELEASED;
 		m_glWidget2D_Z->m_inputData.keyW = ButtonState::RELEASED;
 	}
 	if (key == 'A')
 	{
 		m_glWidget3D->m_inputData.keyA = ButtonState::RELEASED;
+		m_glWidget2D_X->m_inputData.keyA = ButtonState::RELEASED;
+		m_glWidget2D_Y->m_inputData.keyA = ButtonState::RELEASED;
 		m_glWidget2D_Z->m_inputData.keyA = ButtonState::RELEASED;
 	}
 	if (key == 'S')
 	{
 		m_glWidget3D->m_inputData.keyS = ButtonState::RELEASED;
+		m_glWidget2D_X->m_inputData.keyS = ButtonState::RELEASED;
+		m_glWidget2D_Y->m_inputData.keyS = ButtonState::RELEASED;
 		m_glWidget2D_Z->m_inputData.keyS = ButtonState::RELEASED;
 	}
 	if (key == 'D')
 	{
 		m_glWidget3D->m_inputData.keyD = ButtonState::RELEASED;
+		m_glWidget2D_X->m_inputData.keyD = ButtonState::RELEASED;
+		m_glWidget2D_Y->m_inputData.keyD = ButtonState::RELEASED;
 		m_glWidget2D_Z->m_inputData.keyD = ButtonState::RELEASED;
 	}
 	if (key == Qt::Key_Escape)
 	{
+		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D_X->m_inputData.keyEscape = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Y->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D_Y->m_inputData.keyEscape = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
 		if (m_glWidget2D_Z->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
 		{
 			m_glWidget2D_Z->m_inputData.keyEscape = ButtonDownState::RELEASED_NOT_PROCESSED;

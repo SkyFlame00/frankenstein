@@ -5,7 +5,7 @@
 #include <QMenu>
 
 #include "GLWidget3D.h"
-#include "GLWidget2D.h"
+#include "GLWidget2D/GLWidget2D.h"
 #include "../editor/Scene.h"
 #include "../editor/Renderer3D.h"
 #include "../editor/Camera.h"

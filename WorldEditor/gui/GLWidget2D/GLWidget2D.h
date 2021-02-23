@@ -3,12 +3,12 @@
 #include <QOpenGLWidget>
 #include <QWheelEvent>
 #include <QVector3D>
-#include "../editor/Scene.h"
-#include "../editor/Renderer2D.h"
-#include "../editor/Camera.h"
-#include "../common/types.h"
-#include "../editor/Grid2D.h"
-#include "../editor/grid2d/Point.h"
+#include "../../editor/Scene.h"
+#include "../../editor/Renderer2D.h"
+#include "../../editor/Camera.h"
+#include "../../common/types.h"
+#include "../../editor/Grid2D.h"
+#include "../../editor/grid2d/Point.h"
 #include <QOpenGLDebugLogger>
 #include <QOpenGLExtraFunctions>
 
@@ -74,10 +74,10 @@ private:
 	void getNearestPoint(float x, float y, float* nearestX, float* nearestY);
 	void getNearestPointFromScreen(int screenX, int screenY, float* nearestX, float* nearestY);
 	void placePoint(int screenX, int screenY);
-	void processToolMode();
 	float getZoomFactor();
 	bool isSamePoint(QVector3D p1, QVector3D p2);
 	bool hasSameCoordinate(QVector3D p1, QVector3D p2);
+	void processBlockTool();
 };
 
 

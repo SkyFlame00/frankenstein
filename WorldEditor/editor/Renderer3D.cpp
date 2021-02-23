@@ -22,6 +22,8 @@ void Renderer3D::render(QOpenGLContext* context, QList<Brush*>& objects, QList<R
 
 	for (auto& object : objects)
 	{
+		context->makeCurrent(context->surface());
+
 		QMatrix4x4 model;
 		model.setToIdentity();
 		model.translate(0.0f, 0.0f, -1.0f);

@@ -26,6 +26,7 @@ void Renderable::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& 
 		return;
 	}
 
+	context->makeCurrent(context->surface());
 	auto vao = GlobalData::getRenderableVAO(*context, *this);
 
 	QMatrix4x4 model;
@@ -75,6 +76,7 @@ void Renderable::render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& cam
 		return;
 	}
 
+	context->makeCurrent(context->surface());
 	auto vao = GlobalData::getRenderableVAO(*context, *this);
 
 	QMatrix4x4 model;
