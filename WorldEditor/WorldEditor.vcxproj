@@ -104,6 +104,7 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
+    <ClCompile Include="gui\GLWidgetsContainer.cpp" />
     <ClCompile Include="gui\GLWidget2D\BlockTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="editor\GL.h" />
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
+    <QtMoc Include="gui\GLWidgetsContainer.h" />
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />

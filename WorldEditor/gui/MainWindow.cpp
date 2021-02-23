@@ -29,7 +29,7 @@ MainWindow::MainWindow()
 
 	m_camera2D_Z = new Camera;
 	m_renderer2D_Z = new Renderer2D(m_camera2D_Z, 800.0f, 600.0f);
-	
+
 	setCentralWidget(m_centralWidget);
 	m_centralWidget->setMouseTracking(true);
 
@@ -83,33 +83,24 @@ void MainWindow::setupDocks()
 void MainWindow::setupEditor()
 {
 	m_glWidget3D = new GLWidget3D(m_camera3D, m_renderer3D, m_scene);
-	m_glWidget3D->setMaximumWidth(800);
-	m_glWidget3D->setMaximumHeight(600);
 
 	m_glWidget2D_X = new GLWidget2D(Axis::X, m_camera2D_X, m_renderer2D_X, m_scene);
-	m_glWidget2D_X->setMaximumWidth(800);
-	m_glWidget2D_X->setMaximumHeight(600);
 
 	m_glWidget2D_Y = new GLWidget2D(Axis::Y, m_camera2D_Y, m_renderer2D_Y, m_scene);
-	m_glWidget2D_Y->setMaximumWidth(800);
-	m_glWidget2D_Y->setMaximumHeight(600);
 
 	m_glWidget2D_Z = new GLWidget2D(Axis::Z, m_camera2D_Z, m_renderer2D_Z, m_scene);
-	m_glWidget2D_Z->setMaximumWidth(800);
-	m_glWidget2D_Z->setMaximumHeight(600);
 
-	QVBoxLayout* layout = new QVBoxLayout;
+	QHBoxLayout* layout = new QHBoxLayout;
+	m_glWidgetsContainer = new GLWidgetsContainer(m_glWidget3D, m_glWidget2D_X, m_glWidget2D_Y, m_glWidget2D_Z);
+	layout->addWidget(m_glWidgetsContainer);
 	m_centralWidget->setLayout(layout);
-	layout->addWidget(m_glWidget3D);
-	layout->addWidget(m_glWidget2D_X);
-	layout->addWidget(m_glWidget2D_Y);
-	layout->addWidget(m_glWidget2D_Z);
 }
 
 void MainWindow::enableMouseTracking()
 {
 	setMouseTracking(true);
 	m_centralWidget->setMouseTracking(true);
+	m_glWidgetsContainer->setMouseTracking(true);
 	m_glWidget3D->setMouseTracking(true);
 	m_glWidget2D_X->setMouseTracking(true);
 	m_glWidget2D_Y->setMouseTracking(true);
@@ -228,13 +219,4 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 	}
 
 	QMainWindow::keyReleaseEvent(event);
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent* event)
-{
-	auto pos = event->pos();
-	m_glWidget3D->m_inputData.mouseX = pos.x();
-	m_glWidget3D->m_inputData.mouseY = pos.y();
-
-	QMainWindow::mouseMoveEvent(event);
 }

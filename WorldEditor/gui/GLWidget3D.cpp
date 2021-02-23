@@ -102,6 +102,15 @@ void GLWidget3D::leaveEvent(QEvent* event)
 	QOpenGLWidget::leaveEvent(event);
 }
 
+void GLWidget3D::mouseMoveEvent(QMouseEvent* event)
+{
+	auto pos = event->pos();
+	m_inputData.mouseX = pos.x();
+	m_inputData.mouseY = pos.y();
+
+	QOpenGLWidget::mouseMoveEvent(event);
+}
+
 void GLWidget3D::mousePressEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)

@@ -87,12 +87,18 @@
     <ClCompile Include="gui\GLWidget2D\BlockTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui\GLWidgetsContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gui\GLWidget3D.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\GLWidgetsContainer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

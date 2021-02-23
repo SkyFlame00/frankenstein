@@ -10,6 +10,8 @@
 #include "../editor/Renderer3D.h"
 #include "../editor/Camera.h"
 #include <QKeyEvent>
+#include <QPushButton>
+#include "GLWidgetsContainer.h"
 
 class MainWindow : public QMainWindow
 {
@@ -41,6 +43,8 @@ private:
 	Scene* m_scene;
 	Renderer3D* m_renderer3D;
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
+	QPushButton *btn;
 
-private slots:
+	GLWidgetsContainer* m_glWidgetsContainer;
+
 };
