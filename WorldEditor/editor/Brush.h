@@ -37,6 +37,7 @@ private:
 	void makeBufferData();
 	void makeLinesData();
 	void makeTrianglesData();
+	void calcNorm(Types::Polygon* polygon);
 
 	float* m_vertices;
 	int m_verticesCount = 0;
@@ -48,5 +49,6 @@ private:
 	BrushRenderable* m_trianglesRenderable;
 	float m_trianglesVerticesCount = 0;
 	float m_linesVerticesCount = 0;
-	QOpenGLShaderProgram* m_program;
+	QOpenGLShaderProgram* m_program2D;
+	QOpenGLShaderProgram* m_program3D;
 };
