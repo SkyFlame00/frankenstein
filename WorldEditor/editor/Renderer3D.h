@@ -15,9 +15,11 @@ public:
 	~Renderer3D();
 
 	void render(QOpenGLContext* context, QList<Brush*>& objects, QList<Renderable*>& guiObjects);
+	void setFrustrum(int width, int height);
 		
 private:
 	QMatrix4x4 m_projMatrix;
 	QMatrix4x4 m_viewMatrix;
 	Camera* m_camera;
+	float m_fov = 75.0f;
 };

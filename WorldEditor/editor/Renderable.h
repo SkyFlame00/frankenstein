@@ -34,4 +34,6 @@ protected:
 	GLenum m_drawMode = GL_LINES;
 	bool m_shouldDraw = true;
 	bool m_shouldScale = false;
+
+	void useContext(QOpenGLContext* context);
 };

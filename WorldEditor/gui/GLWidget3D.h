@@ -46,8 +46,11 @@ private:
 	int lastY;
 	QElapsedTimer m_timer;
 	float m_timeDelta = 0.0f;
+	float m_frustrumWidth;
+	float m_frustrumHeight;
 
 	void processInputData();
 	void updateCamera();
 	void clearInputData();
+	void resizeGL(int width, int height) override;
 };

@@ -2,6 +2,9 @@
 
 #include <Qt>
 #include <unordered_map>
+#include <QVector3D>
+#include <QVector2D>
+#include <QList>
 
 enum class ButtonState
 {
@@ -43,7 +46,7 @@ const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
 	{ SceneZoom::X128, 128.0f }
 };
 
-enum class EdtitorMode
+enum class EditorMode
 {
 	SELECTING_MODE,
 	BLOCK_MODE
@@ -56,3 +59,28 @@ enum class BlockToolState
 	RESIZE,
 	MOVE
 };
+
+namespace Types
+{
+	struct Triangle
+	{
+		QVector3D* v0, * v1, * v2;
+	};
+
+	struct Edge
+	{
+		QVector3D* v0, * v1;
+	};
+
+	struct Polygon
+	{
+		float a, b, c, d;
+		int count = 0;
+		std::unordered_map<QVector3D*, QVector2D> verticesMap; // vertices to tex coordinates mapping
+		QVector3D norm;
+		QList<Triangle> triangles;
+		QList< QPair<QVector3D, int> > indexedVertices;
+		QList<Edge> allEdges;
+		QList<Edge> borderEdges;
+	};
+}

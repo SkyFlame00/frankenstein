@@ -13,6 +13,7 @@ public:
 
 	void setup();
 	QList<Brush*>& getObjects();
+	void addObject(Brush* brush);
 
 	QList<Renderable*> m_gui2DObjects;
 	QList<Renderable*> m_gui3DObjects;

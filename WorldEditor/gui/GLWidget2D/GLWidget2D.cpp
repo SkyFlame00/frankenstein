@@ -40,7 +40,7 @@ void GLWidget2D::paintGL()
 
 	processInputData();
 	m_grid->updateView(m_camera->getPosition(), m_frustrumWidth, m_frustrumHeight);
-	m_renderer->render(context(), *m_grid, objects, m_scene->m_gui2DObjects, getZoomFactor());
+	m_renderer->render(context(), *m_grid, m_scene->getObjects(), m_scene->m_gui2DObjects, getZoomFactor());
 	clearInputData();
 	update();
 }
@@ -103,7 +103,7 @@ void GLWidget2D::processInputData()
 		m_grid->decreaseScale();
 	}
 	
-	if (GlobalData::getInstance()->m_editorMode == EdtitorMode::BLOCK_MODE)
+	if (GlobalData::getInstance()->m_editorMode == EditorMode::BLOCK_MODE)
 	{
 		processBlockTool();
 	}

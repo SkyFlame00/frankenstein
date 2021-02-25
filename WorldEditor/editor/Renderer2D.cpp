@@ -89,20 +89,6 @@ void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& 
 
 	for (auto& object : objects)
 	{
-		makeCurrent();
-
-		auto program = object->m_program;
-		QMatrix4x4 model;
-		model.setToIdentity();
-		//model.scale(m_zoomVec);
-
-		GLCall(program->bind());
-		GLCall(program->setUniformValue("proj", m_projMatrix));
-		GLCall(program->setUniformValue("view", m_camera->getViewMatrix()));
-		GLCall(program->setUniformValue("model", model));
-		GLCall(program->setUniformValue("color", 1.0f, 1.0f, 1.0f));
-		
-		object->m_vao.bind();
-		GLCall($->glDrawArrays(GL_LINES, 0, object->verticesCount()));
+		object->render2D(context, m_projMatrix, m_zoomVec, *m_camera);
 	}
 }

@@ -12,6 +12,7 @@
 
 #include "../common/types.h"
 #include "../common/GlobalData.h"
+#include "../common/helpers.h"
 
 MainWindow::MainWindow()
 {
@@ -82,16 +83,13 @@ void MainWindow::setupDocks()
 
 void MainWindow::setupEditor()
 {
-	m_glWidget3D = new GLWidget3D(m_camera3D, m_renderer3D, m_scene);
-
-	m_glWidget2D_X = new GLWidget2D(Axis::X, m_camera2D_X, m_renderer2D_X, m_scene);
-
-	m_glWidget2D_Y = new GLWidget2D(Axis::Y, m_camera2D_Y, m_renderer2D_Y, m_scene);
-
-	m_glWidget2D_Z = new GLWidget2D(Axis::Z, m_camera2D_Z, m_renderer2D_Z, m_scene);
-
 	QHBoxLayout* layout = new QHBoxLayout;
+	m_glWidget3D = new GLWidget3D(m_camera3D, m_renderer3D, m_scene);
+	m_glWidget2D_X = new GLWidget2D(Axis::X, m_camera2D_X, m_renderer2D_X, m_scene);
+	m_glWidget2D_Y = new GLWidget2D(Axis::Y, m_camera2D_Y, m_renderer2D_Y, m_scene);
+	m_glWidget2D_Z = new GLWidget2D(Axis::Z, m_camera2D_Z, m_renderer2D_Z, m_scene);
 	m_glWidgetsContainer = new GLWidgetsContainer(m_glWidget3D, m_glWidget2D_X, m_glWidget2D_Y, m_glWidget2D_Z);
+
 	layout->addWidget(m_glWidgetsContainer);
 	m_centralWidget->setLayout(layout);
 }
@@ -164,6 +162,26 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		if (m_glWidget2D_Z->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
 		{
 			m_glWidget2D_Z->m_inputData.keyEscape = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Return)
+	{
+		auto global = GlobalData::getInstance();
+		auto& data = global->m_blockToolData;
+
+		if (global->m_editorMode == EditorMode::BLOCK_MODE && data.state == BlockToolState::READY_TO_EDIT)
+		{
+			QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
+
+			auto block = data.blockInstance;
+			auto brush = new Brush(*block->getVertices(), color);
+			m_scene->addObject(brush);
+
+			m_scene->m_gui2DObjects.removeOne(block);
+			m_scene->m_gui3DObjects.removeOne(block);
+			delete data.blockInstance;
+			data.blockInstance = nullptr;
+			data.state = BlockToolState::CREATING;
 		}
 	}
 

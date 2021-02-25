@@ -56,6 +56,7 @@ public:
 	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps);
 	Qt::CursorShape checkHover(float x, float y, Axis axis, float zoomFactor);
 	ResizePointsBoundaries* getResizePointsBoundaries(Axis axis, float zoomFactor);
+	inline QList<QVector3D>* getVertices() { return &m_vertices; }
 
 	ResizeDirection m_resizeDirection;
 	bool m_isEditingMode = false;

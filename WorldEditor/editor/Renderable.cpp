@@ -97,3 +97,8 @@ void Renderable::bindVAO(QOpenGLContext* context)
 	auto vao = GlobalData::getRenderableVAO(*context, *this);
 	vao->bind();
 }
+
+void Renderable::useContext(QOpenGLContext* context)
+{
+	context->makeCurrent(context->surface());
+}

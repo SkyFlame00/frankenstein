@@ -5,9 +5,13 @@
 #include "editor/ResourceManager.h"
 #include "editor/GL.h"
 #include "common/GlobalData.h"
+#include <cstdlib>
+#include <ctime>
 
 int main(int argc, char* argv[])
 {
+	std::srand(std::time(nullptr));
+
 	QApplication app(argc, argv);
 
 #ifndef QT_NO_DEBUG_OUTPUT

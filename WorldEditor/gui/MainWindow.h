@@ -10,7 +10,6 @@
 #include "../editor/Renderer3D.h"
 #include "../editor/Camera.h"
 #include <QKeyEvent>
-#include <QPushButton>
 #include "GLWidgetsContainer.h"
 
 class MainWindow : public QMainWindow
@@ -26,7 +25,6 @@ public:
 
 	void keyPressEvent(QKeyEvent* event) override;
 	void keyReleaseEvent(QKeyEvent* event) override;
-	void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
 	void setupMenu();
@@ -43,8 +41,5 @@ private:
 	Scene* m_scene;
 	Renderer3D* m_renderer3D;
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
-	QPushButton *btn;
-
 	GLWidgetsContainer* m_glWidgetsContainer;
-
 };

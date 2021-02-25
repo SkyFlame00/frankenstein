@@ -19,3 +19,8 @@ QVector3D Helpers::get3DPointFrom2D(Axis axis, float hor, float ver, float third
 		return QVector3D(hor, ver, thirdAxisVal);
 	}
 }
+
+float Helpers::getRandom()
+{
+	return (float)std::rand() / (float)RAND_MAX;
+}

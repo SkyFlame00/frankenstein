@@ -126,3 +126,10 @@ void GLWidget3D::mouseReleaseEvent(QMouseEvent* event)
 
 	QOpenGLWidget::mouseReleaseEvent(event);
 }
+
+void GLWidget3D::resizeGL(int width, int height)
+{
+	m_frustrumWidth = width;
+	m_frustrumHeight = height;
+	m_renderer->setFrustrum(m_frustrumWidth, m_frustrumHeight);
+}
