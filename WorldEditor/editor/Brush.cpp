@@ -116,6 +116,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 
 	m_program2D = ResourceManager::getProgram("plain_brush_2d", "plain_brush_2d");
 	m_program3D = ResourceManager::getProgram("plain_brush_3d", "plain_brush_3d");
+	m_programSelection = ResourceManager::getProgram("brush_selection", "brush_selection");
 
 	makeTrianglesBufferData();
 	makeLinesBufferData();
@@ -271,4 +272,22 @@ void Brush::calcNorm(Types::Polygon* polygon)
 {
 	auto& tri = polygon->triangles[0];
 	polygon->norm = QVector3D::normal(*tri.v0, *tri.v1, *tri.v2);
+}
+
+void Brush::writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
+{
+	auto vao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
+	QMatrix4x4 model;
+	model.setToIdentity();
+	model.translate(m_origin);
+
+	useContext(context);
+	GLCall(m_programSelection->bind());
+	GLCall(m_programSelection->setUniformValue("u_Proj", proj));
+	GLCall(m_programSelection->setUniformValue("u_View", camera.getViewMatrix()));
+	GLCall(m_programSelection->setUniformValue("u_Model", model));
+	GLCall(m_programSelection->setUniformValue("u_RenderId", renderId));
+
+	GLCall(vao->bind());
+	GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
 }

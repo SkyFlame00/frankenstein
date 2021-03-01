@@ -23,54 +23,88 @@ void GLWidget3D::processSelectionTool()
 
 	if (isWidgetActive && m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
 	{
+		float renderId = m_renderer->getSelectionValue(mouseX, m_screenHeight - mouseY);
+		auto renderable = m_renderer->getBrushByRenderId(renderId);
+
+		if (renderId == 0.0f || !renderable)
+		{
+			if (data.renderable)
+			{
+				data.renderable->m_selected = false;
+				data.renderable = nullptr;
+			}
+			goto end;
+		}
+
+		//qInfo() << renderId;
 		QVector3D pointingRay =
 			m_camera->getPickingRay(mouseX, mouseY, m_screenWidth, m_screenHeight, m_renderer->getNearPlane(), m_renderer->getFarPlane(), m_renderer->getProjMatrix());
 		QVector3D intersectionPoint;
-		Brush* intersectionRenderable;
 		Types::Polygon* intersectionPolygon;
 		Types::Triangle* intersectionTriangle;
 		bool intersected = false;
 
-		for (auto& renderable : m_scene->getObjects())
+		//for (auto& renderable : m_scene->getObjects())
+		//{
+		//	for (auto& polygon : renderable->getPolygons())
+		//	{
+		//		for (auto& triangle : polygon->triangles)
+		//		{
+		//			if (hasIntersection(m_camera->getPosition(), pointingRay, triangle, renderable->m_origin, intersectionPoint))
+		//			{
+		//				intersectionRenderable = renderable;
+		//				intersectionPolygon = polygon;
+		//				intersectionTriangle = &triangle;
+		//				intersected = true;
+		//				goto after_loop;
+		//			}
+		//		}
+		//	}
+		//}
+
+		for (auto& polygon : renderable->getPolygons())
 		{
-			for (auto& polygon : renderable->getPolygons())
+			for (auto& triangle : polygon->triangles)
 			{
-				for (auto& triangle : polygon->triangles)
+				if (hasIntersection(m_camera->getPosition(), pointingRay, triangle, renderable->m_origin, intersectionPoint))
 				{
-					if (hasIntersection(m_camera->getPosition(), pointingRay, triangle, renderable->m_origin, intersectionPoint))
-					{
-						intersectionRenderable = renderable;
-						intersectionPolygon = polygon;
-						intersectionTriangle = &triangle;
-						qInfo() << "Succeed";
-						intersected = true;
-						goto after_loop;
-					}
+					intersectionPolygon = polygon;
+					intersectionTriangle = &triangle;
+					goto after_loop;
 				}
 			}
 		}
 
 	after_loop:
-		if (intersected)
+		if (data.renderable)
 		{
-			if (data.renderable)
-			{
-				data.renderable->m_selected = false;
-				data.renderable = nullptr;
-			}
+			data.renderable->m_selected = false;
+			data.renderable = nullptr;
+		}
 
-			data.renderable = intersectionRenderable;
-			intersectionRenderable->m_selected = true;
-		}
-		else
-		{
-			if (data.renderable)
-			{
-				data.renderable->m_selected = false;
-				data.renderable = nullptr;
-			}
-		}
+		data.renderable = renderable;
+		renderable->m_selected = true;
+		//if (intersected)
+		//{
+		//	if (data.renderable)
+		//	{
+		//		data.renderable->m_selected = false;
+		//		data.renderable = nullptr;
+		//	}
+
+		//	data.renderable = renderable;
+		//	renderable->m_selected = true;
+		//}
+		//else
+		//{
+		//	if (data.renderable)
+		//	{
+		//		data.renderable->m_selected = false;
+		//		data.renderable = nullptr;
+		//	}
+		//}
 	}
+end:;
 }
 
 bool GLWidget3D::hasIntersection(QVector3D position, QVector3D direction, Types::Triangle triangle, QVector3D origin, QVector3D& output)

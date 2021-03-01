@@ -2,6 +2,11 @@
 #include "../common/GlobalData.h"
 #include "../gui/Debug.h"
 
+Renderable::Renderable()
+	: m_modelMatrix(), m_scaleVec(1.0f, 1.0f, 1.0f), m_origin(0.0f, 0.0f, 0.0f)
+{
+}
+
 Renderable::~Renderable()
 {
 	for (auto& [context, map] : GlobalData::openglContexts)
@@ -96,9 +101,4 @@ void Renderable::bindVAO(QOpenGLContext* context)
 {
 	auto vao = GlobalData::getRenderableVAO(*context, *this);
 	vao->bind();
-}
-
-void Renderable::useContext(QOpenGLContext* context)
-{
-	context->makeCurrent(context->surface());
 }

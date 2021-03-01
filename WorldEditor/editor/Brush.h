@@ -20,6 +20,7 @@ public:
 	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 	void render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 	inline QList<Types::Polygon*>& getPolygons() { return m_polygons; }
+	void writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 
 	QVector3D m_origin;
 	bool m_selected = false;
@@ -53,4 +54,5 @@ private:
 	float m_linesVerticesCount = 0;
 	QOpenGLShaderProgram* m_program2D;
 	QOpenGLShaderProgram* m_program3D;
+	QOpenGLShaderProgram* m_programSelection;
 };

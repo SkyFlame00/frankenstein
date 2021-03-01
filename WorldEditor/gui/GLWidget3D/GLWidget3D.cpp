@@ -19,6 +19,7 @@ void GLWidget3D::initializeGL()
 
 	m_scene->setup();
 	m_timer.start();
+	m_renderer->setupSelectionBuffer(context());
 
 	update();
 }

@@ -13,7 +13,7 @@
 class Renderable : public OpenGLFunctions
 {
 public:
-	Renderable() : m_modelMatrix(), m_scaleVec(1.0f, 1.0f, 1.0f), m_origin(0.0f, 0.0f, 0.0f) {}
+	Renderable();
 	~Renderable();
 
 	virtual int verticesCount() = 0;
@@ -24,6 +24,8 @@ public:
 	virtual void render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera);
 	virtual void createVAO(VertexBufferObject& vbo);
 	virtual void bindVAO(QOpenGLContext* context);
+	virtual inline float getRenderId() { return m_renderId; }
+	virtual inline void changeRenderId(float renderId) { m_renderId = renderId; }
 
 	QOpenGLShaderProgram* m_program;
 	QMatrix4x4 m_modelMatrix;
@@ -34,6 +36,5 @@ protected:
 	GLenum m_drawMode = GL_LINES;
 	bool m_shouldDraw = true;
 	bool m_shouldScale = false;
-
-	void useContext(QOpenGLContext* context);
+	float m_renderId; /* It's changed once per each render */
 };

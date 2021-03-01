@@ -31,4 +31,9 @@ class OpenGLFunctions : public QOpenGLExtraFunctions
 {
 protected:
 	GL* $ = GL::functions();
+
+	inline void useContext(QOpenGLContext* context)
+	{
+		context->makeCurrent(context->surface());
+	}
 };
