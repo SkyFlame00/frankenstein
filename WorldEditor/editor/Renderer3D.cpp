@@ -100,7 +100,6 @@ void Renderer3D::writeSelectionBuffer(QOpenGLContext* context, QList<Brush*>& ob
 	{
 		object->changeRenderId(renderId);
 		object->writeSelectionBuffer(context, renderId, m_projMatrix, zoomVec, *m_camera);
-		//(*m_brushMap)[renderId] = object;
 		m_brushMap->insert(std::make_pair(renderId, object));
 		renderId += delta;
 	}
@@ -113,28 +112,10 @@ float Renderer3D::getSelectionValue(int x, int y)
 {
 	float renderId;
 
-	//qInfo() << "x = " << x << ", y = " << y;
-
-	//float* data = new float[m_screenWidth * m_screenHeight];
-
 	GLCall($->glBindFramebuffer(GL_FRAMEBUFFER, m_selectionFbo));
 	GLCall($->glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &renderId));
-	//GLCall($->glReadPixels(0, 0, m_screenWidth, m_screenHeight, GL_RED, GL_FLOAT, data));
 	GLCall($->glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
-	//QList<float> floats;
-
-	//for (int i = 0; i < m_screenWidth * m_screenHeight; i++)
-	//{
-	//	floats.append(data[i]);
-
-	//	if (data[i] != 0.0f)
-	//	{
-	//		qInfo() << "here";
-	//	}
-	//}
-
-	//delete [] data;
 	return renderId;
 }
 
