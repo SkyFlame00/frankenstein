@@ -19,8 +19,11 @@ public:
 	inline int verticesCount() { return m_verticesCount; }
 	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 	void render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
+	inline QList<Types::Polygon*>& getPolygons() { return m_polygons; }
 
 	QVector3D m_origin;
+	bool m_selected = false;
+	QVector3D m_selectionColor;
 
 private:
 	class BrushRenderable : public Renderable
@@ -34,14 +37,13 @@ private:
 		VertexBufferObject* m_vbo;
 	};
 
-	void makeBufferData();
-	void makeLinesData();
-	void makeTrianglesData();
+	void makeLinesBufferData();
+	void makeTrianglesBufferData();
 	void calcNorm(Types::Polygon* polygon);
 
-	float* m_vertices;
+	QList<QVector3D> m_uniqueVertices;
 	int m_verticesCount = 0;
-	QList<Types::Polygon*> polygons;
+	QList<Types::Polygon*> m_polygons;
 	QVector3D m_uniformColor;
 	VertexBufferObject m_linesVbo;
 	VertexBufferObject m_trianglesVbo;

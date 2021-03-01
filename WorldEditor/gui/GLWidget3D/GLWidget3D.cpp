@@ -1,8 +1,8 @@
 #include "GLWidget3D.h"
 
-#include "../editor/GL.h"
-#include "Debug.h"
-#include "../common/GlobalData.h"
+#include "../../editor/GL.h"
+#include "../Debug.h"
+#include "../../common/GlobalData.h"
 
 GLWidget3D::GLWidget3D(Camera* camera, Renderer3D* renderer, Scene* scene, QWidget* parent)
 	: QOpenGLWidget(parent), m_camera(camera), m_renderer(renderer), m_scene(scene)
@@ -40,7 +40,11 @@ void GLWidget3D::paintGL()
 void GLWidget3D::processInputData()
 {
 	auto globalData = GlobalData::getInstance();
-	auto blockToolData = &globalData->m_blockToolData;
+
+	if (globalData->m_editorMode == EditorMode::SELECTING_MODE)
+	{
+		processSelectionTool();
+	}
 }
 
 void GLWidget3D::updateCamera()
@@ -88,6 +92,10 @@ void GLWidget3D::updateCamera()
 
 void GLWidget3D::clearInputData()
 {
+	if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.leftMouseDown = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.leftMouseDown = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget3D::enterEvent(QEvent* event)
@@ -114,22 +122,36 @@ void GLWidget3D::mouseMoveEvent(QMouseEvent* event)
 void GLWidget3D::mousePressEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
+	{
 		m_inputData.leftMouse = ButtonState::PRESSED;
 
+		if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_inputData.leftMouseDown = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+		
 	QOpenGLWidget::mousePressEvent(event);
 }
 
 void GLWidget3D::mouseReleaseEvent(QMouseEvent* event)
 {
 	if (event->button() == Qt::LeftButton)
+	{
 		m_inputData.leftMouse = ButtonState::RELEASED;
+
+		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.leftMouseDown = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
 
 	QOpenGLWidget::mouseReleaseEvent(event);
 }
 
 void GLWidget3D::resizeGL(int width, int height)
 {
-	m_frustrumWidth = width;
-	m_frustrumHeight = height;
-	m_renderer->setFrustrum(m_frustrumWidth, m_frustrumHeight);
+	m_screenWidth = width;
+	m_screenHeight = height;
+	m_renderer->setFrustrum(width, height);
 }

@@ -36,6 +36,7 @@ public:
 	void moveRelativelyToAxis(Axis axis, float horShift, float verShift);
 	void inline setWorldUpVec(QVector3D vec) { m_worldUp = vec; }
 	void inline setFrontVec(QVector3D vec) { m_front = vec; }
+	QVector3D getPickingRay(int x, int y, int screenWidth, int screenHeight, float nearPlane, float farPlane, QMatrix4x4& proj);
 
 private:
 	QVector3D m_position;

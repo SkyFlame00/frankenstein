@@ -44,3 +44,47 @@ QOpenGLVertexArrayObject* GlobalData::getRenderableVAO(QOpenGLContext& context, 
 
 	return vaoIt->second;
 }
+
+void GlobalData::setMode(EditorMode mode)
+{
+	auto* inst = getInstance();
+	onModeDisable(inst->m_editorMode);
+	onModeEnable(mode);
+	inst->m_editorMode = mode;
+}
+
+void GlobalData::onModeEnable(EditorMode mode)
+{
+	auto* inst = getInstance();
+
+	switch (mode)
+	{
+	case EditorMode::SELECTING_MODE:
+		break;
+	case EditorMode::BLOCK_MODE:
+		if (inst->m_blockToolData.blockInstance)
+		{
+			inst->m_scene->m_gui2DObjects.push_back(inst->m_blockToolData.blockInstance);
+			inst->m_scene->m_gui3DObjects.push_back(inst->m_blockToolData.blockInstance);
+		}
+		break;
+	}
+}
+
+void GlobalData::onModeDisable(EditorMode mode)
+{
+	auto* inst = getInstance();
+
+	switch (mode)
+	{
+	case EditorMode::SELECTING_MODE:
+		break;
+	case EditorMode::BLOCK_MODE:
+		if (inst->m_blockToolData.blockInstance)
+		{
+			inst->m_scene->m_gui2DObjects.removeOne(inst->m_blockToolData.blockInstance);
+			inst->m_scene->m_gui3DObjects.removeOne(inst->m_blockToolData.blockInstance);
+		}
+		break;
+	}
+}

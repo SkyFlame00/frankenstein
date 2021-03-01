@@ -16,7 +16,7 @@ Renderer3D::~Renderer3D()
 void Renderer3D::setFrustrum(int width, int height)
 {
 	m_projMatrix.setToIdentity();
-	m_projMatrix.perspective(m_fov, (float)width / (float)height, 0.001f, 1000.0f);
+	m_projMatrix.perspective(m_fov, (float)width / (float)height, m_near, m_far);
 }
 
 void Renderer3D::render(QOpenGLContext* context, QList<Brush*>& objects, QList<Renderable*>& guiObjects)

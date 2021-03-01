@@ -18,6 +18,7 @@ MainWindow::MainWindow()
 {
 	m_centralWidget = new QWidget;
 	m_scene = new Scene;
+	GlobalData::getInstance()->m_scene = m_scene;
 
 	m_camera3D = new Camera;
 	m_renderer3D = new Renderer3D(m_camera3D, 800, 600);
@@ -35,7 +36,8 @@ MainWindow::MainWindow()
 	m_centralWidget->setMouseTracking(true);
 
 	setupMenu();
-	setupToolbar();
+	setupTopToolbar();
+	setupLeftToolbar();
 	setupDocks();
 	setupEditor();
 	enableMouseTracking();
@@ -66,7 +68,7 @@ void MainWindow::setupMenu()
 	setMenuBar(menuBar);
 }
 
-void MainWindow::setupToolbar()
+void MainWindow::setupTopToolbar()
 {
 	QToolBar* toolbar = new QToolBar("resize");
 	QAction* resize = new QAction(toolbar);
@@ -75,6 +77,40 @@ void MainWindow::setupToolbar()
 	toolbar->setMovable(false);
 
 	addToolBar(Qt::ToolBarArea::TopToolBarArea, toolbar);
+}
+
+void MainWindow::setupLeftToolbar()
+{
+	/* Toolbar itself */
+	QToolBar* m_leftToolbar = new QToolBar("resize");
+	m_leftToolbar->setIconSize(QSize(36, 36));
+	m_leftToolbar->setMovable(false);
+	addToolBar(Qt::ToolBarArea::LeftToolBarArea, m_leftToolbar);
+
+	/* Selection tool */
+	m_selectionToolButton = new QAction(m_leftToolbar);
+	m_selectionToolButton->setIcon(QIcon("assets/icons/selection_tool.png"));
+	m_selectionToolButton->setCheckable(true);
+	m_leftToolbar->addAction(m_selectionToolButton);
+
+	/* Camera tool */
+	/* ... */
+
+	/* Block tool */
+	m_blockToolButton = new QAction(m_leftToolbar);
+	m_blockToolButton->setIcon(QIcon("assets/icons/block_tool.png"));
+	m_blockToolButton->setCheckable(true);
+	m_leftToolbar->addAction(m_blockToolButton);
+
+	/* Action group */
+	m_leftToolbarGroup = new QActionGroup(m_leftToolbar);
+	m_leftToolbarGroup->addAction(m_selectionToolButton);
+	m_leftToolbarGroup->addAction(m_blockToolButton);
+	m_leftToolbarGroup->setExclusive(true);
+
+	connect(m_leftToolbarGroup, &QActionGroup::triggered, this, &MainWindow::handleToolChange);
+	m_selectionToolButton->setChecked(true);
+	handleToolChange(m_selectionToolButton);
 }
 
 void MainWindow::setupDocks()
@@ -237,4 +273,16 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 	}
 
 	QMainWindow::keyReleaseEvent(event);
+}
+
+void MainWindow::handleToolChange(QAction* action)
+{
+	if (action == m_selectionToolButton)
+	{
+		GlobalData::setMode(EditorMode::SELECTING_MODE);
+	}
+	else if (action == m_blockToolButton)
+	{
+		GlobalData::setMode(EditorMode::BLOCK_MODE);
+	}
 }

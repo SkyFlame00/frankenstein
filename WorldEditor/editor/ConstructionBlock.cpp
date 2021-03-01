@@ -2,13 +2,13 @@
 #include "ResourceManager.h"
 #include <algorithm>
 #include <math.h>
-#include "grid2d/Point.h"
 #include "../common/helpers.h"
 #include "../common/GlobalData.h"
 #include "GL.h"
 #include <memory>
 
 ConstructionBlock::ConstructionBlock(QVector3D startPoint, QVector3D endPoint)
+	: m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
 {
 	m_boundingBox.startX = std::min(startPoint.x(), endPoint.x());
 	m_boundingBox.endX = std::max(startPoint.x(), endPoint.x());
@@ -910,8 +910,6 @@ void ConstructionBlock::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVec
 
 	if (m_isEditingMode)
 	{
-		Point point(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f);
-		
 		QList<QVector3D>* translationVectors = getResizePointsTranslationVectors(axis, factor, zoomVec);
 
 		for (auto& vec : *translationVectors)
@@ -921,14 +919,14 @@ void ConstructionBlock::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVec
 			model.setToIdentity();
 			model.translate(vec);
 
-			point.m_program->bind();
-			point.m_program->setUniformValue("proj", proj);
-			point.m_program->setUniformValue("view", camera.getViewMatrix());
-			point.m_program->setUniformValue("model", model);
-			point.m_program->setUniformValue("color", 1.0f, 0.1f, 0.1f);
+			m_resizePoint.m_program->bind();
+			m_resizePoint.m_program->setUniformValue("proj", proj);
+			m_resizePoint.m_program->setUniformValue("view", camera.getViewMatrix());
+			m_resizePoint.m_program->setUniformValue("model", model);
+			m_resizePoint.m_program->setUniformValue("color", 1.0f, 0.1f, 0.1f);
 
-			point.bindVAO(context);
-			$->glDrawArrays(GL_TRIANGLES, 0, point.verticesCount());
+			m_resizePoint.bindVAO(context);
+			$->glDrawArrays(GL_TRIANGLES, 0, m_resizePoint.verticesCount());
 		}
 
 		delete translationVectors;

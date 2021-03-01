@@ -2,10 +2,10 @@
 
 #include <QOpenGLWidget>
 #include <QElapsedTimer>
-#include "../editor/Scene.h"
-#include "../editor/Renderer3D.h"
-#include "../editor/Camera.h"
-#include "../common/types.h"
+#include "../../editor/Scene.h"
+#include "../../editor/Renderer3D.h"
+#include "../../editor/Camera.h"
+#include "../../common/types.h"
 
 class GLWidget3D : public QOpenGLWidget
 {
@@ -30,8 +30,9 @@ public:
 		ButtonState keyD = ButtonState::NOT_ACTIVE;
 		ButtonState leftMouse = ButtonState::NOT_ACTIVE;
 		ButtonState rightMouse = ButtonState::NOT_ACTIVE;
-		float mouseX;
-		float mouseY;
+		ButtonDownState leftMouseDown = ButtonDownState::RELEASED_NOT_PROCESSED;
+		int mouseX;
+		int mouseY;
 		bool isMouseOver = false;
 		bool isInitialized = false;
 	} m_inputData;
@@ -46,11 +47,13 @@ private:
 	int lastY;
 	QElapsedTimer m_timer;
 	float m_timeDelta = 0.0f;
-	float m_frustrumWidth;
-	float m_frustrumHeight;
+	float m_screenWidth;
+	float m_screenHeight;
 
 	void processInputData();
 	void updateCamera();
 	void clearInputData();
 	void resizeGL(int width, int height) override;
+	void processSelectionTool();
+	bool hasIntersection(QVector3D position, QVector3D direction, Types::Triangle triangle, QVector3D origin, QVector3D& output);
 };

@@ -8,6 +8,7 @@
 #include "../common/types.h"
 #include "Camera.h"
 #include "VertexBufferObject.h"
+#include "grid2d/Point.h"
 
 class ConstructionBlock : public Renderable
 {
@@ -79,6 +80,7 @@ private:
 	float m_moveDelta = 0.0f;
 	float m_moveDeltaX = 0.0f;
 	float m_moveDeltaY = 0.0f;
+	Point m_resizePoint;
 
 	QList<QVector3D>* getResizePointsTranslationVectors(Axis axis, float zoomFactor, QVector3D zoomVec);
 };

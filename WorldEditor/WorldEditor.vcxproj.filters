@@ -42,9 +42,6 @@
     <ClCompile Include="editor\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gui\GLWidget3D.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="editor\Brush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,15 +87,21 @@
     <ClCompile Include="gui\GLWidgetsContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\GLWidget3D\SelectionTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="gui\GLWidget3D.h">
+    <QtMoc Include="gui\GLWidgetsContainer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="gui\GLWidgetsContainer.h">
+    <QtMoc Include="gui\GLWidget3D\GLWidget3D.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -4,7 +4,7 @@
 #include "ResourceManager.h"
 
 Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
-	: m_uniformColor(color)
+	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f)
 {
 	QVector3D total(0.0f, 0.0f, 0.0f);
 
@@ -22,6 +22,8 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 		shiftedVertices.push_back(new QVector3D(v - m_origin));
 	}
 
+	m_uniqueVertices = cubeVertices;
+
 	/* Polygon 1 */
 	Types::Polygon* poly1 = new Types::Polygon;
 	poly1->verticesMap[shiftedVertices[0]] = QVector2D(0, 0);
@@ -35,7 +37,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly1->triangles.push_back({ shiftedVertices[0], shiftedVertices[1], shiftedVertices[2] });
 	poly1->triangles.push_back({ shiftedVertices[0], shiftedVertices[2], shiftedVertices[3] });
 	calcNorm(poly1);
-	polygons.push_back(poly1);
+	m_polygons.push_back(poly1);
 
 	/* Polygon 2 */
 	Types::Polygon* poly2 = new Types::Polygon;
@@ -50,7 +52,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly2->triangles.push_back({ shiftedVertices[0], shiftedVertices[6], shiftedVertices[7] });
 	poly2->triangles.push_back({ shiftedVertices[0], shiftedVertices[7], shiftedVertices[1] });
 	calcNorm(poly2);
-	polygons.push_back(poly2);
+	m_polygons.push_back(poly2);
 
 	/* Polygon 3 */
 	Types::Polygon* poly3 = new Types::Polygon;
@@ -65,7 +67,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly3->triangles.push_back({ shiftedVertices[1], shiftedVertices[7], shiftedVertices[4] });
 	poly3->triangles.push_back({ shiftedVertices[1], shiftedVertices[4], shiftedVertices[2] });
 	calcNorm(poly3);
-	polygons.push_back(poly3);
+	m_polygons.push_back(poly3);
 
 	/* Polygon 4 */
 	Types::Polygon* poly4 = new Types::Polygon;
@@ -80,7 +82,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly4->triangles.push_back({ shiftedVertices[2], shiftedVertices[4], shiftedVertices[5] });
 	poly4->triangles.push_back({ shiftedVertices[2], shiftedVertices[5], shiftedVertices[3] });
 	calcNorm(poly4);
-	polygons.push_back(poly4);
+	m_polygons.push_back(poly4);
 
 	/* Polygon 5 */
 	Types::Polygon* poly5 = new Types::Polygon;
@@ -95,7 +97,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly5->triangles.push_back({ shiftedVertices[3], shiftedVertices[5], shiftedVertices[6] });
 	poly5->triangles.push_back({ shiftedVertices[3], shiftedVertices[6], shiftedVertices[0] });
 	calcNorm(poly5);
-	polygons.push_back(poly5);
+	m_polygons.push_back(poly5);
 
 	/* Polygon 6 */
 	Types::Polygon* poly6 = new Types::Polygon;
@@ -110,13 +112,13 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly6->triangles.push_back({ shiftedVertices[7], shiftedVertices[6], shiftedVertices[5] });
 	poly6->triangles.push_back({ shiftedVertices[7], shiftedVertices[5], shiftedVertices[4] });
 	calcNorm(poly6);
-	polygons.push_back(poly6);
+	m_polygons.push_back(poly6);
 
 	m_program2D = ResourceManager::getProgram("plain_brush_2d", "plain_brush_2d");
 	m_program3D = ResourceManager::getProgram("plain_brush_3d", "plain_brush_3d");
 
-	makeTrianglesData();
-	makeLinesData();
+	makeTrianglesBufferData();
+	makeLinesBufferData();
 }
 
 Brush::~Brush()
@@ -124,17 +126,12 @@ Brush::~Brush()
 
 }
 
-void Brush::makeBufferData()
-{
-
-}
-
-void Brush::makeTrianglesData()
+void Brush::makeTrianglesBufferData()
 {
 	int size = 0;
 	m_trianglesVerticesCount = 0;
 
-	for (auto& poly : polygons)
+	for (auto& poly : m_polygons)
 	{
 		m_trianglesVerticesCount += poly->triangles.size() * 3;
 		size += poly->triangles.size() * 3 * 11;
@@ -158,7 +155,7 @@ void Brush::makeTrianglesData()
 		vertices[i++] = poly->norm.z();
 	};
 
-	for (auto& poly : polygons)
+	for (auto& poly : m_polygons)
 	{
 		for (auto& [v0, v1, v2] : poly->triangles)
 		{
@@ -177,12 +174,12 @@ void Brush::makeTrianglesData()
 	delete[] vertices;
 }
 
-void Brush::makeLinesData()
+void Brush::makeLinesBufferData()
 {
 	int size = 0;
 	m_linesVerticesCount = 0;
 
-	for (auto& poly : polygons)
+	for (auto& poly : m_polygons)
 	{
 		m_linesVerticesCount += poly->borderEdges.size() * 2;
 		size += poly->borderEdges.size() * 2 * 6;
@@ -201,7 +198,7 @@ void Brush::makeLinesData()
 		vertices[i++] = m_uniformColor.z();
 	};
 
-	for (auto& poly : polygons)
+	for (auto& poly : m_polygons)
 	{
 		for (auto& [v0, v1] : poly->borderEdges)
 		{
@@ -239,6 +236,8 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 	GLCall(m_program3D->setUniformValue("u_DirLight.diffuse", diffuse, diffuse, diffuse));
 	//GLCall(m_program3D->setUniformValue("u_DirLight.specular", specular, specular, specular));
 	GLCall(m_program3D->setUniformValue("u_Material.shininess", 64.0f));
+	GLCall(m_program3D->setUniformValue("u_Selected", m_selected));
+	GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
 
 	GLCall(vao->bind());
 	GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));

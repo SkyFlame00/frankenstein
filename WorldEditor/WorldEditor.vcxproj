@@ -49,12 +49,22 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\cpp\Frankenstein\deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\cpp\Frankenstein\deps\lib\cgal;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmpfr-4.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\cpp\Frankenstein\deps\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\cpp\Frankenstein\deps\lib\cgal;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libmpfr-4.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>5</QtInstall>
@@ -104,12 +114,13 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
+    <ClCompile Include="gui\GLWidget3D\SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidgetsContainer.cpp" />
     <ClCompile Include="gui\GLWidget2D\BlockTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
-    <ClCompile Include="gui\GLWidget3D.cpp" />
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="gui\MainWindow.cpp" />
     <ClCompile Include="editor\Renderer3D.cpp" />
@@ -123,7 +134,7 @@
     <QtMoc Include="gui\MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="gui\GLWidget3D.h" />
+    <QtMoc Include="gui\GLWidget3D\GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common\helpers.h" />

@@ -27,6 +27,8 @@ uniform bool u_UsingColor;
 uniform vec3 u_ViewPos;
 uniform DirLight u_DirLight;
 uniform Material u_Material;
+uniform bool u_Selected;
+uniform vec3 u_SelectionColor;
 
 void main()
 {
@@ -34,7 +36,11 @@ void main()
     vec3 viewDir = normalize(u_ViewPos - fragPos);
 
 	vec3 result = CalcDirLight(u_DirLight, norm, viewDir);
-    FragColor = vec4(result, 1.0);
+
+    if (u_Selected)
+        FragColor = mix(vec4(result, 1.0), vec4(u_SelectionColor, 1.0), 0.5);
+    else
+        FragColor = vec4(result, 1.0);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include "GLWidget3D.h"
+#include "GLWidget3D/GLWidget3D.h"
 #include "GLWidget2D/GLWidget2D.h"
 #include <QHBoxLayout>
 #include <QPoint>

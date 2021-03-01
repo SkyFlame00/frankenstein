@@ -4,7 +4,7 @@
 #include <QMenuBar>
 #include <QMenu>
 
-#include "GLWidget3D.h"
+#include "GLWidget3D/GLWidget3D.h"
 #include "GLWidget2D/GLWidget2D.h"
 #include "../editor/Scene.h"
 #include "../editor/Renderer3D.h"
@@ -28,10 +28,12 @@ public:
 
 private:
 	void setupMenu();
-	void setupToolbar();
+	void setupTopToolbar();
+	void setupLeftToolbar();
 	void setupDocks();
 	void setupEditor();
 	void enableMouseTracking();
+	void handleToolChange(QAction* action);
 
 	QWidget* m_centralWidget;
 	GLWidget3D* m_glWidget3D;
@@ -42,4 +44,10 @@ private:
 	Renderer3D* m_renderer3D;
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
 	GLWidgetsContainer* m_glWidgetsContainer;
+
+	/* Left toolbar */
+	QToolBar* m_leftToolbar;
+	QActionGroup* m_leftToolbarGroup;
+	QAction* m_selectionToolButton;
+	QAction* m_blockToolButton;
 };

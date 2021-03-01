@@ -86,3 +86,21 @@ void Camera::moveRelativelyToAxis(Axis axis, float horShift, float verShift)
     }
     }
 }
+
+QVector3D Camera::getPickingRay(int x, int y, int screenWidth, int screenHeight, float nearPlane, float farPlane, QMatrix4x4& proj)
+{
+    float x_ndc = (2.0f * x) / screenWidth - 1.0f;
+    float y_ndc = 1.0f - (2.0f * y) / screenHeight;
+    float z_ndc = 1.0f;
+    QVector3D ray_ndc = QVector3D(x_ndc, y_ndc, z_ndc);
+    QVector4D ray_clip = QVector4D(ray_ndc.x(), ray_ndc.y(), -1.0f, 1.0f);
+
+    QVector4D ray_eye = proj.inverted() * ray_clip;
+    ray_eye = QVector4D(ray_eye.x(), ray_eye.y(), -1.0f, 0.0f);
+
+    QVector4D ray_wor = getViewMatrix().inverted() * ray_eye;
+    QVector3D ray(ray_wor.x(), ray_wor.y(), ray_wor.z());
+    ray.normalize();
+
+    return ray;
+}
