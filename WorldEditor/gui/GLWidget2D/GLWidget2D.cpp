@@ -26,7 +26,7 @@ void GLWidget2D::initializeGL()
 
 	m_grid = new Grid2D(m_axis, m_zoom);
 	m_renderer->m_axis = m_axis;
-	m_renderer->setup(m_axis, -1.0f, m_grid->HALF_LENGTH * 2);
+	m_renderer->setup(m_axis, -m_grid->HALF_LENGTH, m_grid->HALF_LENGTH * 6);
 	m_renderer->setZoom(m_zoom);
 
 	update();
@@ -103,9 +103,15 @@ void GLWidget2D::processInputData()
 		m_grid->decreaseScale();
 	}
 	
-	if (GlobalData::getInstance()->m_editorMode == EditorMode::BLOCK_MODE)
+	auto mode = GlobalData::getInstance()->m_editorMode;
+
+	if (mode == EditorMode::BLOCK_MODE)
 	{
 		processBlockTool();
+	}
+	else if (mode == EditorMode::SELECTION_MODE)
+	{
+		processSelectionTool();
 	}
 }
 

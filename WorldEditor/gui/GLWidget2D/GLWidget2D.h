@@ -78,6 +78,7 @@ private:
 	bool isSamePoint(QVector3D p1, QVector3D p2);
 	bool hasSameCoordinate(QVector3D p1, QVector3D p2);
 	void processBlockTool();
+	void processSelectionTool();
 };
 
 

@@ -279,7 +279,7 @@ void MainWindow::handleToolChange(QAction* action)
 {
 	if (action == m_selectionToolButton)
 	{
-		GlobalData::setMode(EditorMode::SELECTING_MODE);
+		GlobalData::setMode(EditorMode::SELECTION_MODE);
 	}
 	else if (action == m_blockToolButton)
 	{

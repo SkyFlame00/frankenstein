@@ -28,6 +28,7 @@ public:
 	} m_blockToolData;
 
 	struct {
+		Types::SelectionToolState state = Types::SelectionToolState::READY_TO_SELECT;
 		Brush* renderable = nullptr;
 	} m_selectionToolData;
 

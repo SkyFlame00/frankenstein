@@ -59,7 +59,7 @@ void GlobalData::onModeEnable(EditorMode mode)
 
 	switch (mode)
 	{
-	case EditorMode::SELECTING_MODE:
+	case EditorMode::SELECTION_MODE:
 		break;
 	case EditorMode::BLOCK_MODE:
 		if (inst->m_blockToolData.blockInstance)
@@ -77,7 +77,7 @@ void GlobalData::onModeDisable(EditorMode mode)
 
 	switch (mode)
 	{
-	case EditorMode::SELECTING_MODE:
+	case EditorMode::SELECTION_MODE:
 		break;
 	case EditorMode::BLOCK_MODE:
 		if (inst->m_blockToolData.blockInstance)

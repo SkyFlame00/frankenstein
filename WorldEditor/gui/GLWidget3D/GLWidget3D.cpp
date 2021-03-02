@@ -42,7 +42,7 @@ void GLWidget3D::processInputData()
 {
 	auto globalData = GlobalData::getInstance();
 
-	if (globalData->m_editorMode == EditorMode::SELECTING_MODE)
+	if (globalData->m_editorMode == EditorMode::SELECTION_MODE)
 	{
 		processSelectionTool();
 	}

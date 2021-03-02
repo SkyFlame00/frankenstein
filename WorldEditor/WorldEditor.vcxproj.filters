@@ -81,16 +81,22 @@
     <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gui\GLWidget2D\BlockTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gui\GLWidgetsContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gui\GLWidget3D\GLWidget3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gui\GLWidget3D\SelectionTool.cpp">
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D_SelectionTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D_SelectionTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D_BlockTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\ChangeableRenderable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,6 +158,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\ChangeableRenderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

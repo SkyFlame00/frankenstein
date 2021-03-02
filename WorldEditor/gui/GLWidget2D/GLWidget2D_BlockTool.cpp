@@ -90,7 +90,8 @@ void GLWidget2D::processBlockTool()
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
-			BlockToolState state = blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
+			auto _state = blockToolData->blockInstance->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
+			auto state = Helpers::mapToBlockToolState(_state);
 			blockToolData->state = state;
 
 			if (state == BlockToolState::MOVE)

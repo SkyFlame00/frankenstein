@@ -48,7 +48,7 @@ const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
 
 enum class EditorMode
 {
-	SELECTING_MODE,
+	SELECTION_MODE,
 	BLOCK_MODE
 };
 
@@ -58,6 +58,38 @@ enum class BlockToolState
 	READY_TO_EDIT,
 	RESIZE,
 	MOVE
+};
+
+enum class ResizeDirection
+{
+	LEFT_TOP,
+	CENTER_TOP,
+	RIGHT_TOP,
+	RIGHT_CENTER,
+	RIGHT_BOTTOM,
+	CENTER_BOTTOM,
+	LEFT_BOTTOM,
+	LEFT_CENTER
+};
+
+struct ResizePointsBoundaries
+{
+	struct Boundaries
+	{
+		float horStart;
+		float horEnd;
+		float verStart;
+		float verEnd;
+	};
+
+	Boundaries leftTop;
+	Boundaries centerTop;
+	Boundaries rightTop;
+	Boundaries rightCenter;
+	Boundaries rightBottom;
+	Boundaries centerBottom;
+	Boundaries leftBottom;
+	Boundaries leftCenter;
 };
 
 namespace Types
@@ -82,5 +114,19 @@ namespace Types
 		QList< QPair<QVector3D, int> > indexedVertices;
 		QList<Edge> allEdges;
 		QList<Edge> borderEdges;
+	};
+
+	enum class SelectionToolState
+	{
+		READY_TO_SELECT,
+		RESIZE,
+		MOVE
+	};
+
+	enum class BrushAction
+	{
+		READY,
+		RESIZE,
+		MOVE
 	};
 }

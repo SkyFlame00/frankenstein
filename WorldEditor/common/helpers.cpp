@@ -24,3 +24,29 @@ float Helpers::getRandom()
 {
 	return (float)std::rand() / (float)RAND_MAX;
 }
+
+BlockToolState Helpers::mapToBlockToolState(Types::BrushAction state)
+{
+	switch (state)
+	{
+	case Types::BrushAction::READY:
+		return BlockToolState::READY_TO_EDIT;
+	case Types::BrushAction::MOVE:
+		return BlockToolState::MOVE;
+	case Types::BrushAction::RESIZE:
+		return BlockToolState::RESIZE;
+	}
+}
+
+Types::SelectionToolState Helpers::mapToSelectionToolState(Types::BrushAction state)
+{
+	switch (state)
+	{
+	case Types::BrushAction::READY:
+		return Types::SelectionToolState::READY_TO_SELECT;
+	case Types::BrushAction::MOVE:
+		return Types::SelectionToolState::MOVE;
+	case Types::BrushAction::RESIZE:
+		return Types::SelectionToolState::RESIZE;
+	}
+}

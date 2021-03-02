@@ -106,6 +106,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="editor\ChangeableRenderable.cpp" />
     <ClCompile Include="common\helpers.cpp" />
     <ClCompile Include="common\types.h" />
     <ClCompile Include="editor\ConstructionBlock.cpp" />
@@ -114,9 +115,10 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
-    <ClCompile Include="gui\GLWidget3D\SelectionTool.cpp" />
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D_SelectionTool.cpp" />
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D_SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidgetsContainer.cpp" />
-    <ClCompile Include="gui\GLWidget2D\BlockTool.cpp" />
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D_BlockTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp" />
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
@@ -137,6 +139,7 @@
     <QtMoc Include="gui\GLWidget3D\GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="editor\ChangeableRenderable.h" />
     <ClInclude Include="common\helpers.h" />
     <ClInclude Include="editor\ConstructionBlock.h" />
     <ClInclude Include="editor\Brush.h" />
