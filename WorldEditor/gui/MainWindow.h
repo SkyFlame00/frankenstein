@@ -50,4 +50,5 @@ private:
 	QActionGroup* m_leftToolbarGroup;
 	QAction* m_selectionToolButton;
 	QAction* m_blockToolButton;
+	QAction* m_clippingToolButton;
 };

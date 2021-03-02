@@ -56,6 +56,7 @@ private:
 	SceneZoom m_zoom = SceneZoom::X32;
 	bool m_inited = false;
 	QOpenGLDebugLogger* glLogger;
+	QList<Renderable*> m_guiObjects;
 
 	void zoomIn();
 	void zoomOut();
@@ -79,6 +80,7 @@ private:
 	bool hasSameCoordinate(QVector3D p1, QVector3D p2);
 	void processBlockTool();
 	void processSelectionTool();
+	void processClippingTool();
 };
 
 

@@ -57,7 +57,7 @@ void Renderer2D::setZoom(SceneZoom zoom)
 	m_zoomVec.setZ(m_axis == Axis::Z ? 1.0f : val);
 }
 
-void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float factor)
+void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, QList<Renderable*>& ownGuiObjects, float factor)
 {
 	auto makeCurrent = [&]() { context->makeCurrent(context->surface()); };
 
@@ -84,6 +84,11 @@ void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& 
 	}
 
 	for (auto& guiObject : guiObjects)
+	{
+		guiObject->render2D(context, m_projMatrix, m_zoomVec, *m_camera, m_axis, factor);
+	}
+
+	for (auto& guiObject : ownGuiObjects)
 	{
 		guiObject->render2D(context, m_projMatrix, m_zoomVec, *m_camera, m_axis, factor);
 	}

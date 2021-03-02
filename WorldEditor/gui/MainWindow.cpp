@@ -102,10 +102,17 @@ void MainWindow::setupLeftToolbar()
 	m_blockToolButton->setCheckable(true);
 	m_leftToolbar->addAction(m_blockToolButton);
 
+	/* Clipping tool */
+	m_clippingToolButton = new QAction(m_leftToolbar);
+	m_clippingToolButton->setIcon(QIcon("assets/icons/clipping_tool.png"));
+	m_clippingToolButton->setCheckable(true);
+	m_leftToolbar->addAction(m_clippingToolButton);
+
 	/* Action group */
 	m_leftToolbarGroup = new QActionGroup(m_leftToolbar);
 	m_leftToolbarGroup->addAction(m_selectionToolButton);
 	m_leftToolbarGroup->addAction(m_blockToolButton);
+	m_leftToolbarGroup->addAction(m_clippingToolButton);
 	m_leftToolbarGroup->setExclusive(true);
 
 	connect(m_leftToolbarGroup, &QActionGroup::triggered, this, &MainWindow::handleToolChange);
@@ -284,5 +291,9 @@ void MainWindow::handleToolChange(QAction* action)
 	else if (action == m_blockToolButton)
 	{
 		GlobalData::setMode(EditorMode::BLOCK_MODE);
+	}
+	else if (action == m_clippingToolButton)
+	{
+		GlobalData::setMode(EditorMode::CLIPPING_MODE);
 	}
 }

@@ -17,7 +17,7 @@ public:
 	~Renderer2D();
 
 	void setup(Axis axis, float nearPlane, float farPlane);
-	void render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, float zoomFactor);
+	void render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& objects, QList<Renderable*>& guiObjects, QList<Renderable*>& ownGuiObjects, float zoomFactor);
 	void setFrustrum(float width, float height);
 	void setZoom(SceneZoom zoom);
 	inline QMatrix4x4& getProjectionMatrix() { return m_projMatrix; }

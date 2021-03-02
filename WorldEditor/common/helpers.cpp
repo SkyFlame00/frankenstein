@@ -1,4 +1,5 @@
 #include "helpers.h"
+#include "../editor/Grid2D.h"
 
 float Helpers::trunc(float num, int digits)
 {
@@ -17,6 +18,32 @@ QVector3D Helpers::get3DPointFrom2D(Axis axis, float hor, float ver, float third
 		return QVector3D(hor, thirdAxisVal, ver);
 	case Axis::Z:
 		return QVector3D(hor, ver, thirdAxisVal);
+	}
+}
+
+QVector3D Helpers::getTop3DPointFrom2D(Axis axis, float hor, float ver)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return QVector3D(-Grid2D::HALF_LENGTH, ver, hor);
+	case Axis::Y:
+		return QVector3D(hor, -Grid2D::HALF_LENGTH, ver);
+	case Axis::Z:
+		return QVector3D(hor, ver, Grid2D::HALF_LENGTH);
+	}
+}
+
+QVector2D Helpers::get2DPointFrom3D(Axis axis, QVector3D p)
+{
+	switch (axis)
+	{
+	case Axis::X:
+		return QVector2D(p.z(), p.y());
+	case Axis::Y:
+		return QVector2D(p.x(), p.z());
+	case Axis::Z:
+		return QVector2D(p.x(), p.y());
 	}
 }
 

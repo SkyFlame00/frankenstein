@@ -23,6 +23,7 @@ GLWidget2D::~GLWidget2D()
 void GLWidget2D::initializeGL()
 {
 	GlobalData::openglContexts[context()] = new GlobalData::ContextVAOMap;
+	GlobalData::onContextReady();
 
 	m_grid = new Grid2D(m_axis, m_zoom);
 	m_renderer->m_axis = m_axis;
@@ -36,11 +37,9 @@ void GLWidget2D::paintGL()
 {
 	makeCurrent();
 
-	QList<Brush*> objects;
-
 	processInputData();
 	m_grid->updateView(m_camera->getPosition(), m_frustrumWidth, m_frustrumHeight);
-	m_renderer->render(context(), *m_grid, m_scene->getObjects(), m_scene->m_gui2DObjects, getZoomFactor());
+	m_renderer->render(context(), *m_grid, m_scene->getObjects(), m_scene->m_gui2DObjects, m_guiObjects, getZoomFactor());
 	clearInputData();
 	update();
 }
@@ -112,6 +111,10 @@ void GLWidget2D::processInputData()
 	else if (mode == EditorMode::SELECTION_MODE)
 	{
 		processSelectionTool();
+	}
+	else if (mode == EditorMode::CLIPPING_MODE)
+	{
+		processClippingTool();
 	}
 }
 

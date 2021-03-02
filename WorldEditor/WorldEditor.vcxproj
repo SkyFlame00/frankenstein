@@ -115,6 +115,7 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
+    <ClCompile Include="gui\GLWidget2D\GLWidget2D_ClippingTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidget3D\GLWidget3D_SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidgetsContainer.cpp" />
@@ -123,6 +124,7 @@
     <ClCompile Include="gui\Debug.cpp" />
     <ClCompile Include="editor\Camera.cpp" />
     <ClCompile Include="gui\GLWidget3D\GLWidget3D.cpp" />
+    <ClCompile Include="editor\grid2d\Line.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="gui\MainWindow.cpp" />
     <ClCompile Include="editor\Renderer3D.cpp" />
@@ -146,6 +148,7 @@
     <ClInclude Include="editor\GL.h" />
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
+    <ClInclude Include="editor\grid2d\Line.h" />
     <QtMoc Include="gui\GLWidgetsContainer.h" />
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />

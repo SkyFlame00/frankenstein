@@ -89,3 +89,62 @@ Point::~Point()
 {
 	Renderable::~Renderable();
 }
+
+bool Point::hasHover(Axis axis, float x, float y, float zoomFactor)
+{
+	float originHor;
+	float originVer;
+
+	switch (axis)
+	{
+	case Axis::X:
+		originHor = m_origin.z();
+		originVer = m_origin.y();
+		break;
+	case Axis::Y:
+		originHor = m_origin.x();
+		originVer = m_origin.z();
+		break;
+	case Axis::Z:
+		originHor = m_origin.x();
+		originVer = m_origin.y();
+	}
+
+	float size = m_size * zoomFactor;
+	QVector2D leftTop(originHor - size / 2, originVer + size / 2);
+	QVector2D rightTop(originHor + size / 2, originVer + size / 2);
+	QVector2D leftBottom(originHor - size / 2, originVer - size / 2);
+	QVector2D rightBottom(originHor + size / 2, originVer - size / 2);
+
+	if (leftTop.x() <= x && y <= leftTop.y() &&
+		x <= rightTop.x() && y <= rightTop.y() &&
+		leftBottom.x() <= x && leftBottom.y() <= y &&
+		x <= rightBottom.x() && rightBottom.y() <= y)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void Point::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
+{
+	auto vao = GlobalData::getRenderableVAO(*context, *this);
+
+	QMatrix4x4 model;
+	model.setToIdentity();
+	model.translate(m_origin * zoomVec);
+
+	if (m_enableScale)
+		model.scale(m_scaleVec);
+	
+	useContext(context);
+	GLCall(m_program->bind());
+	GLCall(m_program->setUniformValue("proj", proj));
+	GLCall(m_program->setUniformValue("view", camera.getViewMatrix()));
+	GLCall(m_program->setUniformValue("model", model));
+	GLCall(m_program->setUniformValue("color", 1.0f, 1.0f, 1.0f));
+
+	vao->bind();
+	GLCall($->glDrawArrays(getDrawMode(), 0, verticesCount()));
+}

@@ -3,6 +3,8 @@
 
 GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
+const int GlobalData::CONTEXTS_NUM = 4;
+int GlobalData::contextsReady = 0;
 
 GlobalData::GlobalData()
 {
@@ -68,6 +70,8 @@ void GlobalData::onModeEnable(EditorMode mode)
 			inst->m_scene->m_gui3DObjects.push_back(inst->m_blockToolData.blockInstance);
 		}
 		break;
+	case EditorMode::CLIPPING_MODE:
+		break;
 	}
 }
 
@@ -86,5 +90,27 @@ void GlobalData::onModeDisable(EditorMode mode)
 			inst->m_scene->m_gui3DObjects.removeOne(inst->m_blockToolData.blockInstance);
 		}
 		break;
+	case EditorMode::CLIPPING_MODE:
+		break;
+	}
+}
+
+void GlobalData::onContextReady()
+{
+	if (contextsReady >= CONTEXTS_NUM)
+	{
+		qWarning() << "Exceeded max number of available OpenGL contexts";
+		return;
+	}
+
+	contextsReady++;
+
+	if (contextsReady == CONTEXTS_NUM)
+	{
+		m_instance->m_clippingToolData.point1 = new Point(12.0f, 0.0f, 0.0f, 0.0f);
+		m_instance->m_clippingToolData.point2 = new Point(12.0f, 0.0f, 0.0f, 0.0f);
+		m_instance->m_clippingToolData.point1->m_enableScale = false;
+		m_instance->m_clippingToolData.point2->m_enableScale = false;
+		m_instance->m_clippingToolData.line = new Line;
 	}
 }

@@ -16,6 +16,7 @@ GLWidget3D::~GLWidget3D()
 void GLWidget3D::initializeGL()
 {
 	GlobalData::openglContexts[context()] = new GlobalData::ContextVAOMap;
+	GlobalData::onContextReady();
 
 	m_scene->setup();
 	m_timer.start();

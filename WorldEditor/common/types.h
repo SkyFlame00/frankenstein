@@ -23,7 +23,10 @@ enum class ButtonDownState
 
 enum class Axis
 {
-	X, Y, Z
+	X,
+	Y,
+	Z,
+	NONE
 };
 
 enum class SceneZoom
@@ -49,7 +52,8 @@ const std::unordered_map<SceneZoom, float> SCENE_ZOOM_FACTORS{
 enum class EditorMode
 {
 	SELECTION_MODE,
-	BLOCK_MODE
+	BLOCK_MODE,
+	CLIPPING_MODE
 };
 
 enum class BlockToolState
@@ -121,6 +125,14 @@ namespace Types
 		READY_TO_SELECT,
 		RESIZE,
 		MOVE
+	};
+
+	enum class ClippingToolState
+	{
+		READY,
+		POINT_PLACED,
+		INTERSECTION,
+		POINT_DISPLACEMENT
 	};
 
 	enum class BrushAction
