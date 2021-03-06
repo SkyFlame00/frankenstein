@@ -119,6 +119,9 @@ void GLWidget2D::processClippingTool()
 
 				if (!containsLine)
 					m_guiObjects.push_back(data->line);
+
+				clipBrush();
+				data->glWidget = this;
 			}
 		}
 		else if (lmDown == ButtonDownState::RELEASED_NOT_PROCESSED)
@@ -139,13 +142,7 @@ void GLWidget2D::processClippingTool()
 	{
 		if (m_inputData.keyEscape == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
-			m_guiObjects.removeOne(data->point1);
-			m_guiObjects.removeOne(data->point2);
-			m_guiObjects.removeOne(data->line);
-			data->pt1_placed = false;
-			data->pt2_placed = false;
-			data->state = Types::ClippingToolState::READY;
-			data->axis = Axis::NONE;
+			discardClipping();
 		}
 		else if (lmDown == ButtonDownState::DOWN_NOT_PROCESSED)
 		{
@@ -168,7 +165,7 @@ void GLWidget2D::processClippingTool()
 		}
 		else if (m_inputData.keyReturn == ButtonDownState::RELEASED_NOT_PROCESSED)
 		{
-			clipBrush();
+			applyClipping();
 		}
 		else
 		{
@@ -215,6 +212,8 @@ void GLWidget2D::processClippingTool()
 
 				data->line->m_pt1Origin = Helpers::getTop3DPointFrom2D(m_axis, v1.x(), v1.y());
 				data->line->m_pt2Origin = Helpers::getTop3DPointFrom2D(m_axis, v2.x(), v2.y());
+
+				clipBrush();
 			}
 		}
 		else if (lmDown == ButtonDownState::RELEASED_NOT_PROCESSED)
@@ -231,8 +230,21 @@ void GLWidget2D::clipBrush()
 	auto cdata = &globalData->m_clippingToolData;
 	auto& brush = sdata->renderable;
 
+	/* Brush has not been selected, nothing to do */
 	if (!brush)
 		return;
+
+	if (brush->m_clippedBrush)
+	{
+		delete brush->m_clippedBrush;
+		brush->m_clippedBrush = nullptr;
+	}
+
+	if (brush->m_remainingBrush)
+	{
+		delete brush->m_remainingBrush;
+		brush->m_remainingBrush = nullptr;
+	}
 
 	std::vector<INEXACT_K::Point_3> intersectionPts;
 
@@ -317,22 +329,96 @@ void GLWidget2D::clipBrush()
 		remainingBrush = new Brush(poly, brush->m_origin, brush->getUniformColor());
 	}
 
-	m_scene->removeObject(brush);
-	m_scene->m_gui2DObjects.removeOne(brush);
+	brush->m_beingClipped = true;
 
 	if (clippedBrush)
 	{
-		m_scene->addObject(clippedBrush);
-		m_scene->m_gui2DObjects.push_back(clippedBrush);
+		clippedBrush->m_beingCut = true;
+		brush->m_clippedBrush = clippedBrush;
 	}
 
 	if (remainingBrush)
 	{
-		m_scene->addObject(remainingBrush);
-		m_scene->m_gui2DObjects.push_back(remainingBrush);
+		brush->m_remainingBrush = remainingBrush;
+	}
+}
+
+void GLWidget2D::applyClipping()
+{
+	auto globalData = GlobalData::getInstance();
+	auto sdata = &globalData->m_selectionToolData;
+	auto cdata = &globalData->m_clippingToolData;
+	auto& brush = sdata->renderable;
+
+	if (brush->m_remainingBrush)
+	{
+		m_scene->addObject(brush->m_remainingBrush);
 	}
 
-	sdata->renderable->m_selected = false;
-	sdata->renderable = nullptr;
-	sdata->state = Types::SelectionToolState::READY_TO_SELECT;
+	if (brush->m_clippedBrush)
+	{
+		delete brush->m_clippedBrush;
+	}
+
+	brush->m_remainingBrush = nullptr;
+	brush->m_clippedBrush = nullptr;
+	m_scene->removeObject(brush);
+	delete brush;
+
+	m_guiObjects.removeOne(cdata->point1);
+	m_guiObjects.removeOne(cdata->point2);
+	m_guiObjects.removeOne(cdata->line);
+	cdata->pt1_placed = false;
+	cdata->pt2_placed = false;
+	cdata->state = Types::ClippingToolState::READY;
+	cdata->axis = Axis::NONE;
+	cdata->glWidget = nullptr;
+}
+
+void GLWidget2D::discardClipping()
+{
+	auto globalData = GlobalData::getInstance();
+	auto data = &globalData->m_clippingToolData;
+	auto sdata = &globalData->m_selectionToolData;
+	auto& brush = sdata->renderable;
+
+	if (data->state == Types::ClippingToolState::READY)
+	{
+		return;
+	}
+
+	if (data->pt1_placed && data->pt2_placed)
+	{
+		m_guiObjects.removeOne(data->line);
+	}
+
+	if (data->pt1_placed)
+	{
+		m_guiObjects.removeOne(data->point1);
+		data->pt1_placed = false;
+	}
+
+	if (data->pt2_placed)
+	{
+		m_guiObjects.removeOne(data->point2);
+		data->pt2_placed = false;
+	}
+
+	data->state = Types::ClippingToolState::READY;
+	data->axis = Axis::NONE;
+	data->glWidget = nullptr;
+
+	brush->m_beingClipped = false;
+
+	if (brush->m_clippedBrush)
+	{
+		delete brush->m_clippedBrush;
+		brush->m_clippedBrush = nullptr;
+	}
+
+	if (brush->m_remainingBrush)
+	{
+		delete brush->m_remainingBrush;
+		brush->m_remainingBrush = nullptr;
+	}
 }

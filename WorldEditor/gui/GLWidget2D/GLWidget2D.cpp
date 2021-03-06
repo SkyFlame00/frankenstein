@@ -102,19 +102,22 @@ void GLWidget2D::processInputData()
 		m_grid->decreaseScale();
 	}
 	
-	auto mode = GlobalData::getInstance()->m_editorMode;
+	if (isWidgetActive)
+	{
+		auto mode = GlobalData::getInstance()->m_editorMode;
 
-	if (mode == EditorMode::BLOCK_MODE)
-	{
-		processBlockTool();
-	}
-	else if (mode == EditorMode::SELECTION_MODE)
-	{
-		processSelectionTool();
-	}
-	else if (mode == EditorMode::CLIPPING_MODE)
-	{
-		processClippingTool();
+		if (mode == EditorMode::BLOCK_MODE)
+		{
+			processBlockTool();
+		}
+		else if (mode == EditorMode::SELECTION_MODE)
+		{
+			processSelectionTool();
+		}
+		else if (mode == EditorMode::CLIPPING_MODE)
+		{
+			processClippingTool();
+		}
 	}
 }
 

@@ -42,6 +42,7 @@ public:
 
 	GLWidget2D(Axis axis, Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent = nullptr);
 	~GLWidget2D();
+	void discardClipping();
 
 private:
 	const SceneZoom REFERENCE_ZOOM = SceneZoom::X1;
@@ -81,6 +82,7 @@ private:
 	void processSelectionTool();
 	void processClippingTool();
 	void clipBrush();
+	void applyClipping();
 };
 
 

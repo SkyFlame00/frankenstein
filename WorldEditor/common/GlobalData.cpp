@@ -50,16 +50,16 @@ QOpenGLVertexArrayObject* GlobalData::getRenderableVAO(QOpenGLContext& context, 
 void GlobalData::setMode(EditorMode mode)
 {
 	auto* inst = getInstance();
-	onModeDisable(inst->m_editorMode);
-	onModeEnable(mode);
+	onModeChange(mode);
 	inst->m_editorMode = mode;
 }
 
-void GlobalData::onModeEnable(EditorMode mode)
+void GlobalData::onModeChange(EditorMode nextMode)
 {
 	auto* inst = getInstance();
+	auto prevMode = inst->m_editorMode;
 
-	switch (mode)
+	switch (nextMode)
 	{
 	case EditorMode::SELECTION_MODE:
 		break;
@@ -71,15 +71,13 @@ void GlobalData::onModeEnable(EditorMode mode)
 		}
 		break;
 	case EditorMode::CLIPPING_MODE:
+		auto* brush = inst->m_selectionToolData.renderable;
+		if (brush)
+			brush->m_isInClippingMode = true;
 		break;
 	}
-}
 
-void GlobalData::onModeDisable(EditorMode mode)
-{
-	auto* inst = getInstance();
-
-	switch (mode)
+	switch (prevMode)
 	{
 	case EditorMode::SELECTION_MODE:
 		break;
@@ -91,6 +89,10 @@ void GlobalData::onModeDisable(EditorMode mode)
 		}
 		break;
 	case EditorMode::CLIPPING_MODE:
+		auto* brush = inst->m_selectionToolData.renderable;
+		if (brush)
+			brush->m_isInClippingMode = false;
+		inst->m_clippingToolData.glWidget->discardClipping();
 		break;
 	}
 }

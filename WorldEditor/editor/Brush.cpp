@@ -407,6 +407,20 @@ Brush::~Brush()
 	delete m_linesVerticesX_renderable;
 	delete m_linesVerticesY_renderable;
 	delete m_linesVerticesZ_renderable;
+	delete m_linesRenderable;
+	delete m_trianglesRenderable;
+	delete m_trianglesLinesRenderable;
+
+	if (m_clippedBrush)
+		delete m_clippedBrush;
+	if (m_remainingBrush)
+		delete m_remainingBrush;
+
+	for (auto* v : m_uniqueVertices)
+		delete v;
+
+	for (auto* p : m_polygons)
+		delete p;
 }
 
 void Brush::setup()
@@ -462,19 +476,19 @@ void Brush::setup()
 	m_linesVerticesX_vbo.addAttribute<float>(3); // position
 	m_linesVerticesX_vbo.addAttribute<float>(3); // color
 	m_linesVerticesX_renderable = new BrushRenderable(&m_linesVerticesX_vbo, 8);
-	//delete[] linesVerticesX;
+	delete[] linesVerticesX;
 
 	m_linesVerticesY_vbo.allocate(linesVerticesY, 6 * 8 * sizeof(float));
 	m_linesVerticesY_vbo.addAttribute<float>(3); // position
 	m_linesVerticesY_vbo.addAttribute<float>(3); // color
 	m_linesVerticesY_renderable = new BrushRenderable(&m_linesVerticesY_vbo, 8);
-	//delete[] linesVerticesY;
+	delete[] linesVerticesY;
 
 	m_linesVerticesZ_vbo.allocate(linesVerticesZ, 6 * 8 * sizeof(float));
 	m_linesVerticesZ_vbo.addAttribute<float>(3); // position
 	m_linesVerticesZ_vbo.addAttribute<float>(3); // color
 	m_linesVerticesZ_renderable = new BrushRenderable(&m_linesVerticesZ_vbo, 8);
-	//delete[] linesVerticesZ;
+	delete[] linesVerticesZ;
 
 	m_bboxLinesVerticesCount = 8;
 
@@ -615,6 +629,15 @@ void Brush::makeTrianglesLinesBufferData()
 
 void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
 {
+	if (m_beingClipped)
+	{
+		if (m_clippedBrush)
+			m_clippedBrush->render3D(context, proj, zoomVec, camera);
+		if (m_remainingBrush)
+			m_remainingBrush->render3D(context, proj, zoomVec, camera);
+		return;
+	}
+
 	auto global = GlobalData::getInstance();
 	auto trianglesVao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
 	auto linesVao = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
@@ -638,7 +661,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 	GLCall(m_program3D->setUniformValue("u_DirLight.diffuse", diffuse, diffuse, diffuse));
 	//GLCall(m_program3D->setUniformValue("u_DirLight.specular", specular, specular, specular));
 	GLCall(m_program3D->setUniformValue("u_Material.shininess", 64.0f));
-	GLCall(m_program3D->setUniformValue("u_Selected", m_selected));
+	GLCall(m_program3D->setUniformValue("u_Selected", m_selected || m_beingCut));
 	GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
 
 	if (global->m_isDrawingLines)
@@ -663,6 +686,15 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 
 void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
 {
+	if (m_beingClipped)
+	{
+		if (m_clippedBrush)
+			m_clippedBrush->render2D(context, proj, zoomVec, camera, axis, factor);
+		if (m_remainingBrush)
+			m_remainingBrush->render2D(context, proj, zoomVec, camera, axis, factor);
+		return;
+	}
+
 	auto vao = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
 	QMatrix4x4 model;
 	model.setToIdentity();
@@ -674,11 +706,12 @@ void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 	GLCall(m_program2D->setUniformValue("u_Proj", proj));
 	GLCall(m_program2D->setUniformValue("u_View", camera.getViewMatrix()));
 	GLCall(m_program2D->setUniformValue("u_Model", model));
+	GLCall(m_program2D->setUniformValue("u_BeingCut", m_beingCut || m_isInClippingMode));
 
 	GLCall(vao->bind());
 	GLCall($->glDrawArrays(GL_LINES, 0, m_linesVerticesCount));
 
-	if (m_selected)
+	if (m_selected && !m_isInClippingMode)
 	{
 		auto* bbox = &m_boundingBox;
 		BrushRenderable* renderable;

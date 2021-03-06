@@ -11,6 +11,7 @@
 #include "../editor/Scene.h"
 #include "../editor/grid2d/Point.h"
 #include "../editor/grid2d/Line.h"
+#include "../gui/GLWidget2D/GLWidget2D.h"
 
 class GlobalData
 {
@@ -45,7 +46,7 @@ public:
 		Point* point2;
 		Point* d_pt; /* Displacement point */
 		Point* nd_pt; /* Non-displacement point */
-		Line* line;
+		Line* line = nullptr;
 		bool pt1_placed = false;
 		bool pt2_placed = false;
 
@@ -55,6 +56,8 @@ public:
 			QVector3D norm;
 			bool normReversed = false;
 		} plane;
+
+		GLWidget2D* glWidget = nullptr;
 	} m_clippingToolData;
 
 	static std::unordered_map<QOpenGLContext*, ContextVAOMap*> openglContexts;
@@ -66,8 +69,7 @@ public:
 private:
 	GlobalData();
 	~GlobalData();
-	static void onModeEnable(EditorMode mode);
-	static void onModeDisable(EditorMode mode);
+	static void onModeChange(EditorMode nextMode);
 
 	static GlobalData* m_instance;
 };

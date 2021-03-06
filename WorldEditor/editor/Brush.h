@@ -33,6 +33,11 @@ public:
 	QVector3D m_origin;
 	bool m_selected = false;
 	QVector3D m_selectionColor;
+	Brush* m_clippedBrush = nullptr;
+	Brush* m_remainingBrush = nullptr;
+	bool m_beingClipped = false;
+	bool m_beingCut = false;
+	bool m_isInClippingMode = false;
 
 private:
 	class BrushRenderable : public Renderable
