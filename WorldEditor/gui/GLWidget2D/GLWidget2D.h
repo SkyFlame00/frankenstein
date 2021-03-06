@@ -10,7 +10,6 @@
 #include "../../editor/Grid2D.h"
 #include "../../editor/grid2d/Point.h"
 #include <QOpenGLDebugLogger>
-#include <QOpenGLExtraFunctions>
 
 class GLWidget2D : public QOpenGLWidget
 {

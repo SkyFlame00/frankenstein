@@ -29,6 +29,7 @@ public:
 		ButtonState keyS = ButtonState::NOT_ACTIVE;
 		ButtonState keyD = ButtonState::NOT_ACTIVE;
 		ButtonDownState keyV = ButtonDownState::RELEASED_NOT_PROCESSED;
+		ButtonDownState keyF = ButtonDownState::RELEASED_NOT_PROCESSED;
 		ButtonState leftMouse = ButtonState::NOT_ACTIVE;
 		ButtonState rightMouse = ButtonState::NOT_ACTIVE;
 		ButtonDownState leftMouseDown = ButtonDownState::RELEASED_NOT_PROCESSED;

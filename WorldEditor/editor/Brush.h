@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QOpenGLExtraFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
@@ -50,6 +49,7 @@ private:
 
 	void makeLinesBufferData();
 	void makeTrianglesBufferData();
+	void makeTrianglesLinesBufferData();
 	void calcNorm(Types::Polygon* polygon);
 	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
 	QVector2D get2DOrigin(Axis axis);
@@ -61,10 +61,13 @@ private:
 	QVector3D m_uniformColor;
 	VertexBufferObject m_linesVbo;
 	VertexBufferObject m_trianglesVbo;
+	VertexBufferObject m_trianglesLinesVbo;
 	BrushRenderable* m_linesRenderable;
 	BrushRenderable* m_trianglesRenderable;
+	BrushRenderable* m_trianglesLinesRenderable;
 	float m_trianglesVerticesCount = 0;
 	float m_linesVerticesCount = 0;
+	float m_trianglesLinesVerticesCount = 0;
 	QOpenGLShaderProgram* m_program2D;
 	QOpenGLShaderProgram* m_program3D;
 	QOpenGLShaderProgram* m_programSelection;

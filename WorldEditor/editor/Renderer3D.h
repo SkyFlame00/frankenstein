@@ -2,7 +2,6 @@
 
 #include <QMatrix4x4>
 #include <QList>
-#include <QOpenGLExtraFunctions>
 #include "Brush.h"
 #include "Camera.h"
 #include "GL.h"

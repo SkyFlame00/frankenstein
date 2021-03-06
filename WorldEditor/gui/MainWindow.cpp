@@ -199,6 +199,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			m_glWidget3D->m_inputData.keyV = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_F)
+	{
+		if (m_glWidget3D->m_inputData.keyF == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyF = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
@@ -288,6 +295,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		if (m_glWidget3D->m_inputData.keyV == ButtonDownState::DOWN_PROCESSED)
 		{
 			m_glWidget3D->m_inputData.keyV = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_F)
+	{
+		if (m_glWidget3D->m_inputData.keyF == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyF = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
 	if (key == Qt::Key_Escape)

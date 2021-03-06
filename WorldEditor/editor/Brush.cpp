@@ -53,6 +53,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly1->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
 	poly1->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[1], m_uniqueVertices[2] });
 	poly1->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[2], m_uniqueVertices[3] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[0] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[2] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[3] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
 	calcNorm(poly1);
 	m_polygons.push_back(poly1);
 
@@ -68,6 +74,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly2->borderEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
 	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[6], m_uniqueVertices[7] });
 	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[7], m_uniqueVertices[1] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[1] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[0] });
 	calcNorm(poly2);
 	m_polygons.push_back(poly2);
 
@@ -83,6 +95,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly3->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
 	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[7], m_uniqueVertices[4] });
 	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[4], m_uniqueVertices[2] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[2] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
 	calcNorm(poly3);
 	m_polygons.push_back(poly3);
 
@@ -98,6 +116,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly4->borderEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
 	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[4], m_uniqueVertices[5] });
 	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[5], m_uniqueVertices[3] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[3] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
 	calcNorm(poly4);
 	m_polygons.push_back(poly4);
 
@@ -113,6 +137,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly5->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
 	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[5], m_uniqueVertices[6] });
 	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[6], m_uniqueVertices[0] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[0] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
 	calcNorm(poly5);
 	m_polygons.push_back(poly5);
 
@@ -128,6 +158,12 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly6->borderEdges.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
 	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[6], m_uniqueVertices[5] });
 	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[5], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[6] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
+	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
 	calcNorm(poly6);
 	m_polygons.push_back(poly6);
 
@@ -243,6 +279,9 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 		tryAddingVertexToPolygon(polygon, v1);
 		tryAddingVertexToPolygon(polygon, v2);
 		tryAddingVertexToPolygon(polygon, v3);
+		polygon->trianglesLines.push_back({ v1, v2 });
+		polygon->trianglesLines.push_back({ v2, v3 });
+		polygon->trianglesLines.push_back({ v1, v3 });
 	}
 
 	/* Sort polygons' vertices in the clockwise order */
@@ -455,6 +494,11 @@ void Brush::setup()
 	m_linesVbo.addAttribute<float>(3); // color
 	m_linesRenderable = new BrushRenderable(&m_linesVbo, 0);
 	makeLinesBufferData();
+
+	m_trianglesLinesVbo.addAttribute<float>(3); // position
+	m_trianglesLinesVbo.addAttribute<float>(3); // color
+	m_trianglesLinesRenderable = new BrushRenderable(&m_trianglesLinesVbo, 0);
+	makeTrianglesLinesBufferData();
 }
 
 void Brush::makeTrianglesBufferData()
@@ -532,11 +576,49 @@ void Brush::makeLinesBufferData()
 	delete[] vertices;
 }
 
+void Brush::makeTrianglesLinesBufferData()
+{
+	int size = 0;
+	m_trianglesLinesVerticesCount = 0;
+
+	for (auto& poly : m_polygons)
+	{
+		m_trianglesLinesVerticesCount += poly->trianglesLines.size() * 2;
+		size += poly->trianglesLines.size() * 2 * 6;
+	}
+
+	float* vertices = new float[size];
+	int i = 0;
+
+	auto vertexBufferData = [&](QVector3D* v) {
+		vertices[i++] = v->x();
+		vertices[i++] = v->y();
+		vertices[i++] = v->z();
+		vertices[i++] = m_uniformColor.x();
+		vertices[i++] = m_uniformColor.y();
+		vertices[i++] = m_uniformColor.z();
+	};
+
+	for (auto& poly : m_polygons)
+	{
+		for (auto& [v0, v1] : poly->trianglesLines)
+		{
+			vertexBufferData(v0);
+			vertexBufferData(v1);
+		}
+	}
+
+	m_trianglesLinesVbo.allocate(vertices, size * sizeof(float));
+	m_trianglesLinesRenderable->setVerticesCount(m_trianglesLinesVerticesCount);
+	delete[] vertices;
+}
+
 void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
 {
 	auto global = GlobalData::getInstance();
-	auto vao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
-	auto vao2 = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
+	auto trianglesVao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
+	auto linesVao = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
+	auto trianglesLinesVao = GlobalData::getRenderableVAO(*context, *m_trianglesLinesRenderable);
 	float ambient = 0.4f;
 	float diffuse = 0.7f;
 	float specular = 1.0f;
@@ -561,13 +643,21 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 
 	if (global->m_isDrawingLines)
 	{
-		GLCall(vao2->bind());
+		GLCall(linesVao->bind());
 		GLCall($->glDrawArrays(GL_LINES, 0, m_linesVerticesCount));
 	}
 	else
 	{
-		GLCall(vao->bind());
-		GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
+		if (global->m_isWireframeMode)
+		{
+			GLCall(trianglesLinesVao->bind());
+			GLCall($->glDrawArrays(GL_LINES, 0, m_trianglesLinesVerticesCount));
+		}
+		else
+		{
+			GLCall(trianglesVao->bind());
+			GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
+		}
 	}
 }
 
@@ -636,8 +726,7 @@ void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 		auto vao = GlobalData::getRenderableVAO(*context, *renderable);
 		QMatrix4x4 model;
 		model.setToIdentity();
-		auto res = scale * zoomVec;
-		model.scale(res);
+		model.scale(scale * zoomVec);
 		model.translate(calcBboxOrigin() * QVector3D(1 / scale.x(), 1 / scale.y(), 1 / scale.z()));
 
 		useContext(context);

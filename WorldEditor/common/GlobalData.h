@@ -61,6 +61,7 @@ public:
 	EditorMode m_editorMode;
 	Scene* m_scene;
 	bool m_isDrawingLines = false;
+	bool m_isWireframeMode = false;
 
 private:
 	GlobalData();

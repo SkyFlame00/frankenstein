@@ -92,6 +92,8 @@ void GLWidget3D::updateCamera()
 
 	if (m_inputData.keyV == ButtonDownState::DOWN_NOT_PROCESSED)
 		global->m_isDrawingLines = !global->m_isDrawingLines;
+	if (m_inputData.keyF == ButtonDownState::DOWN_NOT_PROCESSED)
+		global->m_isWireframeMode = !global->m_isWireframeMode;
 
 	m_camera->updateCameraVectors();
 }
@@ -106,6 +108,10 @@ void GLWidget3D::clearInputData()
 		m_inputData.keyV = ButtonDownState::DOWN_PROCESSED;
 	if (m_inputData.keyV == ButtonDownState::RELEASED_NOT_PROCESSED)
 		m_inputData.keyV = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyF == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyF = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyF == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyF = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget3D::enterEvent(QEvent* event)

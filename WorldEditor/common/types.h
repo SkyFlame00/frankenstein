@@ -120,6 +120,7 @@ namespace Types
 		QList< QPair<QVector3D, int> > indexedVertices;
 		QList<Edge> allEdges;
 		QList<Edge> borderEdges;
+		QList<Edge> trianglesLines;
 	};
 
 	enum class SelectionToolState
