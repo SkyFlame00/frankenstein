@@ -5,6 +5,7 @@
 #include <limits>
 #include "Grid2D.h"
 #include "../common/helpers.h"
+#include <QtMath>
 
 Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
@@ -23,6 +24,22 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	{
 		m_uniqueVertices.push_back(new QVector3D(v - m_origin));
 	}
+
+	/* Unique edges */
+	m_uniqueEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
+
+	m_uniqueEdges.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
+
+	m_uniqueEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
+	m_uniqueEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
 
 	/* Polygon 1 */
 	Types::Polygon* poly1 = new Types::Polygon;
@@ -138,9 +155,226 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 			m_boundingBox.endZ = v.z();
 	}
 
+	setup();
+}
+
+Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
+	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
+	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
+{
+	auto tryAddingUniqueVertex = [&](QVector3D& vertex) {
+		vertex.setX(Helpers::round(vertex.x(), 5));
+		vertex.setY(Helpers::round(vertex.y(), 5));
+		vertex.setZ(Helpers::round(vertex.z(), 5));
+		
+		auto res = std::find_if(m_uniqueVertices.begin(), m_uniqueVertices.end(), [&](QVector3D* v) {
+			return vertex.x() == v->x() && vertex.y() == v->y() && vertex.z() == v->z();
+			});
+
+		if (res != m_uniqueVertices.end())
+			return *res;
+
+		QVector3D* uniqueVertex = new QVector3D(vertex);
+		m_uniqueVertices.push_back(uniqueVertex);
+		return uniqueVertex;
+	};
+
+	auto tryAddingPolygon = [&](float a, float b, float c, float d, QVector3D norm) {
+		auto res = std::find_if(m_polygons.begin(), m_polygons.end(), [&](Types::Polygon* poly) {
+			/* There can only be one plane with such a normal in a convex polyhedron */
+			return Helpers::trunc(poly->norm.x(), 2) == Helpers::trunc(norm.x(), 2) &&
+				Helpers::trunc(poly->norm.y(), 2) == Helpers::trunc(norm.y(), 2) &&
+				Helpers::trunc(poly->norm.z(), 2) == Helpers::trunc(norm.z(), 2);
+			});
+
+		if (res != m_polygons.end())
+			return *res;
+
+		Types::Polygon* poly = new Types::Polygon{ a, b, c, d };
+		poly->norm = norm;
+		m_polygons.push_back(poly);
+		return poly;
+	};
+
+	auto tryAddingVertexToPolygon = [&](Types::Polygon* poly, QVector3D* vertex) {
+		auto res = std::find_if(poly->vertices.begin(), poly->vertices.end(), [&](QVector3D* v) {
+			return vertex == v;
+			});
+
+		if (res == poly->vertices.end())
+			poly->vertices.push_back(vertex);
+	};
+	
+	auto tryAddingUniqueEdge = [&](QVector3D* v0, QVector3D* v1) {
+		auto res = std::find_if(m_uniqueEdges.begin(), m_uniqueEdges.end(), [&](Types::Edge edge) {
+			return
+				*v0 == *edge.v0 && *v1 == *edge.v1 ||
+				*v1 == *edge.v0 && *v0 == *edge.v1;
+			});
+
+		if (res == m_uniqueEdges.end())
+			m_uniqueEdges.push_back({ v0, v1 });
+	};
+
+	Polyhedron_3::Facet_iterator fit;
+
+	/* Create polygons */
+	for (fit = polyhedron.facets_begin(); fit != polyhedron.facets_end(); fit++)
+	{
+		Polyhedron_3::Facet facet = *fit;
+		auto v1_raw = facet.halfedge()->vertex()->point();
+		auto v2_raw = facet.halfedge()->next()->vertex()->point();
+		auto v3_raw = facet.halfedge()->opposite()->vertex()->point();
+
+		QVector3D* v1 = tryAddingUniqueVertex(QVector3D(v1_raw[0], v1_raw[1], v1_raw[2]));
+		QVector3D* v2 = tryAddingUniqueVertex(QVector3D(v2_raw[0], v2_raw[1], v2_raw[2]));
+		QVector3D* v3 = tryAddingUniqueVertex(QVector3D(v3_raw[0], v3_raw[1], v3_raw[2]));
+
+		QVector3D norm = QVector3D::crossProduct(*v1 - *v2, *v1 - *v3);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *v1);
+		auto polygon = tryAddingPolygon(a, b, c, d, norm);
+
+		Types::Triangle triangle{ v1, v2, v3 };
+		polygon->triangles.push_back(triangle);
+		tryAddingVertexToPolygon(polygon, v1);
+		tryAddingVertexToPolygon(polygon, v2);
+		tryAddingVertexToPolygon(polygon, v3);
+	}
+
+	/* Sort polygons' vertices in the clockwise order */
+	for (auto* polygon : m_polygons)
+	{
+		QVector3D target(0, 0, 1);
+		QVector3D rotateAxis = QVector3D::crossProduct(polygon->norm, target);
+
+		QMatrix4x4 model;
+		model.setToIdentity();
+
+		auto round = [&](float n) {
+			return Helpers::round(n, 5);
+		};
+
+		if (!(round(target.x()) == round(polygon->norm.x()) &&
+			round(target.y()) ==  round(polygon->norm.y()) &&
+			round(target.z()) ==  round(polygon->norm.z())
+			) && !(
+			round(-target.x()) == round(polygon->norm.x()) &&
+			round(-target.y()) == round(polygon->norm.y()) &&
+			round(-target.z()) == round(polygon->norm.z())
+			))
+		{
+			float cos = QVector3D::dotProduct(polygon->norm, target) / (polygon->norm.length() * target.length());
+			float acos = -qRadiansToDegrees(qAcos(cos));
+			model.rotate(acos, rotateAxis);
+		}
+
+		QVector2D centroid(0, 0);
+		QVector2D total(0, 0);
+
+		for (auto pt : polygon->vertices)
+		{
+			QVector4D v = model * QVector4D(*pt, 1.0f);
+			total += QVector2D(v.x(), v.y());
+		}
+
+		centroid = total / polygon->vertices.size();
+
+		std::sort(polygon->vertices.begin(), polygon->vertices.end(), [&](QVector3D* v1, QVector3D* v2)
+			{
+				QVector4D _v1 = model * QVector4D(*v1, 1.0f);
+				QVector4D _v2 = model * QVector4D(*v2, 1.0f);
+
+				float a1 = qAtan2(_v1.x() - centroid.x(), _v1.y() - centroid.y());
+				float a2 = qAtan2(_v2.x() - centroid.x(), _v2.y() - centroid.y());
+
+				while (a1 >= 360.0f)
+					a1 -= 360.0f;
+				while (a2 >= 360.0f)
+					a2 -= 360.0f;
+
+				return a1 - a2 > 0;
+			}
+		);
+	}
+
+	/* Create unique edges */
+	for (auto* polygon : m_polygons)
+	{
+		int size = polygon->vertices.size();
+		for (int i = 0; i < size; i++)
+		{
+			int j = i == size - 1 ? 0 : i + 1;
+			tryAddingUniqueEdge(polygon->vertices[i], polygon->vertices[j]);
+		}
+	}
+
+	/* Calculate new origin */
+	QVector3D total(0.0f, 0.0f, 0.0f);
+	QVector3D shift;
+
+	for (auto* v : m_uniqueVertices)
+	{
+		total += *v;
+	}
+
+	shift = total / m_uniqueVertices.size();
+	m_origin = oldOrigin + shift;
+
+	for (auto* v : m_uniqueVertices)
+	{
+		*v -= shift;
+	}
+
+	/* Bounding box struct */
+	m_boundingBox.startX = std::numeric_limits<float>::max();
+	m_boundingBox.endX = -std::numeric_limits<float>::max();
+	m_boundingBox.startY = std::numeric_limits<float>::max();
+	m_boundingBox.endY = -std::numeric_limits<float>::max();
+	m_boundingBox.startZ = std::numeric_limits<float>::max();
+	m_boundingBox.endZ = -std::numeric_limits<float>::max();
+
+	for (auto& v : m_uniqueVertices)
+	{
+		if (v->x() < m_boundingBox.startX)
+			m_boundingBox.startX = v->x();
+		if (m_boundingBox.endX < v->x())
+			m_boundingBox.endX = v->x();
+		if (v->y() < m_boundingBox.startY)
+			m_boundingBox.startY = v->y();
+		if (m_boundingBox.endY < v->y())
+			m_boundingBox.endY = v->y();
+		if (v->z() < m_boundingBox.startZ)
+			m_boundingBox.startZ = v->z();
+		if (m_boundingBox.endZ < v->z())
+			m_boundingBox.endZ = v->z();
+	}
+
+	m_boundingBox.startX += m_origin.x();
+	m_boundingBox.endX += m_origin.x();
+	m_boundingBox.startY += m_origin.y();
+	m_boundingBox.endY += m_origin.y();
+	m_boundingBox.startZ += m_origin.z();
+	m_boundingBox.endZ += m_origin.z();
+
+	setup();
+}
+
+Brush::~Brush()
+{
+	delete m_linesVerticesX_renderable;
+	delete m_linesVerticesY_renderable;
+	delete m_linesVerticesZ_renderable;
+}
+
+void Brush::setup()
+{
 	float c = Grid2D::HALF_LENGTH - 1.0f;
 
-	float *linesVerticesX = new float[6 * 8]{
+	float* linesVerticesX = new float[6 * 8]{
 		-c, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 		-c,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
 
@@ -223,13 +457,6 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	makeLinesBufferData();
 }
 
-Brush::~Brush()
-{
-	delete m_linesVerticesX_renderable;
-	delete m_linesVerticesY_renderable;
-	delete m_linesVerticesZ_renderable;
-}
-
 void Brush::makeTrianglesBufferData()
 {
 	int size = 0;
@@ -279,17 +506,13 @@ void Brush::makeLinesBufferData()
 	int size = 0;
 	m_linesVerticesCount = 0;
 
-	for (auto& poly : m_polygons)
-	{
-		m_linesVerticesCount += poly->borderEdges.size() * 2;
-		size += poly->borderEdges.size() * 2 * 6;
-	}
+	m_linesVerticesCount += m_uniqueEdges.size() * 2;
+	size += m_uniqueEdges.size() * 2 * 6;
 
 	float* vertices = new float[size];
 	int i = 0;
 
-	auto vertexBufferData = [&](Types::Polygon* poly, QVector3D* v) {
-		auto& texCoords = poly->verticesMap[v];
+	auto vertexBufferData = [&](QVector3D* v) {
 		vertices[i++] = v->x();
 		vertices[i++] = v->y();
 		vertices[i++] = v->z();
@@ -298,13 +521,10 @@ void Brush::makeLinesBufferData()
 		vertices[i++] = m_uniformColor.z();
 	};
 
-	for (auto& poly : m_polygons)
+	for (auto& [v0, v1] : m_uniqueEdges)
 	{
-		for (auto& [v0, v1] : poly->borderEdges)
-		{
-			vertexBufferData(poly, v0);
-			vertexBufferData(poly, v1);
-		}
+		vertexBufferData(v0);
+		vertexBufferData(v1);
 	}
 
 	m_linesVbo.allocate(vertices, size * sizeof(float));
@@ -314,7 +534,9 @@ void Brush::makeLinesBufferData()
 
 void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
 {
+	auto global = GlobalData::getInstance();
 	auto vao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
+	auto vao2 = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
 	float ambient = 0.4f;
 	float diffuse = 0.7f;
 	float specular = 1.0f;
@@ -337,8 +559,16 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 	GLCall(m_program3D->setUniformValue("u_Selected", m_selected));
 	GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
 
-	GLCall(vao->bind());
-	GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
+	if (global->m_isDrawingLines)
+	{
+		GLCall(vao2->bind());
+		GLCall($->glDrawArrays(GL_LINES, 0, m_linesVerticesCount));
+	}
+	else
+	{
+		GLCall(vao->bind());
+		GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
+	}
 }
 
 void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor)
@@ -365,6 +595,25 @@ void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 		QVector3D scale;
 		float* vertices;
 
+		auto calcBboxOrigin = [&]() {
+			QList<QVector3D> vertices;
+			vertices.push_back({ bbox->startX, bbox->startY, bbox->endZ });
+			vertices.push_back({ bbox->endX, bbox->startY, bbox->endZ });
+			vertices.push_back({ bbox->endX, bbox->startY, bbox->startZ });
+			vertices.push_back({ bbox->startX, bbox->startY, bbox->startZ });
+			vertices.push_back({ bbox->startX, bbox->endY, bbox->endZ });
+			vertices.push_back({ bbox->endX, bbox->endY, bbox->endZ });
+			vertices.push_back({ bbox->endX, bbox->endY, bbox->startZ });
+			vertices.push_back({ bbox->startX, bbox->endY, bbox->startZ });
+
+			QVector3D total(0.0f, 0.0f, 0.0f);
+
+			for (auto& v : vertices)
+				total += v;
+
+			return total / vertices.size();
+		};
+
 		switch (axis)
 		{
 		case Axis::X:
@@ -387,8 +636,9 @@ void Brush::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 		auto vao = GlobalData::getRenderableVAO(*context, *renderable);
 		QMatrix4x4 model;
 		model.setToIdentity();
-		model.translate(m_origin * zoomVec);
-		model.scale(scale * zoomVec);
+		auto res = scale * zoomVec;
+		model.scale(res);
+		model.translate(calcBboxOrigin() * QVector3D(1 / scale.x(), 1 / scale.y(), 1 / scale.z()));
 
 		useContext(context);
 		GLCall(m_program2D->bind());

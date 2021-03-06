@@ -14,6 +14,7 @@ public:
 	void setup();
 	QList<Brush*>& getObjects();
 	void addObject(Brush* brush);
+	void removeObject(Brush* brush);
 
 	QList<Renderable*> m_gui2DObjects;
 	QList<Renderable*> m_gui3DObjects;

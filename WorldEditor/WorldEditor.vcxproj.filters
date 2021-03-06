@@ -172,5 +172,8 @@
     <ClInclude Include="editor\grid2d\Line.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="common\cgal_bindings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

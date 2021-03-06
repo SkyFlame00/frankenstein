@@ -22,3 +22,9 @@ void Scene::addObject(Brush* brush)
 {
 	m_objects.push_back(brush);
 }
+
+void Scene::removeObject(Brush* brush)
+{
+	m_objects.removeOne(brush);
+}
+

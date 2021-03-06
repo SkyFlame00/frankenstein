@@ -112,6 +112,8 @@ namespace Types
 	{
 		float a, b, c, d;
 		int count = 0;
+		QList<QVector3D*> vertices;
+		QList<QVector3D*> beforeSorted;
 		std::unordered_map<QVector3D*, QVector2D> verticesMap; // vertices to tex coordinates mapping
 		QVector3D norm;
 		QList<Triangle> triangles;

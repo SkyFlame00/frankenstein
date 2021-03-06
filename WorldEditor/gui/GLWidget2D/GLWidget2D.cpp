@@ -164,6 +164,10 @@ void GLWidget2D::clearInputData()
 		m_inputData.keyEscape = ButtonDownState::DOWN_PROCESSED;
 	if (m_inputData.keyEscape == ButtonDownState::RELEASED_NOT_PROCESSED)
 		m_inputData.keyEscape = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyReturn == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyReturn = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyReturn == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyReturn = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget2D::wheelEvent(QWheelEvent* event)

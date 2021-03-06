@@ -11,17 +11,23 @@
 #include <QOpenGLContext>
 #include "grid2d/Point.h"
 #include "ChangeableRenderable.h"
+#include "../common/cgal_bindings.h"
 
 class Brush : public Renderable, public ChangeableRenderable
 {
 public:
 	Brush(QList<QVector3D>& cubeVertices, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
+	Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
 	~Brush();
 
+	void setup();
 	inline int verticesCount() { return m_verticesCount; }
 	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
 	void render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 	inline QList<Types::Polygon*>& getPolygons() { return m_polygons; }
+	inline QList<Types::Edge>& getUniqueEdges() { return m_uniqueEdges; }
+	inline QList<QVector3D*>& getUniqueVertices() { return m_uniqueVertices; }
+	inline QVector3D getUniformColor() { return m_uniformColor; }
 	void writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
 	void doMoveStep(Axis axis, QVector2D pos, float step);
 
@@ -49,6 +55,7 @@ private:
 	QVector2D get2DOrigin(Axis axis);
 
 	QList<QVector3D*> m_uniqueVertices;
+	QList<Types::Edge> m_uniqueEdges;
 	int m_verticesCount = 0;
 	QList<Types::Polygon*> m_polygons;
 	QVector3D m_uniformColor;

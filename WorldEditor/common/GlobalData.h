@@ -51,12 +51,16 @@ public:
 
 		struct {
 			float a, b, c, d;
+			QVector3D p0;
+			QVector3D norm;
+			bool normReversed = false;
 		} plane;
 	} m_clippingToolData;
 
 	static std::unordered_map<QOpenGLContext*, ContextVAOMap*> openglContexts;
 	EditorMode m_editorMode;
 	Scene* m_scene;
+	bool m_isDrawingLines = false;
 
 private:
 	GlobalData();

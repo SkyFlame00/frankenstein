@@ -1,5 +1,6 @@
 #include "helpers.h"
 #include "../editor/Grid2D.h"
+#include <cmath>
 
 float Helpers::trunc(float num, int digits)
 {
@@ -76,4 +77,46 @@ Types::SelectionToolState Helpers::mapToSelectionToolState(Types::BrushAction st
 	case Types::BrushAction::RESIZE:
 		return Types::SelectionToolState::RESIZE;
 	}
+}
+
+bool Helpers::lineSegmentPlaneIntersection(QVector3D v1, QVector3D v2, QVector3D p0, QVector3D norm, QVector3D* output)
+{
+	float dist1 = QVector3D::dotProduct(norm, v1 - p0);
+	float dist2 = QVector3D::dotProduct(norm, v2 - p0);
+
+	if (dist1 * dist2 > 0.0f)
+	{
+		/* No intersection */
+		return false;
+	}
+
+	QVector3D x = (v2 - v1) / (v2 - v1).length();
+
+	float cos = QVector3D::dotProduct(norm, x);
+
+	if (cos == 0.0f)
+	{
+		/* Line segment and plane are parallel */
+		return false;
+	}
+
+	*output = v2 - x * (dist2 / cos);
+
+	return true;
+}
+
+float Helpers::roundIfDelta(float num, float delta)
+{
+	float round = std::round(num);
+
+	if (std::abs(round - num) <= delta)
+		return round;
+
+	return num;
+}
+
+float Helpers::round(float num, int precision)
+{
+	float factor = std::pow(10, precision);
+	return std::round(num * factor) / factor;
 }

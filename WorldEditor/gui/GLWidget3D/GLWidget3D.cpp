@@ -51,6 +51,7 @@ void GLWidget3D::processInputData()
 
 void GLWidget3D::updateCamera()
 {
+	auto global = GlobalData::getInstance();
 	bool isCameraMode = m_isCameraToolPicked && m_inputData.leftMouse == ButtonState::PRESSED;
 	bool isWidgetActive = isCameraMode || m_inputData.isMouseOver;
 	float deltaSec = m_timeDelta / 1000.0f;
@@ -89,6 +90,9 @@ void GLWidget3D::updateCamera()
 	if (m_inputData.keyD == ButtonState::PRESSED && isWidgetActive)
 		m_camera->processKeyboard(Camera::Direction::RIGHT, deltaSec);
 
+	if (m_inputData.keyV == ButtonDownState::DOWN_NOT_PROCESSED)
+		global->m_isDrawingLines = !global->m_isDrawingLines;
+
 	m_camera->updateCameraVectors();
 }
 
@@ -98,6 +102,10 @@ void GLWidget3D::clearInputData()
 		m_inputData.leftMouseDown = ButtonDownState::DOWN_PROCESSED;
 	if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
 		m_inputData.leftMouseDown = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyV == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyV = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyV == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyV = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget3D::enterEvent(QEvent* event)

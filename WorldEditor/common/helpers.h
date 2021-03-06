@@ -13,4 +13,7 @@ namespace Helpers
 	float getRandom();
 	BlockToolState mapToBlockToolState(Types::BrushAction state);
 	Types::SelectionToolState mapToSelectionToolState(Types::BrushAction state);
+	bool lineSegmentPlaneIntersection(QVector3D v1, QVector3D v2, QVector3D p0, QVector3D norm, QVector3D* output);
+	float round(float num, int precision = 0);
+	float roundIfDelta(float num, float delta = 0.00001f);
 }

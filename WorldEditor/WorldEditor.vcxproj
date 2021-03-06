@@ -141,6 +141,7 @@
     <QtMoc Include="gui\GLWidget3D\GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\cgal_bindings.h" />
     <ClInclude Include="editor\ChangeableRenderable.h" />
     <ClInclude Include="common\helpers.h" />
     <ClInclude Include="editor\ConstructionBlock.h" />

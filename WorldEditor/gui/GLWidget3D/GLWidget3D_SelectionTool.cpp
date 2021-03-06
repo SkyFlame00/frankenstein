@@ -1,17 +1,6 @@
 #include "GLWidget3D.h"
 #include "../../common/GlobalData.h"
-
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/intersections.h>
-typedef CGAL::Exact_predicates_exact_constructions_kernel K;
-typedef K::Point_2 Point_2;
-typedef K::Segment_2 Segment_2;
-typedef K::Line_2 Line_2;
-typedef K::Intersect_2 Intersect_2;
-typedef K::Point_3 Point_3;
-typedef K::Triangle_3 Triangle_3;
-typedef K::Ray_3 Ray_3;
-typedef K::Direction_3 Direction_3;
+#include "../../common/cgal_bindings.h"
 
 void GLWidget3D::processSelectionTool()
 {
@@ -39,24 +28,38 @@ void GLWidget3D::processSelectionTool()
 		QVector3D pointingRay =
 			m_camera->getPickingRay(mouseX, mouseY, m_screenWidth, m_screenHeight, m_renderer->getNearPlane(), m_renderer->getFarPlane(), m_renderer->getProjMatrix());
 		QVector3D intersectionPoint;
-		Types::Polygon* intersectionPolygon;
-		Types::Triangle* intersectionTriangle;
-		bool intersected = false;
+		Types::Polygon* intersectionPolygon = nullptr;
+		Types::Triangle* intersectionTriangle = nullptr;
 
 		for (auto& polygon : renderable->getPolygons())
 		{
 			for (auto& triangle : polygon->triangles)
 			{
-				if (hasIntersection(m_camera->getPosition(), pointingRay, triangle, renderable->m_origin, intersectionPoint))
+				auto cameraPos = m_camera->getPosition();
+				QVector3D pt;
+				if (hasIntersection(cameraPos, pointingRay, triangle, renderable->m_origin, pt))
 				{
-					intersectionPolygon = polygon;
-					intersectionTriangle = &triangle;
-					goto after_loop;
+					if (!intersectionPolygon)
+					{
+						intersectionPolygon = polygon;
+						intersectionTriangle = &triangle;
+						intersectionPoint = pt;
+						continue;
+					}
+
+					float d1 = std::abs(cameraPos.distanceToPoint(intersectionPoint));
+					float d2 = std::abs(cameraPos.distanceToPoint(pt));
+
+					if (d2 < d1)
+					{
+						intersectionPolygon = polygon;
+						intersectionTriangle = &triangle;
+						intersectionPoint = pt;
+					}
 				}
 			}
 		}
 
-	after_loop:
 		if (data.renderable)
 		{
 			data.renderable->m_selected = false;
@@ -78,19 +81,19 @@ bool GLWidget3D::hasIntersection(QVector3D position, QVector3D direction, Types:
 	auto v1 = model * QVector4D(*triangle.v1, 1.0f);
 	auto v2 = model * QVector4D(*triangle.v2, 1.0f);
 
-	auto cgal_triangle_v0 = Point_3(v0.x(), v0.y(), v0.z());
-	auto cgal_triangle_v1 = Point_3(v1.x(), v1.y(), v1.z());
-	auto cgal_triangle_v2 = Point_3(v2.x(), v2.y(), v2.z());
-	auto cgal_position = Point_3(position.x(), position.y(), position.z());
-	auto cgal_direction = Direction_3(direction.x(), direction.y(), direction.z());
-	Triangle_3 cgal_triangle(cgal_triangle_v0, cgal_triangle_v1, cgal_triangle_v2);
-	Ray_3 cgal_ray(cgal_position, cgal_direction);
+	auto cgal_triangle_v0 = EXACT_K::Point_3(v0.x(), v0.y(), v0.z());
+	auto cgal_triangle_v1 = EXACT_K::Point_3(v1.x(), v1.y(), v1.z());
+	auto cgal_triangle_v2 = EXACT_K::Point_3(v2.x(), v2.y(), v2.z());
+	auto cgal_position = EXACT_K::Point_3(position.x(), position.y(), position.z());
+	auto cgal_direction = EXACT_K::Direction_3(direction.x(), direction.y(), direction.z());
+	EXACT_K::Triangle_3 cgal_triangle(cgal_triangle_v0, cgal_triangle_v1, cgal_triangle_v2);
+	EXACT_K::Ray_3 cgal_ray(cgal_position, cgal_direction);
 
 	auto res = intersection(cgal_triangle, cgal_ray);
 
 	if (res)
 	{
-		const Point_3* p = boost::get<Point_3>(&*res);
+		const EXACT_K::Point_3* p = boost::get<EXACT_K::Point_3>(&*res);
 		auto x = p->x().exact().to_double();
 		auto y = p->y().exact().to_double();
 		auto z = p->z().exact().to_double();

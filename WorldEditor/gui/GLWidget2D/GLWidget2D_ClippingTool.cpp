@@ -2,6 +2,7 @@
 #include "../../common/GlobalData.h"
 #include "../../common/helpers.h"
 #include <algorithm>
+#include "../../common/cgal_bindings.h"
 
 void GLWidget2D::processClippingTool()
 {
@@ -69,11 +70,17 @@ void GLWidget2D::processClippingTool()
 		{
 			QVector3D point1Pos = data->point1->m_origin;
 			QVector3D point2Pos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY, 1.0f);
-			bool isSamePoint = this->isSamePoint(point1Pos, point2Pos);
+			bool isSamePoint1 = this->isSamePoint(point1Pos, point2Pos);
+			bool isSamePoint2 = false;
 			auto pt1 = Helpers::get2DPointFrom3D(m_axis, point1Pos);
 			auto pt2 = QVector2D(nearestX, nearestY);
 			
-			if (!isSamePoint)
+			if (data->pt2_placed)
+			{
+				isSamePoint2 = this->isSamePoint(data->point2->m_origin, point2Pos);
+			}
+
+			if (!isSamePoint1 && !isSamePoint2)
 			{
 				data->point2->m_origin = point2Pos;
 				data->pt2_placed = true;
@@ -94,6 +101,9 @@ void GLWidget2D::processClippingTool()
 				data->plane.b = b;
 				data->plane.c = c;
 				data->plane.d = (-a) * point1Pos.x() + (-b) * point1Pos.y() + (-c) * point1Pos.z();
+				data->plane.norm = coeffs;
+				data->plane.norm.normalize();
+				data->plane.p0 = point1Pos;
 
 				float xx1 = 10000.0f;
 				float xx2 = -10000.0f;
@@ -146,15 +156,19 @@ void GLWidget2D::processClippingTool()
 			{
 				data->d_pt = data->point1;
 				data->nd_pt = data->point2;
+				data->state = Types::ClippingToolState::POINT_DISPLACEMENT;
 			}
 
 			if (pt2DragStarted)
 			{
 				data->d_pt = data->point2;
 				data->nd_pt = data->point1;
+				data->state = Types::ClippingToolState::POINT_DISPLACEMENT;
 			}
-
-			data->state = Types::ClippingToolState::POINT_DISPLACEMENT;
+		}
+		else if (m_inputData.keyReturn == ButtonDownState::RELEASED_NOT_PROCESSED)
+		{
+			clipBrush();
 		}
 		else
 		{
@@ -162,8 +176,6 @@ void GLWidget2D::processClippingTool()
 			bool pt2HasHover = data->point2->hasHover(m_axis, x, y, getZoomFactor());
 
 			setCursor((pt1HasHover || pt2HasHover) ? Qt::OpenHandCursor : Qt::ArrowCursor);
-
-
 		}
 	}
 	else if (data->state == Types::ClippingToolState::POINT_DISPLACEMENT)
@@ -172,11 +184,12 @@ void GLWidget2D::processClippingTool()
 		{
 			QVector3D point1Pos = data->nd_pt->m_origin;
 			QVector3D point2Pos = Helpers::get3DPointFrom2D(m_axis, nearestX, nearestY, 1.0f);
-			bool isSamePoint = this->isSamePoint(point1Pos, point2Pos);
+			bool isSamePoint1 = this->isSamePoint(point1Pos, point2Pos);
+			bool isSamePoint2 = this->isSamePoint(data->d_pt->m_origin, point2Pos);
 			auto pt1 = Helpers::get2DPointFrom3D(m_axis, point1Pos);
 			auto pt2 = QVector2D(nearestX, nearestY);
 
-			if (!isSamePoint)
+			if (!isSamePoint1 && !isSamePoint2)
 			{
 				data->d_pt->m_origin = point2Pos;
 
@@ -190,6 +203,9 @@ void GLWidget2D::processClippingTool()
 				data->plane.b = b;
 				data->plane.c = c;
 				data->plane.d = (-a) * point1Pos.x() + (-b) * point1Pos.y() + (-c) * point1Pos.z();
+				data->plane.norm = coeffs;
+				data->plane.norm.normalize();
+				data->plane.p0 = point1Pos;
 
 				float xx1 = 10000.0f;
 				float xx2 = -10000.0f;
@@ -206,4 +222,117 @@ void GLWidget2D::processClippingTool()
 			data->state = Types::ClippingToolState::INTERSECTION;
 		}
 	}
+}
+
+void GLWidget2D::clipBrush()
+{
+	auto globalData = GlobalData::getInstance();
+	auto sdata = &globalData->m_selectionToolData;
+	auto cdata = &globalData->m_clippingToolData;
+	auto& brush = sdata->renderable;
+
+	if (!brush)
+		return;
+
+	std::vector<INEXACT_K::Point_3> intersectionPts;
+
+	auto isIntersectionPt = [&](QVector3D& pt) {
+		auto res = std::find_if(intersectionPts.begin(), intersectionPts.end(), [&](INEXACT_K::Point_3 _pt) {
+			return Helpers::roundIfDelta(_pt.x(), 5) == Helpers::roundIfDelta(pt.x(), 5) &&
+				Helpers::roundIfDelta(_pt.y(), 5) == Helpers::roundIfDelta(pt.y(), 5) &&
+				Helpers::roundIfDelta(_pt.z(), 5) == Helpers::roundIfDelta(pt.z(), 5);
+			});
+
+		return res != intersectionPts.end();
+	};
+
+	for (auto& seg : brush->getUniqueEdges())
+	{
+		QVector3D pt;
+
+		QMatrix4x4 model;
+		model.setToIdentity();
+		model.translate(brush->m_origin);
+
+		QVector3D v0 = model * *seg.v0;
+		QVector3D v1 = model * *seg.v1;
+
+		if (Helpers::lineSegmentPlaneIntersection(v0, v1, cdata->plane.p0, cdata->plane.norm, &pt))
+		{
+			if (!isIntersectionPt(pt))
+			{
+				INEXACT_K::Point_3 pp(pt.x() - brush->m_origin.x(), pt.y() - brush->m_origin.y(), pt.z() - brush->m_origin.z());
+				intersectionPts.push_back(pp);
+			}
+		}
+	}
+
+	std::vector<INEXACT_K::Point_3> clippedBrushVertices{ intersectionPts };
+	std::vector<INEXACT_K::Point_3> remainingBrushVertices{ intersectionPts };
+
+	QVector3D norm = cdata->plane.norm;
+	QVector3D p0 = cdata->plane.p0;
+	QMatrix4x4 model;
+	model.setToIdentity();
+	model.translate(brush->m_origin);
+
+	if (cdata->plane.normReversed)
+		norm = -norm;
+
+	for (auto& vertex : brush->getUniqueVertices())
+	{
+		QVector3D v(model * QVector4D(*vertex, 1.0f));
+		float sign = QVector3D::dotProduct(norm, v - p0);
+
+		if (sign < 0)
+		{
+			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
+			clippedBrushVertices.push_back(pp);
+		}
+			
+		else if (sign > 0)
+		{
+			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
+			remainingBrushVertices.push_back(pp);
+		}
+	}
+
+	Brush* clippedBrush = nullptr;
+	Brush* remainingBrush = nullptr;
+
+	/* If size is equal then no vertices were added after the clipping */
+	if (clippedBrushVertices.size() > intersectionPts.size())
+	{
+		Polyhedron_3 poly;
+		CGAL::convex_hull_3(clippedBrushVertices.begin(), clippedBrushVertices.end(), poly);
+
+		clippedBrush = new Brush(poly, brush->m_origin, brush->getUniformColor());
+	}
+
+	if (remainingBrushVertices.size() > intersectionPts.size())
+	{
+		Polyhedron_3 poly;
+		CGAL::convex_hull_3(remainingBrushVertices.begin(), remainingBrushVertices.end(), poly);
+
+		remainingBrush = new Brush(poly, brush->m_origin, brush->getUniformColor());
+	}
+
+	m_scene->removeObject(brush);
+	m_scene->m_gui2DObjects.removeOne(brush);
+
+	if (clippedBrush)
+	{
+		m_scene->addObject(clippedBrush);
+		m_scene->m_gui2DObjects.push_back(clippedBrush);
+	}
+
+	if (remainingBrush)
+	{
+		m_scene->addObject(remainingBrush);
+		m_scene->m_gui2DObjects.push_back(remainingBrush);
+	}
+
+	sdata->renderable->m_selected = false;
+	sdata->renderable = nullptr;
+	sdata->state = Types::SelectionToolState::READY_TO_SELECT;
 }

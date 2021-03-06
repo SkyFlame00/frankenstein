@@ -26,6 +26,7 @@ public:
 		ButtonState keyS = ButtonState::NOT_ACTIVE;
 		ButtonState keyD = ButtonState::NOT_ACTIVE;
 		ButtonDownState keyEscape = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState keyReturn = ButtonDownState::RELEASED_PROCESSED;
 		ButtonState keyOpenBracket = ButtonState::NOT_ACTIVE;
 		ButtonState keyCloseBracket = ButtonState::NOT_ACTIVE;
 		ButtonState leftMouse = ButtonState::NOT_ACTIVE;
@@ -54,7 +55,6 @@ private:
 	float m_frustrumWidth;
 	float m_frustrumHeight;
 	SceneZoom m_zoom = SceneZoom::X32;
-	bool m_inited = false;
 	QOpenGLDebugLogger* glLogger;
 	QList<Renderable*> m_guiObjects;
 
@@ -81,6 +81,7 @@ private:
 	void processBlockTool();
 	void processSelectionTool();
 	void processClippingTool();
+	void clipBrush();
 };
 
 

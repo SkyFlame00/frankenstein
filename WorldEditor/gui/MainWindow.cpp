@@ -192,6 +192,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		m_glWidget2D_Y->m_inputData.keyCloseBracket = ButtonState::PRESSED;
 		m_glWidget2D_Z->m_inputData.keyCloseBracket = ButtonState::PRESSED;
 	}
+	if (key == Qt::Key_V)
+	{
+		if (m_glWidget3D->m_inputData.keyV == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyV = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
@@ -225,6 +232,19 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			delete data.blockInstance;
 			data.blockInstance = nullptr;
 			data.state = BlockToolState::CREATING;
+		}
+
+		if (m_glWidget2D_X->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D_X->m_inputData.keyReturn = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Y->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D_Y->m_inputData.keyReturn = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Z->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget2D_Z->m_inputData.keyReturn = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
 
@@ -263,6 +283,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		m_glWidget2D_Y->m_inputData.keyD = ButtonState::RELEASED;
 		m_glWidget2D_Z->m_inputData.keyD = ButtonState::RELEASED;
 	}
+	if (key == Qt::Key_V)
+	{
+		if (m_glWidget3D->m_inputData.keyV == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyV = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
@@ -276,6 +303,21 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		if (m_glWidget2D_Z->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
 		{
 			m_glWidget2D_Z->m_inputData.keyEscape = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Return)
+	{
+		if (m_glWidget2D_X->m_inputData.keyReturn == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D_X->m_inputData.keyReturn = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Y->m_inputData.keyReturn == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D_Y->m_inputData.keyReturn = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+		if (m_glWidget2D_Z->m_inputData.keyReturn == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget2D_Z->m_inputData.keyReturn = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
 
