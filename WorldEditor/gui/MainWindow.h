@@ -19,12 +19,23 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow();
 	~MainWindow();
+	void keyPressEvent(QKeyEvent* event) override;
+	void keyReleaseEvent(QKeyEvent* event) override;
+	static void init();
+	static void cleanup();
+	inline static MainWindow* getInstance() { return m_instance; }
+	inline static QAction* getHistoryBackButton() { return m_instance->m_historyBackButton; }
+	inline static QAction* getHistoryForthButton() { return m_instance->m_historyForthButton; }
 
 	QMenuBar* menuBar;
 	QMenu* fileMenu;
-
-	void keyPressEvent(QKeyEvent* event) override;
-	void keyReleaseEvent(QKeyEvent* event) override;
+	
+	struct
+	{
+		ButtonDownState keyCtrl = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState keyZ = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState keyShift = ButtonDownState::RELEASED_PROCESSED;
+	} m_inputData;
 
 private:
 	void setupMenu();
@@ -34,6 +45,11 @@ private:
 	void setupEditor();
 	void enableMouseTracking();
 	void handleToolChange(QAction* action);
+	void handleHistoryChange(QAction* action);
+	void processShortcuts();
+	void endInputProcessing(bool isReleased);
+
+	static MainWindow* m_instance;
 
 	QWidget* m_centralWidget;
 	GLWidget3D* m_glWidget3D;
@@ -44,6 +60,12 @@ private:
 	Renderer3D* m_renderer3D;
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
 	GLWidgetsContainer* m_glWidgetsContainer;
+
+	/* Top toolbar */
+	QToolBar* m_topToolbar;
+	QActionGroup* m_historyGroup;
+	QAction* m_historyBackButton;
+	QAction* m_historyForthButton;
 
 	/* Left toolbar */
 	QToolBar* m_leftToolbar;

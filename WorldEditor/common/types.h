@@ -144,4 +144,8 @@ namespace Types
 		RESIZE,
 		MOVE
 	};
+
+	typedef void (*undo_t)(void* data);
+	typedef void (*redo_t)(void* data);
+	typedef void (*cleanup_t)(void* data);
 }

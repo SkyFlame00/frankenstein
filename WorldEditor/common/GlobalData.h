@@ -22,6 +22,7 @@ public:
 	static int contextsReady;
 
 	static void init();
+	static void cleanup();
 	static inline GlobalData* getInstance() { return m_instance; }
 	static QOpenGLVertexArrayObject* getRenderableVAO(QOpenGLContext& context, Renderable& renderable);
 	static void setMode(EditorMode mode);

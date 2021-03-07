@@ -7,6 +7,7 @@
 #include "common/GlobalData.h"
 #include <cstdlib>
 #include <ctime>
+#include "common/ActionHistoryTool.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,11 +22,21 @@ int main(int argc, char* argv[])
 	ResourceManager::Init();
 	GL::init();
 	GlobalData::init();
+	ActionHistoryTool::init();
+	MainWindow::init();
 
-	MainWindow window;
+	auto window = MainWindow::getInstance();
 	//window.showMaximized();
-	window.setMinimumSize(320, 240);
-	window.show();
+	window->setMinimumSize(320, 240);
+	window->show();
 
-	return app.exec();
+	int status = app.exec();
+
+	MainWindow::cleanup();
+	ActionHistoryTool::cleanup();
+	GlobalData::cleanup();
+	//GL::cleanup();
+	//ResourceManager::cleanup();
+
+	return status;
 }

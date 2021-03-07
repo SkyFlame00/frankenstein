@@ -106,6 +106,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common\actions.cpp" />
+    <ClCompile Include="common\ActionHistoryTool.cpp" />
     <ClCompile Include="editor\ChangeableRenderable.cpp" />
     <ClCompile Include="common\helpers.cpp" />
     <ClCompile Include="common\types.h" />
@@ -141,6 +143,8 @@
     <QtMoc Include="gui\GLWidget3D\GLWidget3D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\actions.h" />
+    <ClInclude Include="common\ActionHistoryTool.h" />
     <ClInclude Include="common\cgal_bindings.h" />
     <ClInclude Include="editor\ChangeableRenderable.h" />
     <ClInclude Include="common\helpers.h" />

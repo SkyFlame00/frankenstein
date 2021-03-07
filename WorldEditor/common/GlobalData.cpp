@@ -25,6 +25,11 @@ void GlobalData::init()
 	m_instance = new GlobalData;
 }
 
+void GlobalData::cleanup()
+{
+	delete getInstance();
+}
+
 QOpenGLVertexArrayObject* GlobalData::getRenderableVAO(QOpenGLContext& context, Renderable& renderable)
 {
 	auto vaoMapIt = openglContexts.find(&context);

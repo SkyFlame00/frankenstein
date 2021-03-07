@@ -13,6 +13,10 @@
 #include "../common/types.h"
 #include "../common/GlobalData.h"
 #include "../common/helpers.h"
+#include "../common/actions.h"
+#include "../common/ActionHistoryTool.h"
+
+MainWindow* MainWindow::m_instance = nullptr;
 
 MainWindow::MainWindow()
 {
@@ -56,6 +60,20 @@ MainWindow::~MainWindow()
 	delete m_scene;
 }
 
+void MainWindow::init()
+{
+	if (m_instance)
+	{
+		qInfo() << "MainWindow has already been initialized";
+	}
+
+	m_instance = new MainWindow;
+}
+
+void MainWindow::cleanup()
+{
+}
+
 void MainWindow::setupMenu()
 {
 	menuBar = new QMenuBar;
@@ -70,19 +88,33 @@ void MainWindow::setupMenu()
 
 void MainWindow::setupTopToolbar()
 {
-	QToolBar* toolbar = new QToolBar("resize");
-	QAction* resize = new QAction(toolbar);
-	resize->setText("Resize");
-	toolbar->addAction(resize);
-	toolbar->setMovable(false);
+	/* Toolbar itself */
+	m_topToolbar = new QToolBar;
+	m_topToolbar->setMovable(false);
 
-	addToolBar(Qt::ToolBarArea::TopToolBarArea, toolbar);
+	/* Action history */
+	m_historyGroup = new QActionGroup(m_topToolbar);
+
+	m_historyBackButton = new QAction(m_historyGroup);
+	m_historyBackButton->setIcon(QIcon("assets/icons/history_back.png"));
+	m_historyBackButton->setDisabled(true);
+	m_topToolbar->addAction(m_historyBackButton);
+	m_historyGroup->addAction(m_historyBackButton);
+
+	m_historyForthButton = new QAction(m_historyGroup);
+	m_historyForthButton->setIcon(QIcon("assets/icons/history_forth.png"));
+	m_historyForthButton->setDisabled(true);
+	m_topToolbar->addAction(m_historyForthButton);
+	m_historyGroup->addAction(m_historyForthButton);
+
+	addToolBar(Qt::ToolBarArea::TopToolBarArea, m_topToolbar);
+	connect(m_historyGroup, &QActionGroup::triggered, this, &MainWindow::handleHistoryChange);
 }
 
 void MainWindow::setupLeftToolbar()
 {
 	/* Toolbar itself */
-	QToolBar* m_leftToolbar = new QToolBar("resize");
+	QToolBar* m_leftToolbar = new QToolBar;
 	m_leftToolbar->setIconSize(QSize(36, 36));
 	m_leftToolbar->setMovable(false);
 	addToolBar(Qt::ToolBarArea::LeftToolBarArea, m_leftToolbar);
@@ -150,6 +182,9 @@ void MainWindow::enableMouseTracking()
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+	if (event->isAutoRepeat())
+		return;
+
 	auto key = event->key();
 	auto global = GlobalData::getInstance();
 	auto& bdata = global->m_blockToolData;
@@ -217,6 +252,27 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			m_glWidget3D->m_inputData.keyR = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_Control)
+	{
+		if (m_inputData.keyCtrl == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_inputData.keyCtrl = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Z)
+	{
+		if (m_inputData.keyZ == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_inputData.keyZ = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Shift)
+	{
+		if (m_inputData.keyShift == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_inputData.keyShift = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
@@ -247,6 +303,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			delete bdata.blockInstance;
 			bdata.blockInstance = nullptr;
 			bdata.state = BlockToolState::CREATING;
+
+			Actions::BrushCreatingData* data = new Actions::BrushCreatingData{ brush };
+			ActionHistoryTool::addAction(Actions::brushcreating_undo, Actions::brushcreating_redo, Actions::brushcreating_cleanup, data);
 		}
 
 		if (m_glWidget2D_X->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
@@ -263,11 +322,17 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		}
 	}
 
+	processShortcuts();
+	endInputProcessing(false);
+
 	QMainWindow::keyPressEvent(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
+	if (event->isAutoRepeat())
+		return;
+
 	auto key = event->key();
 
 	if (key == 'W')
@@ -319,6 +384,27 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 			m_glWidget3D->m_inputData.keyR = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_Control)
+	{
+		if (m_inputData.keyCtrl == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.keyCtrl = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Z)
+	{
+		if (m_inputData.keyZ == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.keyZ = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Shift)
+	{
+		if (m_inputData.keyShift == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.keyShift = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::DOWN_PROCESSED)
@@ -350,6 +436,9 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		}
 	}
 
+	processShortcuts();
+	endInputProcessing(true);
+
 	QMainWindow::keyReleaseEvent(event);
 }
 
@@ -366,5 +455,69 @@ void MainWindow::handleToolChange(QAction* action)
 	else if (action == m_clippingToolButton)
 	{
 		GlobalData::setMode(EditorMode::CLIPPING_MODE);
+	}
+}
+
+void MainWindow::handleHistoryChange(QAction* action)
+{
+	if (action == m_historyBackButton)
+	{
+		ActionHistoryTool::undo();
+	}
+	else if (action == m_historyForthButton)
+	{
+		ActionHistoryTool::redo();
+	}
+}
+
+void MainWindow::processShortcuts()
+{
+	auto& d = m_inputData;
+
+	/* Ctrl + Shift + Z shortcut */
+	if ((d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_PROCESSED && d.keyShift == ButtonDownState::DOWN_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED && d.keyShift == ButtonDownState::DOWN_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED && d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_PROCESSED && d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED && d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_PROCESSED && d.keyZ == ButtonDownState::DOWN_PROCESSED && d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED && d.keyShift == ButtonDownState::DOWN_PROCESSED))
+	{
+		ActionHistoryTool::redo();
+	}
+	/* Ctrl + Z shortcut */
+	else if ((d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_PROCESSED && d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED) ||
+		(d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED && d.keyZ == ButtonDownState::DOWN_PROCESSED))
+	{
+		ActionHistoryTool::undo();
+	}
+}
+
+void MainWindow::endInputProcessing(bool isReleased)
+{
+	auto& d = m_inputData;
+
+	if (isReleased)
+	{
+		if (d.keyCtrl == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.keyCtrl = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.keyZ == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.keyZ = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.keyShift == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.keyShift = ButtonDownState::RELEASED_PROCESSED;
+	}
+	else
+	{
+		if (d.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.keyCtrl = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.keyZ == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.keyZ = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.keyShift = ButtonDownState::DOWN_PROCESSED;
 	}
 }
