@@ -217,10 +217,7 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 
 	auto tryAddingPolygon = [&](float a, float b, float c, float d, QVector3D norm) {
 		auto res = std::find_if(m_polygons.begin(), m_polygons.end(), [&](Types::Polygon* poly) {
-			/* There can only be one plane with such a normal in a convex polyhedron */
-			return Helpers::trunc(poly->norm.x(), 2) == Helpers::trunc(norm.x(), 2) &&
-				Helpers::trunc(poly->norm.y(), 2) == Helpers::trunc(norm.y(), 2) &&
-				Helpers::trunc(poly->norm.z(), 2) == Helpers::trunc(norm.z(), 2);
+			return Helpers::areEqual(poly->norm, norm);
 			});
 
 		if (res != m_polygons.end())
@@ -244,8 +241,8 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 	auto tryAddingUniqueEdge = [&](QVector3D* v0, QVector3D* v1) {
 		auto res = std::find_if(m_uniqueEdges.begin(), m_uniqueEdges.end(), [&](Types::Edge edge) {
 			return
-				*v0 == *edge.v0 && *v1 == *edge.v1 ||
-				*v1 == *edge.v0 && *v0 == *edge.v1;
+				v0 == edge.v0 && v1 == edge.v1 ||
+				v1 == edge.v0 && v0 == edge.v1;
 			});
 
 		if (res == m_uniqueEdges.end())
@@ -308,7 +305,7 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 		{
 			float cos = QVector3D::dotProduct(polygon->norm, target) / (polygon->norm.length() * target.length());
 			float acos = -qRadiansToDegrees(qAcos(cos));
-			model.rotate(acos, rotateAxis);
+			model.rotate(acos, -rotateAxis);
 		}
 
 		QVector2D centroid(0, 0);
@@ -321,6 +318,7 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 		}
 
 		centroid = total / polygon->vertices.size();
+		centroid += QVector2D(0.01f, 0.01f);
 
 		std::sort(polygon->vertices.begin(), polygon->vertices.end(), [&](QVector3D* v1, QVector3D* v2)
 			{

@@ -120,3 +120,15 @@ float Helpers::round(float num, int precision)
 	float factor = std::pow(10, precision);
 	return std::round(num * factor) / factor;
 }
+
+bool Helpers::areEqual(float x1, float x2, float delta)
+{
+	return std::abs(x1 - x2) <= delta;
+}
+
+bool Helpers::areEqual(QVector3D v1, QVector3D v2, float delta)
+{
+	return std::abs(v1.x() - v2.x()) <= delta &&
+		std::abs(v1.y() - v2.y()) <= delta &&
+		std::abs(v1.z() - v2.z()) <= delta;
+}

@@ -57,6 +57,8 @@ void GLWidget3D::updateCamera()
 	float deltaSec = m_timeDelta / 1000.0f;
 	int offsetX = 0;
 	int offsetY = 0;
+	auto& cdata = global->m_clippingToolData;
+	auto& sdata = global->m_selectionToolData;
 
 	if (isCameraMode)
 	{
@@ -94,6 +96,19 @@ void GLWidget3D::updateCamera()
 		global->m_isDrawingLines = !global->m_isDrawingLines;
 	if (m_inputData.keyF == ButtonDownState::DOWN_NOT_PROCESSED)
 		global->m_isWireframeMode = !global->m_isWireframeMode;
+	if (m_inputData.keyR == ButtonDownState::DOWN_NOT_PROCESSED && global->m_editorMode == EditorMode::CLIPPING_MODE)
+	{
+		auto* brush = sdata.renderable;
+
+		if (brush)
+		{
+			std::swap(brush->m_clippedBrush, brush->m_remainingBrush);
+			if (brush->m_clippedBrush)
+				brush->m_clippedBrush->m_beingCut = true;
+			if (brush->m_remainingBrush)
+				brush->m_remainingBrush->m_beingCut = false;
+		}
+	}
 
 	m_camera->updateCameraVectors();
 }
@@ -112,6 +127,10 @@ void GLWidget3D::clearInputData()
 		m_inputData.keyF = ButtonDownState::DOWN_PROCESSED;
 	if (m_inputData.keyF == ButtonDownState::RELEASED_NOT_PROCESSED)
 		m_inputData.keyF = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyR == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyR = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyR == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyR = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget3D::enterEvent(QEvent* event)

@@ -247,12 +247,14 @@ void GLWidget2D::clipBrush()
 	}
 
 	std::vector<INEXACT_K::Point_3> intersectionPts;
+	QList<QVector3D> ipts;
 
 	auto isIntersectionPt = [&](QVector3D& pt) {
-		auto res = std::find_if(intersectionPts.begin(), intersectionPts.end(), [&](INEXACT_K::Point_3 _pt) {
-			return Helpers::roundIfDelta(_pt.x(), 5) == Helpers::roundIfDelta(pt.x(), 5) &&
-				Helpers::roundIfDelta(_pt.y(), 5) == Helpers::roundIfDelta(pt.y(), 5) &&
-				Helpers::roundIfDelta(_pt.z(), 5) == Helpers::roundIfDelta(pt.z(), 5);
+		auto res = std::find_if(intersectionPts.begin(), intersectionPts.end(), [&](INEXACT_K::Point_3 _pt)
+			{
+				return Helpers::areEqual(pt.x(), _pt.x()) &&
+					Helpers::areEqual(pt.y(), _pt.y()) &&
+					Helpers::areEqual(pt.z(), _pt.z());
 			});
 
 		return res != intersectionPts.end();
@@ -273,14 +275,21 @@ void GLWidget2D::clipBrush()
 		{
 			if (!isIntersectionPt(pt))
 			{
-				INEXACT_K::Point_3 pp(pt.x() - brush->m_origin.x(), pt.y() - brush->m_origin.y(), pt.z() - brush->m_origin.z());
+				auto x = Helpers::round(pt.x() - brush->m_origin.x(), 4);
+				auto y = Helpers::round(pt.y() - brush->m_origin.y(), 4);
+				auto z = Helpers::round(pt.z() - brush->m_origin.z(), 4);
+				INEXACT_K::Point_3 pp(x, y, z);
 				intersectionPts.push_back(pp);
+				ipts.push_back({ x,y,z });
 			}
 		}
 	}
 
 	std::vector<INEXACT_K::Point_3> clippedBrushVertices{ intersectionPts };
 	std::vector<INEXACT_K::Point_3> remainingBrushVertices{ intersectionPts };
+
+	QList<QVector3D> cpv{ ipts };
+	QList<QVector3D> rpv{ ipts };
 
 	QVector3D norm = cdata->plane.norm;
 	QVector3D p0 = cdata->plane.p0;
@@ -300,12 +309,14 @@ void GLWidget2D::clipBrush()
 		{
 			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
 			clippedBrushVertices.push_back(pp);
+			cpv.push_back(v);
 		}
 			
 		else if (sign > 0)
 		{
 			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
 			remainingBrushVertices.push_back(pp);
+			rpv.push_back(v);
 		}
 	}
 

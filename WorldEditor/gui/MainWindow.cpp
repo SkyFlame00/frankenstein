@@ -151,6 +151,10 @@ void MainWindow::enableMouseTracking()
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
 	auto key = event->key();
+	auto global = GlobalData::getInstance();
+	auto& bdata = global->m_blockToolData;
+	auto& sdata = global->m_selectionToolData;
+	auto& cdata = global->m_clippingToolData;
 
 	if (key == 'W')
 	{
@@ -206,6 +210,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			m_glWidget3D->m_inputData.keyF = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_R)
+	{
+		if (m_glWidget3D->m_inputData.keyR == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyR = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Escape)
 	{
 		if (m_glWidget2D_X->m_inputData.keyEscape == ButtonDownState::RELEASED_PROCESSED)
@@ -223,22 +234,19 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	}
 	if (key == Qt::Key_Return)
 	{
-		auto global = GlobalData::getInstance();
-		auto& data = global->m_blockToolData;
-
-		if (global->m_editorMode == EditorMode::BLOCK_MODE && data.state == BlockToolState::READY_TO_EDIT)
+		if (global->m_editorMode == EditorMode::BLOCK_MODE && bdata.state == BlockToolState::READY_TO_EDIT)
 		{
 			QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
 
-			auto block = data.blockInstance;
+			auto block = bdata.blockInstance;
 			auto brush = new Brush(*block->getVertices(), color);
 			m_scene->addObject(brush);
 
 			m_scene->m_gui2DObjects.removeOne(block);
 			m_scene->m_gui3DObjects.removeOne(block);
-			delete data.blockInstance;
-			data.blockInstance = nullptr;
-			data.state = BlockToolState::CREATING;
+			delete bdata.blockInstance;
+			bdata.blockInstance = nullptr;
+			bdata.state = BlockToolState::CREATING;
 		}
 
 		if (m_glWidget2D_X->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
@@ -302,6 +310,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		if (m_glWidget3D->m_inputData.keyF == ButtonDownState::DOWN_PROCESSED)
 		{
 			m_glWidget3D->m_inputData.keyF = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_R)
+	{
+		if (m_glWidget3D->m_inputData.keyR == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyR = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
 	if (key == Qt::Key_Escape)
