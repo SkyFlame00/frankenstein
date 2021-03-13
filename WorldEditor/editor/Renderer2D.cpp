@@ -77,7 +77,7 @@ void Renderer2D::render(QOpenGLContext* context, Grid2D& grid2D, QList<Brush*>& 
 		GLCall(program->setUniformValue("proj", m_projMatrix));
 		GLCall(program->setUniformValue("view", m_camera->getViewMatrix()));
 		GLCall(program->setUniformValue("model", model));
-		GLCall(program->setUniformValue("color", 1.0f, 1.0f, 1.0f));
+		GLCall(program->setUniformValue("color", 0.6f, 0.6f, 0.6f));
 
 		vao->bind();
 		GLCall($->glDrawArrays(grid2D.getDrawMode(), 0, grid2D.verticesCount()));
