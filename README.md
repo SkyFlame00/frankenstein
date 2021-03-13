@@ -37,8 +37,8 @@ World Editor is being created with Qt 5.15, so you need to have it installed and
 ![Viewing modes example][viewing modes]
 
 [grid]: media/grid.gif
-[handles draggins]: media/handles_dragging.gif
-[brushes creating]: media/brushes-creating.gif
-[brush actions]: media/brush-actions.gif
-[brush clipping]: media/clipping.gif
-[viewing modes]: media/viewing-modes.gif
+[handles draggins]: WorldEditor/media/handles_dragging.gif
+[brushes creating]: WorldEditor/media/brushes-creating.gif
+[brush actions]: WorldEditor/media/brush-actions.gif
+[brush clipping]: WorldEditor/media/clipping.gif
+[viewing modes]: WorldEditor/media/viewing-modes.gif
