@@ -18,6 +18,7 @@ public:
 
 	void allocate(void* data, GLuint size);
 	void apply();
+	inline int componentsCount() { return m_componentsCount; }
 
 	template<typename T>
 	void addAttribute(GLuint count) { static_assert(false); }
@@ -27,6 +28,7 @@ public:
 	{
 		m_elements.push_back({ GL_FLOAT, count, (const void*)m_stride });
 		m_stride += count * sizeof(float);
+		m_componentsCount += count;
 	}
 
 private:
@@ -35,4 +37,5 @@ private:
 	GLenum m_usage;
 	GLuint m_stride;
 	QList<VertexBufferElement> m_elements;
+	int m_componentsCount = 0;
 };

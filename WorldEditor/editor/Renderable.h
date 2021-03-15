@@ -21,7 +21,7 @@ public:
 	GLenum inline getDrawMode() { return m_drawMode; }
 	bool inline shouldScale() { return m_shouldScale; }
 	virtual void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
-	virtual void render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera);
+	virtual void render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera);
 	virtual void createVAO(VertexBufferObject& vbo);
 	virtual void bindVAO(QOpenGLContext* context);
 	virtual inline float getRenderId() { return m_renderId; }

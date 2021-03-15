@@ -275,9 +275,9 @@ void GLWidget2D::clipBrush()
 		{
 			if (!isIntersectionPt(pt))
 			{
-				auto x = Helpers::round(pt.x() - brush->m_origin.x(), 4);
-				auto y = Helpers::round(pt.y() - brush->m_origin.y(), 4);
-				auto z = Helpers::round(pt.z() - brush->m_origin.z(), 4);
+				auto x = pt.x() - brush->m_origin.x();
+				auto y = pt.y() - brush->m_origin.y();
+				auto z = pt.z() - brush->m_origin.z();
 				INEXACT_K::Point_3 pp(x, y, z);
 				intersectionPts.push_back(pp);
 				ipts.push_back({ x,y,z });
@@ -329,7 +329,7 @@ void GLWidget2D::clipBrush()
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(clippedBrushVertices.begin(), clippedBrushVertices.end(), poly);
 
-		clippedBrush = new Brush(poly, brush->m_origin, brush->getUniformColor());
+		clippedBrush = new Brush(poly, brush, brush->getUniformColor());
 	}
 
 	if (remainingBrushVertices.size() > intersectionPts.size())
@@ -337,7 +337,7 @@ void GLWidget2D::clipBrush()
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(remainingBrushVertices.begin(), remainingBrushVertices.end(), poly);
 
-		remainingBrush = new Brush(poly, brush->m_origin, brush->getUniformColor());
+		remainingBrush = new Brush(poly, brush, brush->getUniformColor());
 	}
 
 	brush->m_beingClipped = true;
@@ -384,6 +384,8 @@ void GLWidget2D::applyClipping()
 	cdata->state = Types::ClippingToolState::READY;
 	cdata->axis = Axis::NONE;
 	cdata->glWidget = nullptr;
+
+	sdata->renderable = nullptr;
 }
 
 void GLWidget2D::discardClipping()

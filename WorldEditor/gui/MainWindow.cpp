@@ -15,6 +15,7 @@
 #include "../common/helpers.h"
 #include "../common/actions.h"
 #include "../common/ActionHistoryTool.h"
+#include "../editor/ResourceManager.h"
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -293,9 +294,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		if (global->m_editorMode == EditorMode::BLOCK_MODE && bdata.state == BlockToolState::READY_TO_EDIT)
 		{
 			QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
+			//Texture& texture = ResourceManager::getTexture("wall.jpg");
+			//Texture& texture = ResourceManager::getTexture("container.png");
+			Texture& texture = ResourceManager::getTexture("container2.jpg");
 
 			auto block = bdata.blockInstance;
-			auto brush = new Brush(*block->getVertices(), color);
+			auto brush = new Brush(*block->getVertices(), texture);
 			m_scene->addObject(brush);
 
 			m_scene->m_gui2DObjects.removeOne(block);

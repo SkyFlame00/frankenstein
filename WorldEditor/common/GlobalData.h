@@ -66,6 +66,7 @@ public:
 	Scene* m_scene;
 	bool m_isDrawingLines = false;
 	bool m_isWireframeMode = false;
+	int m_maxTextureUnits = 16;
 
 private:
 	GlobalData();

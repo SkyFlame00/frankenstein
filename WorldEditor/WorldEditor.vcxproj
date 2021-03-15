@@ -146,6 +146,7 @@
     <ClInclude Include="common\actions.h" />
     <ClInclude Include="common\ActionHistoryTool.h" />
     <ClInclude Include="common\cgal_bindings.h" />
+    <ClInclude Include="common\constants.h" />
     <ClInclude Include="editor\ChangeableRenderable.h" />
     <ClInclude Include="common\helpers.h" />
     <ClInclude Include="editor\ConstructionBlock.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
     <ClInclude Include="editor\grid2d\Line.h" />
+    <ClInclude Include="editor\Texture.h" />
     <QtMoc Include="gui\GLWidgetsContainer.h" />
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />

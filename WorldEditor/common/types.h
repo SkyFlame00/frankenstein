@@ -5,6 +5,7 @@
 #include <QVector3D>
 #include <QVector2D>
 #include <QList>
+#include <qopengl.h>
 
 enum class ButtonState
 {
@@ -118,9 +119,19 @@ namespace Types
 		QVector3D norm;
 		QList<Triangle> triangles;
 		QList< QPair<QVector3D, int> > indexedVertices;
-		QList<Edge> allEdges;
-		QList<Edge> borderEdges;
+		QList<Edge> edges;
 		QList<Edge> trianglesLines;
+		bool isUsingColor;
+		QVector3D color;
+		GLuint textureId;
+		int begin = 0;
+		QVector2D scale;
+		QVector2D position;
+		float minX;
+		float minY;
+		float arccos;
+		int textureWidth;
+		int textureHeight;
 	};
 
 	enum class SelectionToolState

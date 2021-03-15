@@ -6,10 +6,12 @@
 #include "Grid2D.h"
 #include "../common/helpers.h"
 #include <QtMath>
+#include "../common/constants.h"
 
-Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
+Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, bool isUsingColor)
 	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
-	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
+	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f),
+	m_isUsingColor(isUsingColor), m_defaultTexture(&texture)
 {
 	QVector3D total(0.0f, 0.0f, 0.0f);
 
@@ -41,16 +43,18 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	m_uniqueEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
 	m_uniqueEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
 
+	float cos, acos;
+
 	/* Polygon 1 */
 	Types::Polygon* poly1 = new Types::Polygon;
-	poly1->verticesMap[m_uniqueVertices[0]] = QVector2D(0, 0);
-	poly1->verticesMap[m_uniqueVertices[1]] = QVector2D(0, 1);
-	poly1->verticesMap[m_uniqueVertices[2]] = QVector2D(1, 1);
-	poly1->verticesMap[m_uniqueVertices[3]] = QVector2D(1, 0);
-	poly1->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
-	poly1->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[3] });
-	poly1->borderEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
-	poly1->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
+	poly1->vertices.push_back(m_uniqueVertices[0]);
+	poly1->vertices.push_back(m_uniqueVertices[1]);
+	poly1->vertices.push_back(m_uniqueVertices[2]);
+	poly1->vertices.push_back(m_uniqueVertices[3]);
+	poly1->edges.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
+	poly1->edges.push_back({ m_uniqueVertices[0], m_uniqueVertices[3] });
+	poly1->edges.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
+	poly1->edges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
 	poly1->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[1], m_uniqueVertices[2] });
 	poly1->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[2], m_uniqueVertices[3] });
 	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
@@ -59,112 +63,268 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[2] });
 	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[3] });
 	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
+	poly1->isUsingColor = isUsingColor;
+	poly1->color = color;
+	poly1->textureId = texture.id;
+	poly1->textureWidth = texture.width;
+	poly1->textureHeight = texture.height;
+	poly1->scale = QVector2D(1.0f, 1.0f);
+	poly1->position = QVector2D(0.0f, 0.0f);
+	poly1->verticesMap[m_uniqueVertices[0]] = QVector2D(0, 0);
+	poly1->verticesMap[m_uniqueVertices[1]] = QVector2D(0, 1);
+	poly1->verticesMap[m_uniqueVertices[2]] = QVector2D(1, 1);
+	poly1->verticesMap[m_uniqueVertices[3]] = QVector2D(1, 0);
 	calcNorm(poly1);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[0] - *m_uniqueVertices[1], *m_uniqueVertices[0] - *m_uniqueVertices[2]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[0]);
+
+		poly1->norm = norm;
+		poly1->a = a;
+		poly1->b = b;
+		poly1->c = c;
+		poly1->d = d;
+	}
 	m_polygons.push_back(poly1);
 
 	/* Polygon 2 */
 	Types::Polygon* poly2 = new Types::Polygon;
+	poly2->vertices.push_back(m_uniqueVertices[0]);
+	poly2->vertices.push_back(m_uniqueVertices[6]);
+	poly2->vertices.push_back(m_uniqueVertices[7]);
+	poly2->vertices.push_back(m_uniqueVertices[1]);
+	poly2->edges.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
+	poly2->edges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
+	poly2->edges.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
+	poly2->edges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
+	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[6], m_uniqueVertices[7] });
+	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[7], m_uniqueVertices[1] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[1] });
+	poly2->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[0] });
+	poly2->isUsingColor = isUsingColor;
+	poly2->color = color;
+	poly2->textureId = texture.id;
+	poly2->textureWidth = texture.width;
+	poly2->textureHeight = texture.height;
+	poly2->scale = QVector2D(1.0f, 1.0f);
+	poly2->position = QVector2D(0.0f, 0.0f);
 	poly2->verticesMap[m_uniqueVertices[0]] = QVector2D(0, 0);
 	poly2->verticesMap[m_uniqueVertices[6]] = QVector2D(0, 1);
 	poly2->verticesMap[m_uniqueVertices[7]] = QVector2D(1, 1);
 	poly2->verticesMap[m_uniqueVertices[1]] = QVector2D(1, 0);
-	poly2->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[1] });
-	poly2->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
-	poly2->borderEdges.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
-	poly2->borderEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
-	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[6], m_uniqueVertices[7] });
-	poly2->triangles.push_back({ m_uniqueVertices[0], m_uniqueVertices[7], m_uniqueVertices[1] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[7] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[0], m_uniqueVertices[7] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[1] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[0] });
 	calcNorm(poly2);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[0] - *m_uniqueVertices[6], *m_uniqueVertices[0] - *m_uniqueVertices[7]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[0]);
+
+		poly2->norm = norm;
+		poly2->a = a;
+		poly2->b = b;
+		poly2->c = c;
+		poly2->d = d;
+	}
 	m_polygons.push_back(poly2);
 
 	/* Polygon 3 */
 	Types::Polygon* poly3 = new Types::Polygon;
+	poly3->vertices.push_back(m_uniqueVertices[1]);
+	poly3->vertices.push_back(m_uniqueVertices[7]);
+	poly3->vertices.push_back(m_uniqueVertices[4]);
+	poly3->vertices.push_back(m_uniqueVertices[2]);
+	poly3->edges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
+	poly3->edges.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
+	poly3->edges.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly3->edges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
+	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[4], m_uniqueVertices[2] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[2] });
+	poly3->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
+	poly3->isUsingColor = isUsingColor;
+	poly3->color = color;
+	poly3->textureId = texture.id;
+	poly3->textureWidth = texture.width;
+	poly3->textureHeight = texture.height;
+	poly3->scale = QVector2D(1.0f, 1.0f);
+	poly3->position = QVector2D(0.0f, 0.0f);
 	poly3->verticesMap[m_uniqueVertices[1]] = QVector2D(0, 0);
 	poly3->verticesMap[m_uniqueVertices[7]] = QVector2D(0, 1);
 	poly3->verticesMap[m_uniqueVertices[4]] = QVector2D(1, 1);
 	poly3->verticesMap[m_uniqueVertices[2]] = QVector2D(1, 0);
-	poly3->borderEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
-	poly3->borderEdges.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
-	poly3->borderEdges.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
-	poly3->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
-	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[7], m_uniqueVertices[4] });
-	poly3->triangles.push_back({ m_uniqueVertices[1], m_uniqueVertices[4], m_uniqueVertices[2] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[7] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[2] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[1], m_uniqueVertices[2] });
 	calcNorm(poly3);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[1] - *m_uniqueVertices[7], *m_uniqueVertices[1] - *m_uniqueVertices[4]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[1]);
+
+		poly3->norm = norm;
+		poly3->a = a;
+		poly3->b = b;
+		poly3->c = c;
+		poly3->d = d;
+	}
 	m_polygons.push_back(poly3);
 
 	/* Polygon 4 */
 	Types::Polygon* poly4 = new Types::Polygon;
+	poly4->vertices.push_back(m_uniqueVertices[2]);
+	poly4->vertices.push_back(m_uniqueVertices[4]);
+	poly4->vertices.push_back(m_uniqueVertices[5]);
+	poly4->vertices.push_back(m_uniqueVertices[3]);
+	poly4->edges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
+	poly4->edges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
+	poly4->edges.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
+	poly4->edges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
+	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[4], m_uniqueVertices[5] });
+	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[5], m_uniqueVertices[3] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[3] });
+	poly4->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
+	poly4->isUsingColor = isUsingColor;
+	poly4->color = color;
+	poly4->textureId = texture.id;
+	poly4->textureWidth = texture.width;
+	poly4->textureHeight = texture.height;
+	poly4->scale = QVector2D(1.0f, 1.0f);
+	poly4->position = QVector2D(0.0f, 0.0f);
 	poly4->verticesMap[m_uniqueVertices[2]] = QVector2D(0, 0);
 	poly4->verticesMap[m_uniqueVertices[4]] = QVector2D(0, 1);
 	poly4->verticesMap[m_uniqueVertices[5]] = QVector2D(1, 1);
 	poly4->verticesMap[m_uniqueVertices[3]] = QVector2D(1, 0);
-	poly4->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
-	poly4->borderEdges.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
-	poly4->borderEdges.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
-	poly4->borderEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
-	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[4], m_uniqueVertices[5] });
-	poly4->triangles.push_back({ m_uniqueVertices[2], m_uniqueVertices[5], m_uniqueVertices[3] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[4], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[3] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[2], m_uniqueVertices[3] });
 	calcNorm(poly4);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[2] - *m_uniqueVertices[4], *m_uniqueVertices[2] - *m_uniqueVertices[5]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[2]);
+
+		poly4->norm = norm;
+		poly4->a = a;
+		poly4->b = b;
+		poly4->c = c;
+		poly4->d = d;
+	}
 	m_polygons.push_back(poly4);
 
 	/* Polygon 5 */
 	Types::Polygon* poly5 = new Types::Polygon;
+	poly5->vertices.push_back(m_uniqueVertices[3]);
+	poly5->vertices.push_back(m_uniqueVertices[5]);
+	poly5->vertices.push_back(m_uniqueVertices[6]);
+	poly5->vertices.push_back(m_uniqueVertices[0]);
+	poly5->edges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
+	poly5->edges.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
+	poly5->edges.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
+	poly5->edges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
+	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[5], m_uniqueVertices[6] });
+	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[6], m_uniqueVertices[0] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[0] });
+	poly5->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
+	poly5->isUsingColor = isUsingColor;
+	poly5->color = color;
+	poly5->textureId = texture.id;
+	poly5->textureWidth = texture.width;
+	poly5->textureHeight = texture.height;
+	poly5->scale = QVector2D(1.0f, 1.0f);
+	poly5->position = QVector2D(0.0f, 0.0f);
 	poly5->verticesMap[m_uniqueVertices[3]] = QVector2D(0, 0);
 	poly5->verticesMap[m_uniqueVertices[5]] = QVector2D(0, 1);
 	poly5->verticesMap[m_uniqueVertices[6]] = QVector2D(1, 1);
 	poly5->verticesMap[m_uniqueVertices[0]] = QVector2D(1, 0);
-	poly5->borderEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
-	poly5->borderEdges.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
-	poly5->borderEdges.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
-	poly5->borderEdges.push_back({ m_uniqueVertices[0], m_uniqueVertices[6] });
-	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[5], m_uniqueVertices[6] });
-	poly5->triangles.push_back({ m_uniqueVertices[3], m_uniqueVertices[6], m_uniqueVertices[0] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[6] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[6] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[0] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[3], m_uniqueVertices[0] });
 	calcNorm(poly5);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[3] - *m_uniqueVertices[5], *m_uniqueVertices[3] - *m_uniqueVertices[6]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[3]);
+
+		poly5->norm = norm;
+		poly5->a = a;
+		poly5->b = b;
+		poly5->c = c;
+		poly5->d = d;
+	}
 	m_polygons.push_back(poly5);
 
 	/* Polygon 6 */
 	Types::Polygon* poly6 = new Types::Polygon;
+	poly6->vertices.push_back(m_uniqueVertices[7]);
+	poly6->vertices.push_back(m_uniqueVertices[6]);
+	poly6->vertices.push_back(m_uniqueVertices[5]);
+	poly6->vertices.push_back(m_uniqueVertices[4]);
+	poly6->edges.push_back({ m_uniqueVertices[7], m_uniqueVertices[6] });
+	poly6->edges.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly6->edges.push_back({ m_uniqueVertices[6], m_uniqueVertices[5] });
+	poly6->edges.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
+	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[6], m_uniqueVertices[5] });
+	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[5], m_uniqueVertices[4] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[6] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[5] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
+	poly6->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
+	poly6->isUsingColor = isUsingColor;
+	poly6->color = color;
+	poly6->textureId = texture.id;
+	poly6->textureWidth = texture.width;
+	poly6->textureHeight = texture.height;
+	poly6->scale = QVector2D(1.0f, 1.0f);
+	poly6->position = QVector2D(0.0f, 0.0f);
 	poly6->verticesMap[m_uniqueVertices[7]] = QVector2D(0, 0);
 	poly6->verticesMap[m_uniqueVertices[6]] = QVector2D(0, 1);
 	poly6->verticesMap[m_uniqueVertices[5]] = QVector2D(1, 1);
 	poly6->verticesMap[m_uniqueVertices[4]] = QVector2D(1, 0);
-	poly6->borderEdges.push_back({ m_uniqueVertices[7], m_uniqueVertices[6] });
-	poly6->borderEdges.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
-	poly6->borderEdges.push_back({ m_uniqueVertices[6], m_uniqueVertices[5] });
-	poly6->borderEdges.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
-	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[6], m_uniqueVertices[5] });
-	poly6->triangles.push_back({ m_uniqueVertices[7], m_uniqueVertices[5], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[6] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[6], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[5] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[5], m_uniqueVertices[4] });
-	poly1->trianglesLines.push_back({ m_uniqueVertices[7], m_uniqueVertices[4] });
 	calcNorm(poly6);
+	{
+		/* Calculate norm and plane coefficients */
+		QVector3D norm = QVector3D::crossProduct(*m_uniqueVertices[7] - *m_uniqueVertices[6], *m_uniqueVertices[7] - *m_uniqueVertices[5]);
+		norm.normalize();
+		float a = norm.x();
+		float b = norm.y();
+		float c = norm.z();
+		float d = -QVector3D::dotProduct(norm, *m_uniqueVertices[7]);
+
+		poly6->norm = norm;
+		poly6->a = a;
+		poly6->b = b;
+		poly6->c = c;
+		poly6->d = d;
+	}
 	m_polygons.push_back(poly6);
 
 	/* Bounding box struct */
@@ -191,18 +351,38 @@ Brush::Brush(QList<QVector3D>& cubeVertices, QVector3D color)
 			m_boundingBox.endZ = v.z();
 	}
 
+	for (auto* polygon : m_polygons)
+	{
+		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+		polygon->minX = std::numeric_limits<float>::max();
+		polygon->minY = std::numeric_limits<float>::max();
+
+		for (auto v : polygon->vertices)
+		{
+			QVector3D pos = model * *v;
+
+			if (pos.x() < polygon->minX)
+				polygon->minX = pos.x();
+			if (pos.y() < polygon->minY)
+				polygon->minY = pos.y();
+		}
+	}
+
+	for (auto* polygon : m_polygons)
+		calcTexCoords(polygon);
+
+	setupTextures();
 	setup();
 }
 
-Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
+Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color)
 	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
 	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
 {
+	m_isUsingColor = parentBrush->m_isUsingColor;
+	m_defaultTexture = parentBrush->m_defaultTexture;
+
 	auto tryAddingUniqueVertex = [&](QVector3D& vertex) {
-		vertex.setX(Helpers::round(vertex.x(), 5));
-		vertex.setY(Helpers::round(vertex.y(), 5));
-		vertex.setZ(Helpers::round(vertex.z(), 5));
-		
 		auto res = std::find_if(m_uniqueVertices.begin(), m_uniqueVertices.end(), [&](QVector3D* v) {
 			return vertex.x() == v->x() && vertex.y() == v->y() && vertex.z() == v->z();
 			});
@@ -284,30 +464,7 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 	/* Sort polygons' vertices in the clockwise order */
 	for (auto* polygon : m_polygons)
 	{
-		QVector3D target(0, 0, 1);
-		QVector3D rotateAxis = QVector3D::crossProduct(polygon->norm, target);
-
-		QMatrix4x4 model;
-		model.setToIdentity();
-
-		auto round = [&](float n) {
-			return Helpers::round(n, 5);
-		};
-
-		if (!(round(target.x()) == round(polygon->norm.x()) &&
-			round(target.y()) ==  round(polygon->norm.y()) &&
-			round(target.z()) ==  round(polygon->norm.z())
-			) && !(
-			round(-target.x()) == round(polygon->norm.x()) &&
-			round(-target.y()) == round(polygon->norm.y()) &&
-			round(-target.z()) == round(polygon->norm.z())
-			))
-		{
-			float cos = QVector3D::dotProduct(polygon->norm, target) / (polygon->norm.length() * target.length());
-			float acos = -qRadiansToDegrees(qAcos(cos));
-			model.rotate(acos, -rotateAxis);
-		}
-
+		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
 		QVector2D centroid(0, 0);
 		QVector2D total(0, 0);
 
@@ -346,6 +503,134 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 		{
 			int j = i == size - 1 ? 0 : i + 1;
 			tryAddingUniqueEdge(polygon->vertices[i], polygon->vertices[j]);
+			polygon->edges.push_back({ polygon->vertices[i], polygon->vertices[j] });
+		}
+	}
+
+	/* Set polygons' texture coordinates */
+	for (auto* polygon : m_polygons)
+	{
+		auto& oldPolygons = parentBrush->getPolygons();
+		auto res = std::find_if(oldPolygons.begin(), oldPolygons.end(), [&](Types::Polygon* oldPolygon)
+			{
+				return Helpers::areEqual(polygon->a, oldPolygon->a) &&
+					Helpers::areEqual(polygon->b, oldPolygon->b) &&
+					Helpers::areEqual(polygon->c, oldPolygon->c) &&
+					Helpers::areEqual(polygon->d, oldPolygon->d);
+			});
+
+		if (res != oldPolygons.end())
+		{
+			auto* oldPolygon = *res;
+			polygon->isUsingColor = oldPolygon->isUsingColor;
+			polygon->textureId = oldPolygon->textureId;
+			polygon->textureWidth = oldPolygon->textureWidth;
+			polygon->textureHeight = oldPolygon->textureHeight;
+			polygon->scale = oldPolygon->scale;
+			polygon->position = oldPolygon->position;
+
+			for (auto* v : polygon->vertices)
+			{
+				auto res = std::find_if(oldPolygon->vertices.begin(), oldPolygon->vertices.end(), [&](QVector3D* oldVertex)
+					{
+						return Helpers::areEqual(*v, *oldVertex, 0.000001f);
+					});
+
+				if (res != oldPolygon->vertices.end())
+				{
+					polygon->verticesMap[v] = oldPolygon->verticesMap[*res];
+				}
+				else
+				{
+					for (auto& edge : oldPolygon->edges)
+					{
+						QVector3D res = QVector3D::crossProduct(*edge.v0 - *v, *edge.v1 - *v);
+
+						if (Helpers::areEqual(res, QVector3D(0.0f, 0.0f, 0.0f)))
+						{
+							QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+							QVector3D v0_pos = model * *edge.v0;
+							QVector3D v1_pos = model * *edge.v1;
+							QVector3D target_pos = model * *v;
+
+							/* For x */
+							float v0_texX = oldPolygon->verticesMap[edge.v0].x();
+							float v1_texX = oldPolygon->verticesMap[edge.v1].x();
+							float len_x = std::abs(v0_texX - v1_texX);
+							float texX;
+
+							if (Helpers::areEqual(len_x, 0.0f))
+							{
+								texX = v0_texX;
+							}
+							else
+							{
+								float x_d1 = std::abs(target_pos.x() - v0_pos.x());
+								float x_d2 = std::abs(target_pos.x() - v1_pos.x());
+								float x_ratio = x_d1 / x_d2;
+								float x_d1_tex = len_x * x_ratio / (1 + x_ratio);
+
+								if (v1_pos.x() - v0_pos.x() > 0)
+									texX = v0_texX + x_d1_tex;
+								else
+									texX = v0_texX - x_d1_tex;
+							}
+
+							/* For y */
+							float v0_texY = oldPolygon->verticesMap[edge.v0].y();
+							float v1_texY = oldPolygon->verticesMap[edge.v1].y();
+							float len_y = std::abs(v0_texY - v1_texY);
+							float texY;
+
+							if (Helpers::areEqual(len_y, 0.0f))
+							{
+								texY = v0_texY;
+							}
+							else
+							{
+								float y_d1 = std::abs(target_pos.y() - v0_pos.y());
+								float y_d2 = std::abs(target_pos.y() - v1_pos.y());
+								float y_ratio = y_d1 / y_d2;
+								float y_d1_tex = len_y * y_ratio / (1 + y_ratio);
+
+								if (v1_pos.y() - v0_pos.y() > 0)
+									texY = v0_texY + y_d1_tex;
+								else
+									texY = v0_texY - y_d1_tex;
+							}
+
+							polygon->verticesMap[v] = QVector2D(texX, texY);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			polygon->isUsingColor = m_isUsingColor;
+			polygon->textureId = m_defaultTexture->id;
+			polygon->textureWidth = m_defaultTexture->width;
+			polygon->textureHeight = m_defaultTexture->height;
+			polygon->scale = QVector2D(1.0f, 1.0f);
+			polygon->position = QVector2D(0.0f, 0.0f);
+
+			QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+			polygon->minX = std::numeric_limits<float>::max();
+			polygon->minY = std::numeric_limits<float>::max();
+
+			for (auto v : polygon->vertices)
+			{
+				QVector3D pos = model * *v;
+
+				if (pos.x() < polygon->minX)
+					polygon->minX = pos.x();
+				if (pos.y() < polygon->minY)
+					polygon->minY = pos.y();
+			}
+
+			polygon->scale = QVector2D(1.0f, 1.0f);
+			polygon->position = QVector2D(0.0f, 0.0f);
+			calcTexCoords(polygon);
 		}
 	}
 
@@ -359,7 +644,7 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 	}
 
 	shift = total / m_uniqueVertices.size();
-	m_origin = oldOrigin + shift;
+	m_origin = parentBrush->m_origin + shift;
 
 	for (auto* v : m_uniqueVertices)
 	{
@@ -397,6 +682,8 @@ Brush::Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color)
 	m_boundingBox.startZ += m_origin.z();
 	m_boundingBox.endZ += m_origin.z();
 
+	recalcParams();
+	setupTextures();
 	setup();
 }
 
@@ -499,6 +786,9 @@ void Brush::setup()
 	m_trianglesVbo.addAttribute<float>(2); // tex coords
 	m_trianglesVbo.addAttribute<float>(3); // color
 	m_trianglesVbo.addAttribute<float>(3); // normal
+	m_trianglesVbo.addAttribute<float>(1); // is polygon selected
+	m_trianglesVbo.addAttribute<float>(1); // is using color
+	m_trianglesVbo.addAttribute<float>(1); // texture id
 	m_trianglesRenderable = new BrushRenderable(&m_trianglesVbo, 0);
 	makeTrianglesBufferData();
 
@@ -521,35 +811,15 @@ void Brush::makeTrianglesBufferData()
 	for (auto& poly : m_polygons)
 	{
 		m_trianglesVerticesCount += poly->triangles.size() * 3;
-		size += poly->triangles.size() * 3 * 11;
+		size += poly->triangles.size() * 3 * m_trianglesVbo.componentsCount();
 	}
 
 	float *vertices = new float[size];
 	int i = 0;
 
-	auto vertexBufferData = [&](Types::Polygon* poly, QVector3D* v) {
-		auto& texCoords = poly->verticesMap[v];
-		vertices[i++] = v->x();
-		vertices[i++] = v->y();
-		vertices[i++] = v->z();
-		vertices[i++] = texCoords.x();
-		vertices[i++] = texCoords.y();
-		vertices[i++] = m_uniformColor.x();
-		vertices[i++] = m_uniformColor.y();
-		vertices[i++] = m_uniformColor.z();
-		vertices[i++] = poly->norm.x();
-		vertices[i++] = poly->norm.y();
-		vertices[i++] = poly->norm.z();
-	};
-
-	for (auto& poly : m_polygons)
+	for (auto* polygon : m_polygons)
 	{
-		for (auto& [v0, v1, v2] : poly->triangles)
-		{
-			vertexBufferData(poly, v0);
-			vertexBufferData(poly, v1);
-			vertexBufferData(poly, v2);
-		}
+		makePolygonVertices(polygon, i, vertices);
 	}
 
 	m_trianglesVbo.allocate(vertices, size * sizeof(float));
@@ -625,14 +895,14 @@ void Brush::makeTrianglesLinesBufferData()
 	delete[] vertices;
 }
 
-void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
+void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera)
 {
 	if (m_beingClipped)
 	{
 		if (m_clippedBrush)
-			m_clippedBrush->render3D(context, proj, zoomVec, camera);
+			m_clippedBrush->render3D(context, proj, scaleVec, camera);
 		if (m_remainingBrush)
-			m_remainingBrush->render3D(context, proj, zoomVec, camera);
+			m_remainingBrush->render3D(context, proj, scaleVec, camera);
 		return;
 	}
 
@@ -643,24 +913,63 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomV
 	float ambient = 0.4f;
 	float diffuse = 0.7f;
 	float specular = 1.0f;
+
 	QMatrix4x4 model;
 	model.setToIdentity();
+	model.scale(scaleVec);
 	model.translate(m_origin);
 
+	auto setUniforms = [&]()
+	{
+		GLCall(m_program3D->bind());
+		GLCall(m_program3D->setUniformValue("u_Proj", proj));
+		GLCall(m_program3D->setUniformValue("u_View", camera.getViewMatrix()));
+		GLCall(m_program3D->setUniformValue("u_Model", model));
+		GLCall(m_program3D->setUniformValue("u_UsingColor", true));
+		GLCall(m_program3D->setUniformValue("u_ViewPos", camera.getPosition()));
+		GLCall(m_program3D->setUniformValue("u_DirLight.direction", -0.1f, -0.5f, -0.2f));
+		GLCall(m_program3D->setUniformValue("u_DirLight.ambient", ambient, ambient, ambient));
+		GLCall(m_program3D->setUniformValue("u_DirLight.diffuse", diffuse, diffuse, diffuse));
+		//GLCall(m_program3D->setUniformValue("u_DirLight.specular", specular, specular, specular));
+		GLCall(m_program3D->setUniformValue("u_Material.shininess", 64.0f));
+		GLCall(m_program3D->setUniformValue("u_Selected", m_selected || m_beingCut));
+		GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
+	};
+
+	if (!m_isUsingColor && !global->m_isDrawingLines && !global->m_isWireframeMode)
+	{
+		for (auto& renderCall : m_renderCalls)
+		{
+			useContext(context);
+			setUniforms();
+
+			for (int i = 0; i < renderCall.textureMap.size(); i += 2)
+			{
+				std::string idx1 = std::to_string(i);
+				std::string idx2 = std::to_string(i + 1);
+				std::string textureCount = std::to_string(i / 2);
+				GLuint textureLoc = m_program3D->attributeLocation(("u_Textures[" + textureCount + "]").c_str());
+
+				GLCall(m_program3D->setUniformValue(("u_TextureMap[" + idx1 + "]").c_str(), renderCall.textureMap[i]));
+				GLCall(m_program3D->setUniformValue(("u_TextureMap[" + idx2 + "]").c_str(), renderCall.textureMap[i + 1]));
+
+				if (renderCall.textureMap[i] == -1)
+					break;
+
+				GLCall($->glActiveTexture(GL_TEXTURE0 + renderCall.textureMap[i + 1]));
+				GLCall($->glBindTexture(GL_TEXTURE_2D, renderCall.textureMap[i]));
+				GLCall(m_program3D->setUniformValue(textureLoc, renderCall.textureMap[i + 1]));
+			}
+
+			GLCall(trianglesVao->bind());
+			GLCall($->glDrawArrays(GL_TRIANGLES, renderCall.begin, renderCall.verticesCount));
+		}
+		
+		return;
+	}
+
 	useContext(context);
-	GLCall(m_program3D->bind());
-	GLCall(m_program3D->setUniformValue("u_Proj", proj));
-	GLCall(m_program3D->setUniformValue("u_View", camera.getViewMatrix()));
-	GLCall(m_program3D->setUniformValue("u_Model", model));
-	GLCall(m_program3D->setUniformValue("u_UsingColor", true));
-	GLCall(m_program3D->setUniformValue("u_ViewPos", camera.getPosition()));
-	GLCall(m_program3D->setUniformValue("u_DirLight.direction", -0.1f, -0.5f, -0.2f));
-	GLCall(m_program3D->setUniformValue("u_DirLight.ambient", ambient, ambient, ambient));
-	GLCall(m_program3D->setUniformValue("u_DirLight.diffuse", diffuse, diffuse, diffuse));
-	//GLCall(m_program3D->setUniformValue("u_DirLight.specular", specular, specular, specular));
-	GLCall(m_program3D->setUniformValue("u_Material.shininess", 64.0f));
-	GLCall(m_program3D->setUniformValue("u_Selected", m_selected || m_beingCut));
-	GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
+	setUniforms();
 
 	if (global->m_isDrawingLines)
 	{
@@ -805,11 +1114,12 @@ void Brush::calcNorm(Types::Polygon* polygon)
 	polygon->norm = QVector3D::normal(*tri.v0, *tri.v1, *tri.v2);
 }
 
-void Brush::writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera)
+void Brush::writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera)
 {
 	auto vao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
 	QMatrix4x4 model;
 	model.setToIdentity();
+	model.scale(scaleVec);
 	model.translate(m_origin);
 
 	useContext(context);
@@ -859,6 +1169,7 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 	}
 
 	QVector3D total(0.0f, 0.0f, 0.0f);
+	std::unordered_map<QVector3D*, QVector3D> newVertices;
 
 	for (auto& v : m_uniqueVertices)
 	{
@@ -866,6 +1177,7 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 		model.setToIdentity();
 		model.translate(m_origin);
 		QVector3D vShifted = model * *v;
+		QVector3D vertex = *v;
 
 		switch (axis)
 		{
@@ -873,48 +1185,71 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 			if (isHorizontal)
 			{
 				float factor = std::abs((vShifted.z() - horStart) / (horEnd - horStart));
-				v->setZ(v->z() + steps * factor);
+				vertex.setZ(v->z() + steps * factor);
 			}
 			else
 			{
 				float factor = std::abs((vShifted.y() - verStart) / (verEnd - verStart));
-				v->setY(v->y() + steps * factor);
+				vertex.setY(v->y() + steps * factor);
 			}
 			break;
 		case Axis::Y:
 			if (isHorizontal)
 			{
 				float factor = std::abs((vShifted.x() - horStart) / (horEnd - horStart));
-				v->setX(v->x() + steps * factor);
+				vertex.setX(v->x() + steps * factor);
 			}
 			else
 			{
 				float factor = std::abs((vShifted.z() - verStart) / (verEnd - verStart));
-				v->setZ(v->z() + steps * factor);
+				vertex.setZ(v->z() + steps * factor);
 			}
 			break;
 		case Axis::Z:
 			if (isHorizontal)
 			{
 				float factor = std::abs((vShifted.x() - horStart) / (horEnd - horStart));
-				v->setX(v->x() + steps * factor);
+				vertex.setX(v->x() + steps * factor);
 			}
 			else
 			{
 				float factor = std::abs((vShifted.y() - verStart) / (verEnd - verStart));
-				v->setY(v->y() + steps * factor);
+				vertex.setY(v->y() + steps * factor);
 			}
 		}
 
-		total += *v;
+		total += vertex;
+		newVertices[v] = vertex;
+	}
+
+	for (auto* polygon : m_polygons)
+	{
+		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+
+		for (auto* v : polygon->vertices)
+		{
+			QVector3D newVertex = newVertices[v];
+			QVector3D oldPos = model * *v;
+			QVector3D newPos = model * newVertex;
+			QVector3D shift = newPos - oldPos;
+
+			auto& texCoord = polygon->verticesMap[v];
+			texCoord.setX(texCoord.x() + shift.x() / polygon->textureWidth * Constants::TEXTURE_MAGNIFYING_FACTOR);
+			texCoord.setY(texCoord.y() + shift.y() / polygon->textureHeight * Constants::TEXTURE_MAGNIFYING_FACTOR);
+		}
 	}
 
 	QVector3D shift = total / m_uniqueVertices.size();
 	m_origin += shift;
 
-	for (auto& v : m_uniqueVertices)
+	for (auto& [_, v] : newVertices)
 	{
-		*v -= shift;
+		v -= shift;
+	}
+
+	for (auto* v : m_uniqueVertices)
+	{
+		*v = newVertices[v];
 	}
 
 	switch (axis)
@@ -968,8 +1303,10 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 		}
 	}
 
+	recalcParams();
 	makeTrianglesBufferData();
 	makeLinesBufferData();
+	makeTrianglesLinesBufferData();
 }
 
 void Brush::doMoveStep(Axis axis, QVector2D pos, float step)
@@ -1018,10 +1355,176 @@ void Brush::doMoveStep(Axis axis, QVector2D pos, float step)
 			m_boundingBox.startY += stepsY;
 			m_boundingBox.endY += stepsY;
 		}
-
-		makeTrianglesBufferData();
-		makeLinesBufferData();
 	}
 
 	m_lastPos = pos;
+}
+
+void Brush::setupTextures()
+{
+	auto* global = GlobalData::getInstance();
+	int begin = 0;
+	int textureCount = 0;
+	int verticesCount = 0;
+	std::unordered_map<GLuint, GLuint> map;
+
+	for (auto* polygon : m_polygons)
+	{
+		if (map.find(polygon->textureId) == map.end())
+		{
+			map[polygon->textureId] = textureCount++;
+		}
+		verticesCount += polygon->triangles.size() * 3;
+
+		if (map.size() >= global->m_maxTextureUnits)
+		{
+			int n = polygon->triangles.size() * 3;
+			QList<int> textureMap;
+
+			for (auto [textureId, activeTextureId] : map)
+			{
+				textureMap.append(textureId);
+				textureMap.append(activeTextureId);
+			}
+
+			m_renderCalls.push_back({ begin, verticesCount, textureMap });
+			begin += verticesCount;
+			map.clear();
+			verticesCount = 0;
+			textureCount = 0;
+		}
+	}
+
+	if (map.size() > 0)
+	{
+		QList<int> textureMap;
+		int i = 0;
+
+		for (auto [textureId, activeTextureId] : map)
+		{
+			textureMap.append(textureId);
+			textureMap.append(activeTextureId);
+			i += 2;
+		}
+
+		while (i < global->m_maxTextureUnits)
+		{
+			textureMap.append(-1);
+			textureMap.append(-1);
+			i += 2;
+		}
+
+		m_renderCalls.push_back({ begin, verticesCount, textureMap });
+	}
+}
+
+void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
+{
+	auto vertexBufferData = [&](QVector3D* v) {
+		auto& texCoords = polygon->verticesMap[v];
+		auto x = texCoords.x();
+		auto y = texCoords.y();
+		output[i++] = v->x();
+		output[i++] = v->y();
+		output[i++] = v->z();
+		output[i++] = texCoords.x() /** polygon->scale.x() * polygon->position.x()*/;
+		output[i++] = texCoords.y() /** polygon->scale.y() * polygon->position.y()*/;
+		output[i++] = m_uniformColor.x();
+		output[i++] = m_uniformColor.y();
+		output[i++] = m_uniformColor.z();
+		output[i++] = polygon->norm.x();
+		output[i++] = polygon->norm.y();
+		output[i++] = polygon->norm.z();
+		output[i++] = 0.0f; // is polygon selected
+		output[i++] = static_cast<float>(polygon->isUsingColor);
+		output[i++] = static_cast<float>(polygon->textureId);
+	};
+
+	for (auto& triangle : polygon->triangles)
+	{
+		vertexBufferData(triangle.v0);
+		vertexBufferData(triangle.v1);
+		vertexBufferData(triangle.v2);
+	}
+}
+
+void Brush::calcTexCoords(Types::Polygon* polygon)
+{
+	for (auto* v : polygon->vertices)
+	{
+		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+		QVector3D position = model * *v;
+		float x = (position.x() - polygon->minX) / polygon->textureWidth * Constants::TEXTURE_MAGNIFYING_FACTOR;
+		float y = (position.y() - polygon->minY) / polygon->textureHeight * Constants::TEXTURE_MAGNIFYING_FACTOR;
+		polygon->verticesMap[v] = QVector2D(x, y);
+	}
+}
+
+bool Brush::shouldRotate(QVector3D norm)
+{
+	auto round = [&](float n) {
+		return Helpers::round(n, 5);
+	};
+
+	return !(round(m_targetAxis.x()) == round(norm.x()) &&
+		round(m_targetAxis.y()) == round(norm.y()) &&
+		round(m_targetAxis.z()) == round(norm.z())
+		) && !(
+		round(-m_targetAxis.x()) == round(norm.x()) &&
+		round(-m_targetAxis.y()) == round(norm.y()) &&
+		round(-m_targetAxis.z()) == round(norm.z())
+		);
+}
+
+QMatrix4x4 Brush::get2DTransformMatrix(QVector3D norm)
+{
+	QMatrix4x4 transform;
+	QMatrix4x4 transform2;
+	QVector3D projectionVec(norm.x(), 0.0f, norm.z());
+
+	transform.setToIdentity();
+	transform2.setToIdentity();
+	projectionVec.normalize();
+
+	if (Helpers::areEqual(projectionVec, QVector3D(0.0f, 0.0f, 0.0f)))
+	{
+		projectionVec = m_targetAxis;
+	}
+
+	if (!Helpers::areEqual(norm.y(), 0.0f))
+	{
+		QVector3D rotationAxis = QVector3D::crossProduct(projectionVec, norm);
+		float cos = QVector3D::dotProduct(norm, projectionVec) / (norm.length() * projectionVec.length());
+		float acos = -qRadiansToDegrees(qAcos(cos));
+		transform.rotate(acos, rotationAxis);
+	}
+
+	if (shouldRotate(projectionVec))
+	{
+		QVector3D rotationAxis = QVector3D::crossProduct(projectionVec, m_targetAxis);
+		float cos = QVector3D::dotProduct(m_targetAxis, projectionVec) / (m_targetAxis.length() * projectionVec.length());
+		float acos = -qRadiansToDegrees(qAcos(cos));
+		transform2.rotate(acos, -rotationAxis);
+	}
+
+	return transform2 * transform;
+}
+
+void Brush::recalcParams()
+{
+	for (auto* polygon : m_polygons)
+	{
+		auto& triangle = polygon->triangles[0];
+		auto v0 = *triangle.v0;
+		auto v1 = *triangle.v1;
+		auto v2 = *triangle.v2;
+		QVector3D norm = QVector3D::crossProduct(v0 - v1, v0 - v2);
+
+		norm.normalize();
+		polygon->norm = norm;
+		polygon->a = norm.x();
+		polygon->b = norm.y();
+		polygon->c = norm.z();
+		polygon->d = -QVector3D::dotProduct(norm, v0);
+	}
 }

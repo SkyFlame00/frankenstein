@@ -74,7 +74,7 @@ void Renderable::createVAO(VertexBufferObject& vbo)
 	}
 }
 
-void Renderable::render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& camera)
+void Renderable::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera)
 {
 	if (!shouldDraw())
 	{
@@ -86,6 +86,7 @@ void Renderable::render3D(QOpenGLContext* context, QMatrix4x4& proj, Camera& cam
 
 	QMatrix4x4 model;
 	model.setToIdentity();
+	model.scale(scaleVec);
 
 	GLCall(m_program->bind());
 	GLCall(m_program->setUniformValue("proj", proj));

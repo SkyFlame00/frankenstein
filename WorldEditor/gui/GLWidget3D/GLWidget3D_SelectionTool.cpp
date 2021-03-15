@@ -1,6 +1,7 @@
 #include "GLWidget3D.h"
 #include "../../common/GlobalData.h"
 #include "../../common/cgal_bindings.h"
+#include "../../common/constants.h"
 
 void GLWidget3D::processSelectionTool()
 {
@@ -76,6 +77,7 @@ bool GLWidget3D::hasIntersection(QVector3D position, QVector3D direction, Types:
 {
 	QMatrix4x4 model;
 	model.setToIdentity();
+	model.scale(Constants::SCALE_VECTOR);
 	model.translate(origin);
 	auto v0 = model * QVector4D(*triangle.v0, 1.0f);
 	auto v1 = model * QVector4D(*triangle.v1, 1.0f);

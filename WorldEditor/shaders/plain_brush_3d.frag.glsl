@@ -1,4 +1,6 @@
-#version 330 core
+#ifndef MAX_TEXTURE_UNITS
+#define MAX_TEXTURE_UNITS 16
+#endif
 
 // Structs
 struct Material {
@@ -15,7 +17,7 @@ struct DirLight {
 };  
 
 // Functions declarations
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId);
 
 // Variables
 out vec4 FragColor;
@@ -23,19 +25,33 @@ in vec2 texCoords;
 in vec3 color;
 in vec3 fragPos;
 in vec3 normal;
-uniform bool u_UsingColor;
+flat in int isPolygonSelected;
+flat in int isUsingColor;
+flat in int textureId;
 uniform vec3 u_ViewPos;
 uniform DirLight u_DirLight;
 uniform Material u_Material;
 uniform bool u_Selected;
 uniform vec3 u_SelectionColor;
+uniform int u_TextureMap[MAX_TEXTURE_UNITS * 2];
+uniform sampler2D u_Textures[MAX_TEXTURE_UNITS];
 
 void main()
 {
+    int activeTextureId = -1;
+
+    for (int i = 0; i < MAX_TEXTURE_UNITS * 2; i += 2)
+    {
+        if (u_TextureMap[i] == textureId)
+        {
+            activeTextureId = i + 1;
+            break;
+        }
+    }
+
     vec3 norm = normalize(normal);
     vec3 viewDir = normalize(u_ViewPos - fragPos);
-
-	vec3 result = CalcDirLight(u_DirLight, norm, viewDir);
+	vec3 result = CalcDirLight(u_DirLight, norm, viewDir, activeTextureId);
 
     if (u_Selected)
         FragColor = mix(vec4(result, 1.0), vec4(u_SelectionColor, 1.0), 0.5);
@@ -43,7 +59,7 @@ void main()
         FragColor = vec4(result, 1.0);
 }
 
-vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId)
 {
     vec3 lightDir = normalize(-light.direction);
 
@@ -57,7 +73,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     // Combine results
     vec3 ambient, diffuse, specular;
 
-    if (u_UsingColor)
+    if (bool(isUsingColor))
     {
         ambient  = light.ambient  * color;
         diffuse  = light.diffuse  * diff * color;
@@ -65,9 +81,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     }
     else
     {
-        ambient  = light.ambient  * vec3(texture(u_Material.diffuse, texCoords));
-        diffuse  = light.diffuse  * diff * vec3(texture(u_Material.diffuse, texCoords));
-        specular = light.specular * spec * vec3(texture(u_Material.specular, texCoords));
+        ambient  = light.ambient  * vec3(texture(u_Textures[activeTextureId], texCoords));
+        diffuse  = light.diffuse  * diff * vec3(texture(u_Textures[activeTextureId], texCoords));
     }
 
     return (ambient + diffuse /*+ specular*/);

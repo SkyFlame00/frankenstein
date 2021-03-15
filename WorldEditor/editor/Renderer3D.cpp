@@ -1,5 +1,4 @@
 #include "Renderer3D.h"
-
 #include "GL.h"
 
 Renderer3D::Renderer3D(Camera* camera, int width, int height)
@@ -63,16 +62,14 @@ void Renderer3D::render(QOpenGLContext* context, QList<Brush*>& objects, QList<R
 	GLCall($->glClearColor(0.1, 0.2, 0.4, 1.0));
 	GLCall($->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-	QVector3D zoomVec(1.0f, 1.0f, 1.0f);
-
 	for (auto& object : objects)
 	{
-		object->render3D(context, m_projMatrix, zoomVec, *m_camera);
+		object->render3D(context, m_projMatrix, SCALE_VECTOR, *m_camera);
 	}
 
 	for (auto& guiObject : guiObjects)
 	{
-		guiObject->render3D(context, m_projMatrix, *m_camera);
+		guiObject->render3D(context, m_projMatrix, SCALE_VECTOR, *m_camera);
 	}
 
 	writeSelectionBuffer(context, objects);
@@ -92,14 +89,13 @@ void Renderer3D::writeSelectionBuffer(QOpenGLContext* context, QList<Brush*>& ob
 	}
 	m_brushMap = new std::unordered_map<float, Brush*>;
 
-	QVector3D zoomVec(1.0f, 1.0f, 1.0f);
 	float delta = 1.0f / objects.size();
 	float renderId = delta;
 
 	for (auto& object : objects)
 	{
 		object->changeRenderId(renderId);
-		object->writeSelectionBuffer(context, renderId, m_projMatrix, zoomVec, *m_camera);
+		object->writeSelectionBuffer(context, renderId, m_projMatrix, SCALE_VECTOR, *m_camera);
 		m_brushMap->insert(std::make_pair(renderId, object));
 		renderId += delta;
 	}

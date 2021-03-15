@@ -11,23 +11,24 @@
 #include "grid2d/Point.h"
 #include "ChangeableRenderable.h"
 #include "../common/cgal_bindings.h"
+#include "Texture.h"
 
 class Brush : public Renderable, public ChangeableRenderable
 {
 public:
-	Brush(QList<QVector3D>& cubeVertices, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
-	Brush(Polyhedron_3& polyhedron, QVector3D oldOrigin, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
+	Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f), bool isUsingColor = false);
+	Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
 	~Brush();
 
 	void setup();
 	inline int verticesCount() { return m_verticesCount; }
 	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor);
-	void render3D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
+	void render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera);
 	inline QList<Types::Polygon*>& getPolygons() { return m_polygons; }
 	inline QList<Types::Edge>& getUniqueEdges() { return m_uniqueEdges; }
 	inline QList<QVector3D*>& getUniqueVertices() { return m_uniqueVertices; }
 	inline QVector3D getUniformColor() { return m_uniformColor; }
-	void writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera);
+	void writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera);
 	void doMoveStep(Axis axis, QVector2D pos, float step);
 
 	QVector3D m_origin;
@@ -38,6 +39,7 @@ public:
 	bool m_beingClipped = false;
 	bool m_beingCut = false;
 	bool m_isInClippingMode = false;
+	bool m_isUsingColor;
 
 private:
 	class BrushRenderable : public Renderable
@@ -52,12 +54,25 @@ private:
 		VertexBufferObject* m_vbo;
 	};
 
+	struct RenderCall
+	{
+		int begin;
+		int verticesCount;
+		QList<int> textureMap;
+	};
+
 	void makeLinesBufferData();
 	void makeTrianglesBufferData();
 	void makeTrianglesLinesBufferData();
 	void calcNorm(Types::Polygon* polygon);
 	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
+	void setupTextures();
 	QVector2D get2DOrigin(Axis axis);
+	void makePolygonVertices(Types::Polygon* polygon, int& i, float* output);
+	void calcTexCoords(Types::Polygon* polygon);
+	bool shouldRotate(QVector3D norm);
+	QMatrix4x4 get2DTransformMatrix(QVector3D norm);
+	void recalcParams();
 
 	QList<QVector3D*> m_uniqueVertices;
 	QList<Types::Edge> m_uniqueEdges;
@@ -87,4 +102,7 @@ private:
 	BrushRenderable* m_linesVerticesY_renderable;
 	BrushRenderable* m_linesVerticesZ_renderable;
 	int m_bboxLinesVerticesCount;
+	QList<RenderCall> m_renderCalls;
+	QVector3D m_targetAxis = QVector3D(0, 0, 1);
+	Texture* m_defaultTexture;
 };

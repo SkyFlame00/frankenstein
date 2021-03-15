@@ -38,7 +38,6 @@ void ActionHistoryTool::undo()
 
 	if (cur->isRoot)
 	{
-		qInfo() << "You tried to undo changes at the root node";
 		return;
 	}
 
@@ -57,7 +56,6 @@ void ActionHistoryTool::redo()
 {
 	if (m_instance->m_cur == m_instance->m_end)
 	{
-		qInfo() << "You tried to redo changes at the terminal node";
 		return;
 	}
 

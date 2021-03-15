@@ -187,5 +187,11 @@
     <ClInclude Include="common\ActionHistoryTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="editor\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

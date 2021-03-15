@@ -12,7 +12,7 @@ World Editor is being created with Qt 5.15, so you need to have it installed and
 
 ## World Editor features
 
-All four view windows are plain OpenGL canvases. Three-dimensional view uses perspective projection, all two-dimensional ones use orthographic.
+All four view windows are plain OpenGL canvases. Three-dimensional view uses perspective projection, all two-dimensional ones use orthographic. The grid lines are created on the fly depending on the camera's position in the world.
 
 1. You can move around two-dimensional grid with `W`, `A`, `S`, `D` keys, zoom in and out the grid with the mouse scroll button and increase or decrease scale with `[` and `]` keys
 

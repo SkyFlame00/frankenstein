@@ -24,6 +24,8 @@ public:
 	Brush* getBrushByRenderId(float renderId);
 
 private:
+	const QVector3D SCALE_VECTOR = QVector3D(0.1f, 0.1f, 0.1f);
+
 	QMatrix4x4 m_projMatrix;
 	QMatrix4x4 m_viewMatrix;
 	Camera* m_camera;
