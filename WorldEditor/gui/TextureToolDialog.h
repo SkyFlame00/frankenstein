@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -22,12 +23,23 @@ public:
 private:
 	void handleShiftXChange(int val);
 	void handleShiftXEditingFinished();
+	void handleShiftYChange(int val);
+	void handleShiftYEditingFinished();
+	void handleScaleXChange(int val);
+	void handleScaleXEditingFinished();
+	void handleScaleYChange(int val);
+	void handleScaleYEditingFinished();
+	void handleUndefined(QSpinBox* control, int val, bool* isUndefined);
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void disableControls();
 
-	int intMax = std::numeric_limits<int>::max();
-	int intMin = -(intMax - 1);
+	int shiftMax = std::numeric_limits<int>::max();
+	int shiftMin = -(shiftMax - 1);
+	int scaleMax = std::numeric_limits<int>::max();
+	int scaleMin = -(scaleMax - 1);
+	int rotationMax = 180;
+	int rotationMin = -181;
 
 	/* Layout */
 	QVBoxLayout* m_mainLayout;
@@ -43,17 +55,25 @@ private:
 	bool m_shiftX_editingStarted = false;
 	Actions::TextureShiftData* m_textureShiftXData;
 	bool m_shiftX_isUndefined = false;
-	int m_shiftX_prevVal;
-
+	
 	/* Shift Y */
 	QSpinBox* m_shiftYControl;
 	QLabel* m_shiftYLabel;
+	bool m_shiftY_editingStarted = false;
+	Actions::TextureShiftData* m_textureShiftYData;
+	bool m_shiftY_isUndefined = false;
 
 	/* Scale X */
-	QSpinBox* m_scaleXControl;
+	QDoubleSpinBox* m_scaleXControl;
 	QLabel* m_scaleXLabel;
+	bool m_scaleX_editingStarted = false;
+	Actions::TextureScaleData* m_textureScaleXData;
+	bool m_scaleX_isUndefined = false;
 
 	/* Scale Y */
-	QSpinBox* m_scaleYControl;
+	QDoubleSpinBox* m_scaleYControl;
 	QLabel* m_scaleYLabel;
+	bool m_scaleY_editingStarted = false;
+	Actions::TextureScaleData* m_textureScaleYData;
+	bool m_scaleY_isUndefined = false;
 };

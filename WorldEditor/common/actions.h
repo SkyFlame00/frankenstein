@@ -32,4 +32,17 @@ namespace Actions
 	void textureshift_undo(void* data);
 	void textureshift_redo(void* data);
 	void textureshift_cleanup(void* data);
+
+	/* Texture tool dialog: scale actions */
+	struct TextureScaleStruct
+	{
+		Brush* brush;
+		QVector2D oldScale;
+		QVector2D newScale;
+	};
+	typedef std::unordered_map<Types::Polygon*, TextureScaleStruct> TextureScaleData;
+
+	void texturescale_undo(void* data);
+	void texturescale_redo(void* data);
+	void texturescale_cleanup(void* data);
 }

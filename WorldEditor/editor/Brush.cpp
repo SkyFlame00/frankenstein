@@ -1436,7 +1436,7 @@ void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
 		output[i++] = v->y();
 		output[i++] = v->z();
 		output[i++] = texCoords.x() + (polygon->shift.x() / polygon->textureWidth);
-		output[i++] = texCoords.y() + (polygon->shift.y() / polygon->textureHeight);
+		output[i++] = texCoords.y() - (polygon->shift.y() / polygon->textureHeight);
 		output[i++] = m_uniformColor.x();
 		output[i++] = m_uniformColor.y();
 		output[i++] = m_uniformColor.z();

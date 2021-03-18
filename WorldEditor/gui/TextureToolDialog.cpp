@@ -1,6 +1,5 @@
 #include "TextureToolDialog.h"
 #include "../common/GlobalData.h"
-#include <QDebug>
 #include "../common/helpers.h"
 #include <limits>
 #include "../common/ActionHistoryTool.h"
@@ -39,8 +38,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	QLabel* m_shiftXLabel = new QLabel("Shift X");
 	m_shiftXControl = new QSpinBox;
 	m_shiftXControl->setSpecialValueText("-");
-	m_shiftXControl->setMinimum(intMin);
-	m_shiftXControl->setMaximum(intMax);
+	m_shiftXControl->setMinimum(shiftMin);
+	m_shiftXControl->setMaximum(shiftMax);
 	m_shiftXLayout->addWidget(m_shiftXLabel);
 	m_shiftXLayout->addWidget(m_shiftXControl);
 	m_shiftXContainer->setLayout(m_shiftXLayout);
@@ -51,8 +50,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	QLabel* m_shiftYLabel = new QLabel("Shift Y");
 	m_shiftYControl = new QSpinBox;
 	m_shiftYControl->setSpecialValueText("-");
-	m_shiftYControl->setMinimum(intMin);
-	m_shiftYControl->setMaximum(intMax);
+	m_shiftYControl->setMinimum(shiftMin);
+	m_shiftYControl->setMaximum(shiftMax);
 	m_shiftYLayout->addWidget(m_shiftYLabel);
 	m_shiftYLayout->addWidget(m_shiftYControl);
 	m_shiftYContainer->setLayout(m_shiftYLayout);
@@ -61,9 +60,9 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	QWidget* m_scaleXContainer = new QWidget;
 	QHBoxLayout* m_scaleXLayout = new QHBoxLayout;
 	QLabel* m_scaleXLabel = new QLabel("Scale X");
-	m_scaleXControl = new QSpinBox;
-	m_scaleXControl->setMinimum(intMin);
-	m_scaleXControl->setMaximum(intMax);
+	m_scaleXControl = new QDoubleSpinBox;
+	m_scaleXControl->setMinimum(scaleMin);
+	m_scaleXControl->setMaximum(scaleMax);
 	m_scaleXControl->setSpecialValueText("-");
 	m_scaleXLayout->addWidget(m_scaleXLabel);
 	m_scaleXLayout->addWidget(m_scaleXControl);
@@ -73,9 +72,9 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	QWidget* m_scaleYContainer = new QWidget;
 	QHBoxLayout* m_scaleYLayout = new QHBoxLayout;
 	QLabel* m_scaleYLabel = new QLabel("Scale Y");
-	m_scaleYControl = new QSpinBox;
-	m_scaleYControl->setMinimum(intMin);
-	m_scaleYControl->setMaximum(intMax);
+	m_scaleYControl = new QDoubleSpinBox;
+	m_scaleYControl->setMinimum(scaleMin);
+	m_scaleYControl->setMaximum(scaleMax);
 	m_scaleYControl->setSpecialValueText("-");
 	m_scaleYLayout->addWidget(m_scaleYLabel);
 	m_scaleYLayout->addWidget(m_scaleYControl);
@@ -90,6 +89,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	setLayout(m_mainLayout);
 	connect(m_shiftXControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftXChange);
 	connect(m_shiftXControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftXEditingFinished);
+	connect(m_shiftYControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftYChange);
+	connect(m_shiftYControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftYEditingFinished);
 }
 
 void TextureToolDialog::showEvent(QShowEvent* event)
@@ -132,7 +133,6 @@ void TextureToolDialog::hideEvent(QHideEvent* event)
 	}
 
 	data.pickedPolygons.clear();
-
 	global->isSelectionForTextureToolActivated = false;
 	global->isCameraForTextureToolActivated = false;
 	global->m_editorMode = EditorMode::SELECTION_MODE;
@@ -150,6 +150,12 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 
 	bool shiftX_sameVal = true;
 	int shiftX_val = pickedPolygons.begin()->first->shift.x();
+	bool shiftY_sameVal = true;
+	int shiftY_val = pickedPolygons.begin()->first->shift.y();
+	bool scaleX_sameVal = true;
+	int scaleX_val = pickedPolygons.begin()->first->scale.x();
+	bool scaleY_sameVal = true;
+	int scaleY_val = pickedPolygons.begin()->first->scale.y();
 
 	for (auto it = ++pickedPolygons.begin(); it != pickedPolygons.end(); it++)
 	{
@@ -157,15 +163,21 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 
 		if (shiftX_val != polygon->shift.x())
 			shiftX_sameVal = false;
+		if (shiftY_val != polygon->shift.y())
+			shiftY_sameVal = false;
+		if (scaleX_val != polygon->scale.x())
+			scaleX_sameVal = false;
+		if (scaleY_val != polygon->scale.y())
+			scaleY_sameVal = false;
 
-		if (!shiftX_sameVal)
+		if (!shiftX_sameVal && !shiftY_sameVal && scaleX_sameVal && !scaleY_sameVal)
 			break;
 	}
 
 	if (shiftX_sameVal)
 	{
 		m_shiftXControl->blockSignals(true);
-			m_shiftXControl->setValue(shiftX_val);
+		m_shiftXControl->setValue(shiftX_val);
 		m_shiftXControl->blockSignals(false);
 
 		m_shiftXControl->setDisabled(false);
@@ -173,10 +185,73 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 	else
 	{
 		m_shiftXControl->blockSignals(true);
-			m_shiftXControl->setValue(intMin);
+		m_shiftXControl->setValue(shiftMin);
 		m_shiftXControl->blockSignals(false);
 
 		m_shiftX_isUndefined = true;
+	}
+
+	if (shiftY_sameVal)
+	{
+		m_shiftYControl->blockSignals(true);
+		m_shiftYControl->setValue(shiftY_val);
+		m_shiftYControl->blockSignals(false);
+
+		m_shiftYControl->setDisabled(false);
+	}
+	else
+	{
+		m_shiftYControl->blockSignals(true);
+		m_shiftYControl->setValue(shiftMin);
+		m_shiftYControl->blockSignals(false);
+
+		m_shiftY_isUndefined = true;
+	}
+
+	if (scaleX_sameVal)
+	{
+		m_scaleXControl->blockSignals(true);
+		m_scaleXControl->setValue(scaleX_val);
+		m_scaleXControl->blockSignals(false);
+
+		m_scaleXControl->setDisabled(false);
+	}
+	else
+	{
+		m_scaleXControl->blockSignals(true);
+		m_scaleXControl->setValue(scaleMin);
+		m_scaleXControl->blockSignals(false);
+
+		m_scaleX_isUndefined = true;
+	}
+
+	if (scaleY_sameVal)
+	{
+		m_scaleYControl->blockSignals(true);
+		m_scaleYControl->setValue(scaleY_val);
+		m_scaleYControl->blockSignals(false);
+
+		m_scaleYControl->setDisabled(false);
+	}
+	else
+	{
+		m_scaleYControl->blockSignals(true);
+		m_scaleYControl->setValue(scaleMin);
+		m_scaleYControl->blockSignals(false);
+
+		m_scaleY_isUndefined = true;
+	}
+}
+
+void TextureToolDialog::handleUndefined(QSpinBox* control, int val, bool* isUndefined)
+{
+	if (*isUndefined)
+	{
+		val = 0;
+		control->blockSignals(true);
+		control->setValue(val);
+		control->blockSignals(false);
+		*isUndefined = false;
 	}
 }
 
@@ -185,14 +260,7 @@ void TextureToolDialog::handleShiftXChange(int val)
 	auto global = GlobalData::getInstance();
 	auto& data = global->textureToolData;
 
-	if (m_shiftX_isUndefined)
-	{
-		val = 0;
-		m_shiftXControl->blockSignals(true);
-		m_shiftXControl->setValue(val);
-		m_shiftXControl->blockSignals(false);
-		m_shiftX_isUndefined = false;
-	}
+	handleUndefined(m_shiftXControl, val, &m_shiftX_isUndefined);
 
 	if (!m_shiftX_editingStarted)
 	{
@@ -208,19 +276,10 @@ void TextureToolDialog::handleShiftXChange(int val)
 		m_shiftX_editingStarted = true;
 	}
 
-	for (auto pair : data.pickedPolygons)
+	for (auto& [polygon, brush] : data.pickedPolygons)
 	{
-		auto* polygon = pair.first;
-		auto* brush = pair.second;
-		auto& vbo = brush->getTrianglesVbo();
-		int size = polygon->triangles.size() * 3 * 14;
-		float* polygonData = new float[size];
-		int i = 0;
-
 		polygon->shift = QVector2D(m_shiftXControl->value(), polygon->shift.y());
-		brush->makePolygonVertices(polygon, i, polygonData);
-		vbo.subdata(polygon->begin, size * sizeof(float), polygonData);
-		delete[] polygonData;
+		brush->sendPolygonDataToGPU(polygon);
 	}
 }
 
@@ -245,6 +304,55 @@ void TextureToolDialog::handleShiftXEditingFinished()
 	m_shiftX_editingStarted = false;
 }
 
+void TextureToolDialog::handleShiftYChange(int val)
+{
+	auto global = GlobalData::getInstance();
+	auto& data = global->textureToolData;
+
+	handleUndefined(m_shiftYControl, val, &m_shiftY_isUndefined);
+
+	if (!m_shiftY_editingStarted)
+	{
+		m_textureShiftYData = new Actions::TextureShiftData;
+
+		for (auto& pair : data.pickedPolygons)
+		{
+			auto* polygon = pair.first;
+			auto* brush = pair.second;
+			m_textureShiftYData->insert(std::pair<Types::Polygon*, Actions::TextureShiftStruct>(polygon, { brush, polygon->shift }));
+		}
+
+		m_shiftY_editingStarted = true;
+	}
+
+	for (auto& [polygon, brush] : data.pickedPolygons)
+	{
+		polygon->shift = QVector2D(polygon->shift.x(), m_shiftYControl->value());
+		brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void TextureToolDialog::handleShiftYEditingFinished()
+{
+	if (!m_shiftY_editingStarted)
+		return;
+
+	auto global = GlobalData::getInstance();
+	auto& data = global->textureToolData;
+
+	for (auto& pair : data.pickedPolygons)
+	{
+		auto* polygon = pair.first;
+		QVector2D newShift(polygon->shift.x(), m_shiftYControl->value());
+		(*m_textureShiftYData)[polygon].newShift = newShift;
+	}
+
+	ActionHistoryTool::addAction(Actions::textureshift_undo, Actions::textureshift_redo, Actions::textureshift_cleanup, m_textureShiftYData);
+
+	m_textureShiftYData = nullptr;
+	m_shiftY_editingStarted = false;
+}
+
 void TextureToolDialog::disableControls()
 {
 	m_shiftXControl->setDisabled(true);
@@ -253,18 +361,18 @@ void TextureToolDialog::disableControls()
 	m_scaleYControl->setDisabled(true);
 
 	m_shiftXControl->blockSignals(true);
-		m_shiftXControl->setValue(intMin);
+		m_shiftXControl->setValue(shiftMin);
 	m_shiftXControl->blockSignals(false);
 
 	m_shiftXControl->blockSignals(true);
-		m_shiftXControl->setValue(intMin);
+		m_shiftXControl->setValue(shiftMin);
 	m_shiftXControl->blockSignals(false);
 
 	m_scaleXControl->blockSignals(true);
-		m_scaleXControl->setValue(intMin);
+		m_scaleXControl->setValue(scaleMin);
 	m_scaleXControl->blockSignals(false);
 
 	m_scaleYControl->blockSignals(true);
-		m_scaleYControl->setValue(intMin);
+		m_scaleYControl->setValue(scaleMin);
 	m_scaleYControl->blockSignals(false);
 }
