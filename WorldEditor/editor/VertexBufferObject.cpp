@@ -29,3 +29,9 @@ void VertexBufferObject::apply()
 		i++;
 	}
 }
+
+void VertexBufferObject::subdata(GLuint begin, GLuint size, void* data)
+{
+	GLCall($->glBindBuffer(m_target, m_vbo));
+	GLCall($->glBufferSubData(m_target, begin, size, data));
+}

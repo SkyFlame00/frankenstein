@@ -32,6 +32,7 @@ private:
 
 	ActionHistoryTool();
 	~ActionHistoryTool();
+	static void adjustGlobalState();
 
 	static ActionHistoryTool* m_instance;
 	QLinkedList<Action*> m_actions;

@@ -7,58 +7,19 @@ void GLWidget3D::processSelectionTool()
 {
 	auto global = GlobalData::getInstance();
 	auto& data = global->m_selectionToolData;
-	bool isWidgetActive = m_inputData.isMouseOver;
-	int mouseX = m_inputData.mouseX;
-	int mouseY = m_inputData.mouseY;
 
-	if (isWidgetActive && m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
+	if (isWidgetActive() && m_inputData.leftMouseDown == ButtonDownState::DOWN_NOT_PROCESSED)
 	{
-		float renderId = m_renderer->getSelectionValue(mouseX, m_screenHeight - mouseY);
-		auto renderable = m_renderer->getBrushByRenderId(renderId);
+		Brush* brush;
+		Types::Polygon* polygon;
+		Types::Triangle* triangle;
+		QVector3D point;
 
-		if (renderId == 0.0f || !renderable)
+		bool isBrushPicked = pickBrush(&brush, &polygon, &triangle, &point);
+
+		if (!isBrushPicked)
 		{
-			if (data.renderable)
-			{
-				data.renderable->m_selected = false;
-				data.renderable = nullptr;
-			}
-			goto end;
-		}
-
-		QVector3D pointingRay =
-			m_camera->getPickingRay(mouseX, mouseY, m_screenWidth, m_screenHeight, m_renderer->getNearPlane(), m_renderer->getFarPlane(), m_renderer->getProjMatrix());
-		QVector3D intersectionPoint;
-		Types::Polygon* intersectionPolygon = nullptr;
-		Types::Triangle* intersectionTriangle = nullptr;
-
-		for (auto& polygon : renderable->getPolygons())
-		{
-			for (auto& triangle : polygon->triangles)
-			{
-				auto cameraPos = m_camera->getPosition();
-				QVector3D pt;
-				if (hasIntersection(cameraPos, pointingRay, triangle, renderable->m_origin, pt))
-				{
-					if (!intersectionPolygon)
-					{
-						intersectionPolygon = polygon;
-						intersectionTriangle = &triangle;
-						intersectionPoint = pt;
-						continue;
-					}
-
-					float d1 = std::abs(cameraPos.distanceToPoint(intersectionPoint));
-					float d2 = std::abs(cameraPos.distanceToPoint(pt));
-
-					if (d2 < d1)
-					{
-						intersectionPolygon = polygon;
-						intersectionTriangle = &triangle;
-						intersectionPoint = pt;
-					}
-				}
-			}
+			return;
 		}
 
 		if (data.renderable)
@@ -67,10 +28,9 @@ void GLWidget3D::processSelectionTool()
 			data.renderable = nullptr;
 		}
 
-		data.renderable = renderable;
-		renderable->m_selected = true;
+		data.renderable = brush;
+		brush->m_selected = true;
 	}
-end:;
 }
 
 bool GLWidget3D::hasIntersection(QVector3D position, QVector3D direction, Types::Triangle triangle, QVector3D origin, QVector3D& output)

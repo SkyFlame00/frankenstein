@@ -19,6 +19,7 @@ public:
 	void allocate(void* data, GLuint size);
 	void apply();
 	inline int componentsCount() { return m_componentsCount; }
+	void subdata(GLuint begin, GLuint size, void* data);
 
 	template<typename T>
 	void addAttribute(GLuint count) { static_assert(false); }

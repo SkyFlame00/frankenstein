@@ -50,6 +50,7 @@ void ActionHistoryTool::undo()
 	}
 
 	MainWindow::getHistoryForthButton()->setEnabled(true);
+	adjustGlobalState();
 }
 
 void ActionHistoryTool::redo()
@@ -68,6 +69,7 @@ void ActionHistoryTool::redo()
 	}
 
 	MainWindow::getHistoryBackButton()->setEnabled(true);
+	adjustGlobalState();
 }
 
 void ActionHistoryTool::addAction(undo_t undo, redo_t redo, cleanup_t cleanup, void* data)
@@ -97,4 +99,33 @@ bool ActionHistoryTool::isRoot()
 bool ActionHistoryTool::isTerminal()
 {
 	return *m_instance->m_cur == *m_instance->m_end;
+}
+
+void ActionHistoryTool::adjustGlobalState()
+{
+	auto* dialog = MainWindow::getInstance()->getTextureToolDialog();
+	auto* global = GlobalData::getInstance();
+	auto& pickedPolygons = global->textureToolData.pickedPolygons;
+
+	for (auto it = pickedPolygons.begin(); it != pickedPolygons.end();)
+	{
+		auto* polygon = it->first;
+		auto* brush = it->second;
+
+		if (!brush->isOnScene)
+		{
+			polygon->isSelected = false;
+			brush->sendPolygonDataToGPU(polygon);
+			pickedPolygons.erase(it++);
+		}
+		else
+		{
+			it++;
+		}
+	}
+
+	if (!dialog->isHidden())
+	{
+		dialog->onPickedPolygonsChange(pickedPolygons);
+	}
 }

@@ -11,6 +11,7 @@
 #include "../editor/Camera.h"
 #include <QKeyEvent>
 #include "GLWidgetsContainer.h"
+#include "TextureToolDialog.h"
 
 class MainWindow : public QMainWindow
 {
@@ -26,7 +27,13 @@ public:
 	inline static MainWindow* getInstance() { return m_instance; }
 	inline static QAction* getHistoryBackButton() { return m_instance->m_historyBackButton; }
 	inline static QAction* getHistoryForthButton() { return m_instance->m_historyForthButton; }
-
+	inline static TextureToolDialog* getTextureToolDialog() { return m_instance->m_textureToolDialog; }
+	inline static QAction* getSelectionToolButton() { return m_instance->m_selectionToolButton; }
+	inline static QAction* getCameraToolButton() { return m_instance->m_cameraToolButton; }
+	inline static QAction* getBlockToolButton() { return m_instance->m_blockToolButton; }
+	inline static QAction* getClippingToolButton() { return m_instance->m_clippingToolButton; }
+	inline static QAction* getTextureToolButton() { return m_instance->m_textureToolButton; }
+	
 	QMenuBar* menuBar;
 	QMenu* fileMenu;
 	
@@ -43,11 +50,13 @@ private:
 	void setupLeftToolbar();
 	void setupDocks();
 	void setupEditor();
+	void setupWindows();
 	void enableMouseTracking();
 	void handleToolChange(QAction* action);
 	void handleHistoryChange(QAction* action);
 	void processShortcuts();
 	void endInputProcessing(bool isReleased);
+	void closeEvent(QCloseEvent* event);
 
 	static MainWindow* m_instance;
 
@@ -71,6 +80,10 @@ private:
 	QToolBar* m_leftToolbar;
 	QActionGroup* m_leftToolbarGroup;
 	QAction* m_selectionToolButton;
+	QAction* m_cameraToolButton;
 	QAction* m_blockToolButton;
 	QAction* m_clippingToolButton;
+	QAction* m_textureToolButton;
+
+	TextureToolDialog* m_textureToolDialog = nullptr;
 };

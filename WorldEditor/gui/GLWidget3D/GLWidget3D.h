@@ -31,6 +31,7 @@ public:
 		ButtonDownState keyV = ButtonDownState::RELEASED_NOT_PROCESSED;
 		ButtonDownState keyF = ButtonDownState::RELEASED_NOT_PROCESSED;
 		ButtonDownState keyR = ButtonDownState::RELEASED_NOT_PROCESSED;
+		ButtonDownState keyCtrl = ButtonDownState::RELEASED_PROCESSED;
 		ButtonState leftMouse = ButtonState::NOT_ACTIVE;
 		ButtonState rightMouse = ButtonState::NOT_ACTIVE;
 		ButtonDownState leftMouseDown = ButtonDownState::RELEASED_NOT_PROCESSED;
@@ -59,4 +60,9 @@ private:
 	void resizeGL(int width, int height) override;
 	void processSelectionTool();
 	bool hasIntersection(QVector3D position, QVector3D direction, Types::Triangle triangle, QVector3D origin, QVector3D& output);
+	void processTextureTool();
+	bool pickBrush(Brush** brush, Types::Polygon** polygon, Types::Triangle** triangle, QVector3D* point);
+	bool isWidgetActive();
+	void processMouseMovement();
+	bool isCameraMode();
 };

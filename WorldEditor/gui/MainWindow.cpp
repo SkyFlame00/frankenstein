@@ -45,6 +45,7 @@ MainWindow::MainWindow()
 	setupLeftToolbar();
 	setupDocks();
 	setupEditor();
+	setupWindows();
 	enableMouseTracking();
 }
 
@@ -69,6 +70,7 @@ void MainWindow::init()
 	}
 
 	m_instance = new MainWindow;
+	m_instance->handleToolChange(m_instance->getSelectionToolButton());
 }
 
 void MainWindow::cleanup()
@@ -127,7 +129,10 @@ void MainWindow::setupLeftToolbar()
 	m_leftToolbar->addAction(m_selectionToolButton);
 
 	/* Camera tool */
-	/* ... */
+	m_cameraToolButton = new QAction(m_leftToolbar);
+	m_cameraToolButton->setIcon(QIcon("assets/icons/camera_tool.png"));
+	m_cameraToolButton->setCheckable(true);
+	m_leftToolbar->addAction(m_cameraToolButton);
 
 	/* Block tool */
 	m_blockToolButton = new QAction(m_leftToolbar);
@@ -141,16 +146,23 @@ void MainWindow::setupLeftToolbar()
 	m_clippingToolButton->setCheckable(true);
 	m_leftToolbar->addAction(m_clippingToolButton);
 
+	/* Texture tool */
+	m_textureToolButton = new QAction(m_leftToolbar);
+	m_textureToolButton->setIcon(QIcon("assets/icons/texture_tool.png"));
+	m_textureToolButton->setCheckable(true);
+	m_leftToolbar->addAction(m_textureToolButton);
+
 	/* Action group */
 	m_leftToolbarGroup = new QActionGroup(m_leftToolbar);
 	m_leftToolbarGroup->addAction(m_selectionToolButton);
+	m_leftToolbarGroup->addAction(m_cameraToolButton);
 	m_leftToolbarGroup->addAction(m_blockToolButton);
 	m_leftToolbarGroup->addAction(m_clippingToolButton);
-	m_leftToolbarGroup->setExclusive(true);
+	m_leftToolbarGroup->addAction(m_textureToolButton);
+	m_leftToolbarGroup->setExclusive(false);
 
 	connect(m_leftToolbarGroup, &QActionGroup::triggered, this, &MainWindow::handleToolChange);
 	m_selectionToolButton->setChecked(true);
-	handleToolChange(m_selectionToolButton);
 }
 
 void MainWindow::setupDocks()
@@ -168,6 +180,11 @@ void MainWindow::setupEditor()
 
 	layout->addWidget(m_glWidgetsContainer);
 	m_centralWidget->setLayout(layout);
+}
+
+void MainWindow::setupWindows()
+{
+	m_textureToolDialog = new TextureToolDialog(this, Qt::Tool);
 }
 
 void MainWindow::enableMouseTracking()
@@ -259,6 +276,11 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		{
 			m_inputData.keyCtrl = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
+
+		if (m_glWidget3D->m_inputData.keyCtrl == ButtonDownState::RELEASED_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyCtrl = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
 	}
 	if (key == Qt::Key_Z)
 	{
@@ -293,7 +315,6 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	{
 		if (global->m_editorMode == EditorMode::BLOCK_MODE && bdata.state == BlockToolState::READY_TO_EDIT)
 		{
-			QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
 			//Texture& texture = ResourceManager::getTexture("wall.jpg");
 			//Texture& texture = ResourceManager::getTexture("container.png");
 			Texture& texture = ResourceManager::getTexture("container2.jpg");
@@ -394,6 +415,11 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 		{
 			m_inputData.keyCtrl = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
+
+		if (m_glWidget3D->m_inputData.keyCtrl == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_glWidget3D->m_inputData.keyCtrl = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
 	}
 	if (key == Qt::Key_Z)
 	{
@@ -452,6 +478,10 @@ void MainWindow::handleToolChange(QAction* action)
 	{
 		GlobalData::setMode(EditorMode::SELECTION_MODE);
 	}
+	else if (action == m_cameraToolButton)
+	{
+		GlobalData::setMode(EditorMode::CAMERA_MODE);
+	}
 	else if (action == m_blockToolButton)
 	{
 		GlobalData::setMode(EditorMode::BLOCK_MODE);
@@ -459,6 +489,11 @@ void MainWindow::handleToolChange(QAction* action)
 	else if (action == m_clippingToolButton)
 	{
 		GlobalData::setMode(EditorMode::CLIPPING_MODE);
+	}
+
+	else if (action == m_textureToolButton)
+	{
+		GlobalData::setMode(EditorMode::TEXTURE_TOOL);
 	}
 }
 
@@ -524,4 +559,14 @@ void MainWindow::endInputProcessing(bool isReleased)
 		if (d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED)
 			d.keyShift = ButtonDownState::DOWN_PROCESSED;
 	}
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+	if (m_textureToolDialog)
+	{
+		m_textureToolDialog->close();
+	}
+
+	QMainWindow::closeEvent(event);
 }

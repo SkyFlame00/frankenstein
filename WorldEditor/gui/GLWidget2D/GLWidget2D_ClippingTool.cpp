@@ -329,7 +329,7 @@ void GLWidget2D::clipBrush()
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(clippedBrushVertices.begin(), clippedBrushVertices.end(), poly);
 
-		clippedBrush = new Brush(poly, brush, brush->getUniformColor());
+		clippedBrush = new Brush(poly, brush);
 	}
 
 	if (remainingBrushVertices.size() > intersectionPts.size())
@@ -337,7 +337,7 @@ void GLWidget2D::clipBrush()
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(remainingBrushVertices.begin(), remainingBrushVertices.end(), poly);
 
-		remainingBrush = new Brush(poly, brush, brush->getUniformColor());
+		remainingBrush = new Brush(poly, brush);
 	}
 
 	brush->m_beingClipped = true;

@@ -111,6 +111,12 @@
     <ClCompile Include="common\ActionHistoryTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui\TextureToolDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D_TextureTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
@@ -120,6 +126,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gui\GLWidget3D\GLWidget3D.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\TextureToolDialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

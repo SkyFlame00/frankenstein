@@ -16,8 +16,8 @@
 class Brush : public Renderable, public ChangeableRenderable
 {
 public:
-	Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f), bool isUsingColor = false);
-	Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color = QVector3D(0.0f, 0.8f, 0.2f));
+	Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor = false);
+	Brush(Polyhedron_3& polyhedron, Brush* parentBrush);
 	~Brush();
 
 	void setup();
@@ -30,6 +30,11 @@ public:
 	inline QVector3D getUniformColor() { return m_uniformColor; }
 	void writeSelectionBuffer(QOpenGLContext* context, float renderId, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera);
 	void doMoveStep(Axis axis, QVector2D pos, float step);
+	void selectPolygon(Types::Polygon* polygon);
+	void unselectPolygon(Types::Polygon* polygon);
+	void makePolygonVertices(Types::Polygon* polygon, int& i, float* output);
+	inline VertexBufferObject& getTrianglesVbo() { return m_trianglesVbo; }
+	void sendPolygonDataToGPU(Types::Polygon* polygon);
 
 	QVector3D m_origin;
 	bool m_selected = false;
@@ -40,6 +45,7 @@ public:
 	bool m_beingCut = false;
 	bool m_isInClippingMode = false;
 	bool m_isUsingColor;
+	bool isOnScene = true;
 
 private:
 	class BrushRenderable : public Renderable
@@ -68,7 +74,6 @@ private:
 	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
 	void setupTextures();
 	QVector2D get2DOrigin(Axis axis);
-	void makePolygonVertices(Types::Polygon* polygon, int& i, float* output);
 	void calcTexCoords(Types::Polygon* polygon);
 	bool shouldRotate(QVector3D norm);
 	QMatrix4x4 get2DTransformMatrix(QVector3D norm);

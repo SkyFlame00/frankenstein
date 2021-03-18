@@ -1,5 +1,6 @@
 #include "GlobalData.h"
 #include <QDebug>
+#include "../gui/MainWindow.h"
 
 GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
@@ -52,39 +53,35 @@ QOpenGLVertexArrayObject* GlobalData::getRenderableVAO(QOpenGLContext& context, 
 	return vaoIt->second;
 }
 
-void GlobalData::setMode(EditorMode mode)
+void GlobalData::setMode(EditorMode nextMode)
 {
 	auto* inst = getInstance();
-	onModeChange(mode);
-	inst->m_editorMode = mode;
+	bool hasChanged = onModeChange(nextMode);
+
+	if (hasChanged)
+		inst->m_editorMode = nextMode;
 }
 
-void GlobalData::onModeChange(EditorMode nextMode)
+bool GlobalData::onModeChange(EditorMode nextMode)
 {
 	auto* inst = getInstance();
 	auto prevMode = inst->m_editorMode;
-
-	switch (nextMode)
-	{
-	case EditorMode::SELECTION_MODE:
-		break;
-	case EditorMode::BLOCK_MODE:
-		if (inst->m_blockToolData.blockInstance)
-		{
-			inst->m_scene->m_gui2DObjects.push_back(inst->m_blockToolData.blockInstance);
-			inst->m_scene->m_gui3DObjects.push_back(inst->m_blockToolData.blockInstance);
-		}
-		break;
-	case EditorMode::CLIPPING_MODE:
-		auto* brush = inst->m_selectionToolData.renderable;
-		if (brush)
-			brush->m_isInClippingMode = true;
-		break;
-	}
+	auto* mainWindow = MainWindow::getInstance();
+	auto* prevTool = getToolButtonByMode(prevMode);
+	auto* nextTool = getToolButtonByMode(nextMode);
+	auto* selButton = mainWindow->getSelectionToolButton();
+	auto* camButton = mainWindow->getCameraToolButton();
+	auto* texButton = mainWindow->getTextureToolButton();
+	bool activateNextMode = true;
+	
+	prevTool->setChecked(false);
+	nextTool->setChecked(true);
 
 	switch (prevMode)
 	{
 	case EditorMode::SELECTION_MODE:
+		break;
+	case EditorMode::CAMERA_MODE:
 		break;
 	case EditorMode::BLOCK_MODE:
 		if (inst->m_blockToolData.blockInstance)
@@ -94,12 +91,83 @@ void GlobalData::onModeChange(EditorMode nextMode)
 		}
 		break;
 	case EditorMode::CLIPPING_MODE:
+	{
 		auto* brush = inst->m_selectionToolData.renderable;
 		if (brush)
 			brush->m_isInClippingMode = false;
 		inst->m_clippingToolData.glWidget->discardClipping();
 		break;
 	}
+	case EditorMode::TEXTURE_TOOL:
+		if (nextMode == EditorMode::SELECTION_MODE || nextMode == EditorMode::CAMERA_MODE)
+		{
+			activateNextMode = false;
+
+			if (nextMode == EditorMode::SELECTION_MODE)
+			{
+				selButton->setChecked(true);
+				camButton->setChecked(false);
+				texButton->setChecked(true);
+				inst->isSelectionForTextureToolActivated = true;
+				inst->isCameraForTextureToolActivated = false;
+			}	
+			else if (nextMode == EditorMode::CAMERA_MODE)
+			{
+				selButton->setChecked(false);
+				camButton->setChecked(true);
+				texButton->setChecked(true);
+				inst->isSelectionForTextureToolActivated = false;
+				inst->isCameraForTextureToolActivated = true;
+			}
+		}
+		else
+		{
+			auto* dialog = mainWindow->getTextureToolDialog();
+			dialog->hide();
+			selButton->setChecked(false);
+			camButton->setChecked(false);
+			inst->isSelectionForTextureToolActivated = false;
+			inst->isCameraForTextureToolActivated = false;
+		}
+		break;
+	}
+
+	if (!activateNextMode)
+	{
+		return false;
+	}
+
+	switch (nextMode)
+	{
+	case EditorMode::SELECTION_MODE:
+		break;
+	case EditorMode::CAMERA_MODE:
+		break;
+	case EditorMode::BLOCK_MODE:
+		if (inst->m_blockToolData.blockInstance)
+		{
+			inst->m_scene->m_gui2DObjects.push_back(inst->m_blockToolData.blockInstance);
+			inst->m_scene->m_gui3DObjects.push_back(inst->m_blockToolData.blockInstance);
+		}
+		break;
+	case EditorMode::CLIPPING_MODE:
+	{
+		auto* brush = inst->m_selectionToolData.renderable;
+		if (brush)
+			brush->m_isInClippingMode = true;
+		break;
+	}
+	case EditorMode::TEXTURE_TOOL:
+	{
+		auto* dialog = mainWindow->getTextureToolDialog();
+		dialog->show();
+		selButton->setChecked(true);
+		inst->isSelectionForTextureToolActivated = true;
+		break;
+	}
+	}
+
+	return true;
 }
 
 void GlobalData::onContextReady()
@@ -119,5 +187,24 @@ void GlobalData::onContextReady()
 		m_instance->m_clippingToolData.point1->m_enableScale = false;
 		m_instance->m_clippingToolData.point2->m_enableScale = false;
 		m_instance->m_clippingToolData.line = new Line;
+	}
+}
+
+QAction* GlobalData::getToolButtonByMode(EditorMode mode)
+{
+	auto* mainWindow = MainWindow::getInstance();
+
+	switch (mode)
+	{
+	case EditorMode::SELECTION_MODE:
+		return mainWindow->getSelectionToolButton();
+	case EditorMode::CAMERA_MODE:
+		return mainWindow->getCameraToolButton();
+	case EditorMode::BLOCK_MODE:
+		return mainWindow->getBlockToolButton();
+	case EditorMode::CLIPPING_MODE:
+		return mainWindow->getClippingToolButton();
+	case EditorMode::TEXTURE_TOOL:
+		return mainWindow->getTextureToolButton();
 	}
 }

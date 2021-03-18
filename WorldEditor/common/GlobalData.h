@@ -61,17 +61,24 @@ public:
 		GLWidget2D* glWidget = nullptr;
 	} m_clippingToolData;
 
+	struct {
+		std::unordered_map<Types::Polygon*, Brush*> pickedPolygons;
+	} textureToolData;
+
 	static std::unordered_map<QOpenGLContext*, ContextVAOMap*> openglContexts;
-	EditorMode m_editorMode;
+	EditorMode m_editorMode = EditorMode::SELECTION_MODE;
 	Scene* m_scene;
 	bool m_isDrawingLines = false;
 	bool m_isWireframeMode = false;
 	int m_maxTextureUnits = 16;
+	bool isSelectionForTextureToolActivated = false;
+	bool isCameraForTextureToolActivated = false;
 
 private:
 	GlobalData();
 	~GlobalData();
-	static void onModeChange(EditorMode nextMode);
+	static bool onModeChange(EditorMode nextMode);
+	static QAction* getToolButtonByMode(EditorMode mode);
 
 	static GlobalData* m_instance;
 };

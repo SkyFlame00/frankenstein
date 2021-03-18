@@ -120,6 +120,7 @@
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_ClippingTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidget3D\GLWidget3D_SelectionTool.cpp" />
+    <ClCompile Include="gui\GLWidget3D\GLWidget3D_TextureTool.cpp" />
     <ClCompile Include="gui\GLWidgetsContainer.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_BlockTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D.cpp" />
@@ -135,6 +136,7 @@
     <ClCompile Include="editor\Renderer2D.cpp" />
     <ClCompile Include="editor\grid2d\Point.cpp" />
     <ClCompile Include="editor\VertexBufferObject.cpp" />
+    <ClCompile Include="gui\TextureToolDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -156,6 +158,7 @@
     <ClInclude Include="common\GlobalData.h" />
     <ClInclude Include="editor\grid2d\Line.h" />
     <ClInclude Include="editor\Texture.h" />
+    <QtMoc Include="gui\TextureToolDialog.h" />
     <QtMoc Include="gui\GLWidgetsContainer.h" />
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />

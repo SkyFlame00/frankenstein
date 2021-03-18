@@ -8,11 +8,13 @@
 #include <QtMath>
 #include "../common/constants.h"
 
-Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, bool isUsingColor)
-	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
+Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor)
+	: m_selectionColor(1.0f, 0.0f, 0.0f),
 	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f),
 	m_isUsingColor(isUsingColor), m_defaultTexture(&texture)
 {
+	QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
+	m_uniformColor = color;
 	QVector3D total(0.0f, 0.0f, 0.0f);
 
 	for (auto& v : cubeVertices)
@@ -69,7 +71,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly1->textureWidth = texture.width;
 	poly1->textureHeight = texture.height;
 	poly1->scale = QVector2D(1.0f, 1.0f);
-	poly1->position = QVector2D(0.0f, 0.0f);
+	poly1->shift = QVector2D(0.0f, 0.0f);
 	poly1->verticesMap[m_uniqueVertices[0]] = QVector2D(0, 0);
 	poly1->verticesMap[m_uniqueVertices[1]] = QVector2D(0, 1);
 	poly1->verticesMap[m_uniqueVertices[2]] = QVector2D(1, 1);
@@ -116,7 +118,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly2->textureWidth = texture.width;
 	poly2->textureHeight = texture.height;
 	poly2->scale = QVector2D(1.0f, 1.0f);
-	poly2->position = QVector2D(0.0f, 0.0f);
+	poly2->shift = QVector2D(0.0f, 0.0f);
 	poly2->verticesMap[m_uniqueVertices[0]] = QVector2D(0, 0);
 	poly2->verticesMap[m_uniqueVertices[6]] = QVector2D(0, 1);
 	poly2->verticesMap[m_uniqueVertices[7]] = QVector2D(1, 1);
@@ -163,7 +165,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly3->textureWidth = texture.width;
 	poly3->textureHeight = texture.height;
 	poly3->scale = QVector2D(1.0f, 1.0f);
-	poly3->position = QVector2D(0.0f, 0.0f);
+	poly3->shift = QVector2D(0.0f, 0.0f);
 	poly3->verticesMap[m_uniqueVertices[1]] = QVector2D(0, 0);
 	poly3->verticesMap[m_uniqueVertices[7]] = QVector2D(0, 1);
 	poly3->verticesMap[m_uniqueVertices[4]] = QVector2D(1, 1);
@@ -210,7 +212,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly4->textureWidth = texture.width;
 	poly4->textureHeight = texture.height;
 	poly4->scale = QVector2D(1.0f, 1.0f);
-	poly4->position = QVector2D(0.0f, 0.0f);
+	poly4->shift = QVector2D(0.0f, 0.0f);
 	poly4->verticesMap[m_uniqueVertices[2]] = QVector2D(0, 0);
 	poly4->verticesMap[m_uniqueVertices[4]] = QVector2D(0, 1);
 	poly4->verticesMap[m_uniqueVertices[5]] = QVector2D(1, 1);
@@ -257,7 +259,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly5->textureWidth = texture.width;
 	poly5->textureHeight = texture.height;
 	poly5->scale = QVector2D(1.0f, 1.0f);
-	poly5->position = QVector2D(0.0f, 0.0f);
+	poly5->shift = QVector2D(0.0f, 0.0f);
 	poly5->verticesMap[m_uniqueVertices[3]] = QVector2D(0, 0);
 	poly5->verticesMap[m_uniqueVertices[5]] = QVector2D(0, 1);
 	poly5->verticesMap[m_uniqueVertices[6]] = QVector2D(1, 1);
@@ -304,7 +306,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	poly6->textureWidth = texture.width;
 	poly6->textureHeight = texture.height;
 	poly6->scale = QVector2D(1.0f, 1.0f);
-	poly6->position = QVector2D(0.0f, 0.0f);
+	poly6->shift = QVector2D(0.0f, 0.0f);
 	poly6->verticesMap[m_uniqueVertices[7]] = QVector2D(0, 0);
 	poly6->verticesMap[m_uniqueVertices[6]] = QVector2D(0, 1);
 	poly6->verticesMap[m_uniqueVertices[5]] = QVector2D(1, 1);
@@ -375,10 +377,11 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, QVector3D color, 
 	setup();
 }
 
-Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color)
-	: m_uniformColor(color), m_selectionColor(1.0f, 0.0f, 0.0f),
+Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
+	: m_selectionColor(1.0f, 0.0f, 0.0f),
 	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
 {
+	m_uniformColor = parentBrush->m_uniformColor;
 	m_isUsingColor = parentBrush->m_isUsingColor;
 	m_defaultTexture = parentBrush->m_defaultTexture;
 
@@ -527,7 +530,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color)
 			polygon->textureWidth = oldPolygon->textureWidth;
 			polygon->textureHeight = oldPolygon->textureHeight;
 			polygon->scale = oldPolygon->scale;
-			polygon->position = oldPolygon->position;
+			polygon->shift = oldPolygon->shift;
 
 			for (auto* v : polygon->vertices)
 			{
@@ -612,7 +615,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color)
 			polygon->textureWidth = m_defaultTexture->width;
 			polygon->textureHeight = m_defaultTexture->height;
 			polygon->scale = QVector2D(1.0f, 1.0f);
-			polygon->position = QVector2D(0.0f, 0.0f);
+			polygon->shift = QVector2D(0.0f, 0.0f);
 
 			QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
 			polygon->minX = std::numeric_limits<float>::max();
@@ -629,7 +632,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush, QVector3D color)
 			}
 
 			polygon->scale = QVector2D(1.0f, 1.0f);
-			polygon->position = QVector2D(0.0f, 0.0f);
+			polygon->shift = QVector2D(0.0f, 0.0f);
 			calcTexCoords(polygon);
 		}
 	}
@@ -819,6 +822,7 @@ void Brush::makeTrianglesBufferData()
 
 	for (auto* polygon : m_polygons)
 	{
+		polygon->begin = i * sizeof(float);
 		makePolygonVertices(polygon, i, vertices);
 	}
 
@@ -934,6 +938,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 		GLCall(m_program3D->setUniformValue("u_Material.shininess", 64.0f));
 		GLCall(m_program3D->setUniformValue("u_Selected", m_selected || m_beingCut));
 		GLCall(m_program3D->setUniformValue("u_SelectionColor", m_selectionColor));
+		GLCall(m_program3D->setUniformValue("u_UniformColor", m_uniformColor));
 	};
 
 	if (!m_isUsingColor && !global->m_isDrawingLines && !global->m_isWireframeMode)
@@ -962,6 +967,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 			}
 
 			GLCall(trianglesVao->bind());
+			GLCall(m_program3D->setUniformValue("u_IsUsingColor", false));
 			GLCall($->glDrawArrays(GL_TRIANGLES, renderCall.begin, renderCall.verticesCount));
 		}
 		
@@ -974,6 +980,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 	if (global->m_isDrawingLines)
 	{
 		GLCall(linesVao->bind());
+		GLCall(m_program3D->setUniformValue("u_IsUsingColor", true));
 		GLCall($->glDrawArrays(GL_LINES, 0, m_linesVerticesCount));
 	}
 	else
@@ -981,6 +988,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 		if (global->m_isWireframeMode)
 		{
 			GLCall(trianglesLinesVao->bind());
+			GLCall(m_program3D->setUniformValue("u_IsUsingColor", true));
 			GLCall($->glDrawArrays(GL_LINES, 0, m_trianglesLinesVerticesCount));
 		}
 		else
@@ -1427,15 +1435,15 @@ void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
 		output[i++] = v->x();
 		output[i++] = v->y();
 		output[i++] = v->z();
-		output[i++] = texCoords.x() /** polygon->scale.x() * polygon->position.x()*/;
-		output[i++] = texCoords.y() /** polygon->scale.y() * polygon->position.y()*/;
+		output[i++] = texCoords.x() + (polygon->shift.x() / polygon->textureWidth);
+		output[i++] = texCoords.y() + (polygon->shift.y() / polygon->textureHeight);
 		output[i++] = m_uniformColor.x();
 		output[i++] = m_uniformColor.y();
 		output[i++] = m_uniformColor.z();
 		output[i++] = polygon->norm.x();
 		output[i++] = polygon->norm.y();
 		output[i++] = polygon->norm.z();
-		output[i++] = 0.0f; // is polygon selected
+		output[i++] = polygon->isSelected ? 1.0f : 0.0f;
 		output[i++] = static_cast<float>(polygon->isUsingColor);
 		output[i++] = static_cast<float>(polygon->textureId);
 	};
@@ -1527,4 +1535,26 @@ void Brush::recalcParams()
 		polygon->c = norm.z();
 		polygon->d = -QVector3D::dotProduct(norm, v0);
 	}
+}
+
+void Brush::selectPolygon(Types::Polygon* polygon)
+{
+	polygon->isSelected = true;
+	sendPolygonDataToGPU(polygon);
+}
+
+void Brush::unselectPolygon(Types::Polygon* polygon)
+{
+	polygon->isSelected = false;
+	sendPolygonDataToGPU(polygon);
+}
+
+void Brush::sendPolygonDataToGPU(Types::Polygon* polygon)
+{
+	int size = polygon->triangles.size() * 3 * 14;
+	float* data = new float[size];
+	int i = 0;
+	makePolygonVertices(polygon, i, data);
+	m_trianglesVbo.subdata(polygon->begin, size * sizeof(float), data);
+	delete[] data;
 }

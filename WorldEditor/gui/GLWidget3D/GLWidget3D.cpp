@@ -47,42 +47,22 @@ void GLWidget3D::processInputData()
 	{
 		processSelectionTool();
 	}
+	else if (globalData->m_editorMode == EditorMode::TEXTURE_TOOL)
+	{
+		processTextureTool();
+	}
 }
 
 void GLWidget3D::updateCamera()
 {
 	auto global = GlobalData::getInstance();
-	bool isCameraMode = m_isCameraToolPicked && m_inputData.leftMouse == ButtonState::PRESSED;
-	bool isWidgetActive = isCameraMode || m_inputData.isMouseOver;
+	bool isWidgetActive = isCameraMode() || m_inputData.isMouseOver;
 	float deltaSec = m_timeDelta / 1000.0f;
-	int offsetX = 0;
-	int offsetY = 0;
 	auto& cdata = global->m_clippingToolData;
 	auto& sdata = global->m_selectionToolData;
+	
+	processMouseMovement();
 
-	if (isCameraMode)
-	{
-		if (m_isCameraModeStarted)
-		{
-			offsetX = m_inputData.mouseX - lastX;
-			offsetY = lastY - m_inputData.mouseY;
-			lastX = m_inputData.mouseX;
-			lastY = m_inputData.mouseY;
-		}
-		else
-		{
-			lastX = m_inputData.mouseX;
-			lastY = m_inputData.mouseY;
-			m_isCameraModeStarted = true;
-		}
-	}
-	else
-	{
-		m_isCameraModeStarted = false;
-	}
-
-	if (m_inputData.leftMouse == ButtonState::PRESSED && isCameraMode && m_isCameraModeStarted)
-		m_camera->processMouseMovement(offsetX, offsetY);
 	if (m_inputData.keyW == ButtonState::PRESSED && isWidgetActive)
 		m_camera->processKeyboard(Camera::Direction::FORWARD, deltaSec);
 	if (m_inputData.keyA == ButtonState::PRESSED && isWidgetActive)
@@ -131,6 +111,13 @@ void GLWidget3D::clearInputData()
 		m_inputData.keyR = ButtonDownState::DOWN_PROCESSED;
 	if (m_inputData.keyR == ButtonDownState::RELEASED_NOT_PROCESSED)
 		m_inputData.keyR = ButtonDownState::RELEASED_PROCESSED;
+
+	if (m_inputData.keyCtrl == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyCtrl = ButtonDownState::RELEASED_PROCESSED;
+	if (m_inputData.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED)
+		m_inputData.keyCtrl = ButtonDownState::DOWN_PROCESSED;
+	if (m_inputData.keyCtrl == ButtonDownState::RELEASED_NOT_PROCESSED)
+		m_inputData.keyCtrl = ButtonDownState::RELEASED_PROCESSED;
 }
 
 void GLWidget3D::enterEvent(QEvent* event)
@@ -189,4 +176,113 @@ void GLWidget3D::resizeGL(int width, int height)
 	m_screenWidth = width;
 	m_screenHeight = height;
 	m_renderer->setFrustrum(width, height);
+}
+
+bool GLWidget3D::pickBrush(Brush** brush, Types::Polygon** polygon, Types::Triangle** triangle, QVector3D* point)
+{
+	auto global = GlobalData::getInstance();
+	auto& data = global->m_selectionToolData;
+	int mouseX = m_inputData.mouseX;
+	int mouseY = m_inputData.mouseY;
+	float renderId = m_renderer->getSelectionValue(mouseX, m_screenHeight - mouseY);
+	auto renderable = m_renderer->getBrushByRenderId(renderId);
+
+	if (renderId == 0.0f || !renderable)
+	{
+		if (data.renderable)
+		{
+			data.renderable->m_selected = false;
+			data.renderable = nullptr;
+		}
+		return false;
+	}
+
+	QVector3D pointingRay =
+		m_camera->getPickingRay(mouseX, mouseY, m_screenWidth, m_screenHeight, m_renderer->getNearPlane(), m_renderer->getFarPlane(), m_renderer->getProjMatrix());
+	QVector3D intersectionPoint;
+	Types::Polygon* intersectionPolygon = nullptr;
+	Types::Triangle* intersectionTriangle = nullptr;
+
+	for (auto& polygon : renderable->getPolygons())
+	{
+		for (auto& triangle : polygon->triangles)
+		{
+			auto cameraPos = m_camera->getPosition();
+			QVector3D pt;
+			if (hasIntersection(cameraPos, pointingRay, triangle, renderable->m_origin, pt))
+			{
+				if (!intersectionPolygon)
+				{
+					intersectionPolygon = polygon;
+					intersectionTriangle = &triangle;
+					intersectionPoint = pt;
+					continue;
+				}
+
+				float d1 = std::abs(cameraPos.distanceToPoint(intersectionPoint));
+				float d2 = std::abs(cameraPos.distanceToPoint(pt));
+
+				if (d2 < d1)
+				{
+					intersectionPolygon = polygon;
+					intersectionTriangle = &triangle;
+					intersectionPoint = pt;
+				}
+			}
+		}
+	}
+
+	if (brush)
+		*brush = renderable;
+	if (polygon)
+		*polygon = intersectionPolygon;
+	if (triangle)
+		*triangle = intersectionTriangle;
+	if (point)
+		*point = intersectionPoint;
+
+	return true;
+}
+
+bool GLWidget3D::isWidgetActive()
+{
+	return m_inputData.isMouseOver;
+}
+
+bool GLWidget3D::isCameraMode()
+{
+	auto* global = GlobalData::getInstance();
+
+	return (global->m_editorMode == EditorMode::CAMERA_MODE || global->isCameraForTextureToolActivated) &&
+		m_inputData.leftMouse == ButtonState::PRESSED;
+}
+
+void GLWidget3D::processMouseMovement()
+{
+	int offsetX = 0;
+	int offsetY = 0;
+
+	if (isCameraMode())
+	{
+		if (m_isCameraModeStarted)
+		{
+			offsetX = m_inputData.mouseX - lastX;
+			offsetY = lastY - m_inputData.mouseY;
+			lastX = m_inputData.mouseX;
+			lastY = m_inputData.mouseY;
+		}
+		else
+		{
+			lastX = m_inputData.mouseX;
+			lastY = m_inputData.mouseY;
+			m_isCameraModeStarted = true;
+		}
+	}
+	else
+	{
+		m_isCameraModeStarted = false;
+	}
+
+	if (m_inputData.leftMouse == ButtonState::PRESSED && isCameraMode() && m_isCameraModeStarted)
+		m_camera->processMouseMovement(offsetX, offsetY);
 }

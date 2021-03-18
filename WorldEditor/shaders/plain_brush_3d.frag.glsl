@@ -35,6 +35,8 @@ uniform bool u_Selected;
 uniform vec3 u_SelectionColor;
 uniform int u_TextureMap[MAX_TEXTURE_UNITS * 2];
 uniform sampler2D u_Textures[MAX_TEXTURE_UNITS];
+uniform vec3 u_UniformColor;
+uniform bool u_IsUsingColor;
 
 void main()
 {
@@ -53,7 +55,7 @@ void main()
     vec3 viewDir = normalize(u_ViewPos - fragPos);
 	vec3 result = CalcDirLight(u_DirLight, norm, viewDir, activeTextureId);
 
-    if (u_Selected)
+    if (u_Selected || bool(isPolygonSelected))
         FragColor = mix(vec4(result, 1.0), vec4(u_SelectionColor, 1.0), 0.5);
     else
         FragColor = vec4(result, 1.0);
@@ -73,11 +75,11 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId
     // Combine results
     vec3 ambient, diffuse, specular;
 
-    if (bool(isUsingColor))
+    if (u_IsUsingColor)
     {
-        ambient  = light.ambient  * color;
-        diffuse  = light.diffuse  * diff * color;
-        specular = light.specular * spec * color;
+        ambient  = light.ambient  * u_UniformColor;
+        diffuse  = light.diffuse  * diff * u_UniformColor;
+        specular = light.specular * spec * u_UniformColor;
     }
     else
     {

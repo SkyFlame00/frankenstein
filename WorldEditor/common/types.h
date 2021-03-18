@@ -54,7 +54,9 @@ enum class EditorMode
 {
 	SELECTION_MODE,
 	BLOCK_MODE,
-	CLIPPING_MODE
+	CAMERA_MODE,
+	CLIPPING_MODE,
+	TEXTURE_TOOL
 };
 
 enum class BlockToolState
@@ -126,12 +128,13 @@ namespace Types
 		GLuint textureId;
 		int begin = 0;
 		QVector2D scale;
-		QVector2D position;
+		QVector2D shift;
 		float minX;
 		float minY;
 		float arccos;
 		int textureWidth;
 		int textureHeight;
+		bool isSelected = false;
 	};
 
 	enum class SelectionToolState
