@@ -505,7 +505,7 @@ void TextureToolDialog::handleScaleYEditingFinished()
 	m_scaleY_editingStarted = false;
 }
 
-void TextureToolDialog::handleRotationChange(double val)
+void TextureToolDialog::handleRotationChange(int val)
 {
 	auto global = GlobalData::getInstance();
 	auto& data = global->textureToolData;
