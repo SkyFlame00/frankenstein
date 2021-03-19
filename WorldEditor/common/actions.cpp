@@ -101,3 +101,37 @@ void Actions::texturescale_cleanup(void* rawData)
 	auto* data = static_cast<TextureScaleData*>(rawData);
 	delete data;
 }
+
+/* Texture rotation */
+
+void Actions::texturerotation_undo(void* rawData)
+{
+	auto* list = static_cast<TextureRotationData*>(rawData);
+
+	for (auto& pair : *list)
+	{
+		auto* polygon = pair.first;
+		auto& st = pair.second;
+		polygon->rotationAngle = st.oldRotation;
+		st.brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void Actions::texturerotation_redo(void* rawData)
+{
+	auto* list = static_cast<TextureRotationData*>(rawData);
+
+	for (auto& pair : *list)
+	{
+		auto* polygon = pair.first;
+		auto& st = pair.second;
+		polygon->rotationAngle = st.newRotation;
+		st.brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void Actions::texturerotation_cleanup(void* rawData)
+{
+	auto* data = static_cast<TextureRotationData*>(rawData);
+	delete data;
+}

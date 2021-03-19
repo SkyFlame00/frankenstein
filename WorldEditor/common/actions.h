@@ -45,4 +45,17 @@ namespace Actions
 	void texturescale_undo(void* data);
 	void texturescale_redo(void* data);
 	void texturescale_cleanup(void* data);
+
+	/* Texture tool dialog: rotation actions */
+	struct TextureRotationStruct
+	{
+		Brush* brush;
+		int oldRotation;
+		int newRotation;
+	};
+	typedef std::unordered_map<Types::Polygon*, TextureRotationStruct> TextureRotationData;
+
+	void texturerotation_undo(void* data);
+	void texturerotation_redo(void* data);
+	void texturerotation_cleanup(void* data);
 }

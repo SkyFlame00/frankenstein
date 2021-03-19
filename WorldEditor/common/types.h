@@ -135,6 +135,7 @@ namespace Types
 		int textureWidth;
 		int textureHeight;
 		bool isSelected = false;
+		int rotationAngle = 0;
 	};
 
 	enum class SelectionToolState

@@ -531,6 +531,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 			polygon->textureHeight = oldPolygon->textureHeight;
 			polygon->scale = oldPolygon->scale;
 			polygon->shift = oldPolygon->shift;
+			polygon->rotationAngle = oldPolygon->rotationAngle;
 
 			for (auto* v : polygon->vertices)
 			{
@@ -616,6 +617,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 			polygon->textureHeight = m_defaultTexture->height;
 			polygon->scale = QVector2D(1.0f, 1.0f);
 			polygon->shift = QVector2D(0.0f, 0.0f);
+			polygon->rotationAngle = 0;
 
 			QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
 			polygon->minX = std::numeric_limits<float>::max();
@@ -1430,8 +1432,12 @@ void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
 {
 	auto vertexBufferData = [&](QVector3D* v) {
 		auto& texCoords = polygon->verticesMap[v];
-		auto x = texCoords.x();
-		auto y = texCoords.y();
+		QMatrix4x4 model;
+		model.setToIdentity();
+		model.rotate(polygon->rotationAngle, 0.0f, 0.0f, 1.0f);
+		auto rotatedCoords = model * QVector4D(texCoords, 0.0f, 1.0f);
+		auto x = rotatedCoords.x();
+		auto y = rotatedCoords.y();
 		auto scaleX = 1.0f / polygon->scale.x();
 		auto scaleY = 1.0f / polygon->scale.y();
 		auto shiftX = (polygon->shift.x() / polygon->textureWidth);
@@ -1439,8 +1445,8 @@ void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
 		output[i++] = v->x();
 		output[i++] = v->y();
 		output[i++] = v->z();
-		output[i++] = texCoords.x() * scaleX + shiftX * scaleX;
-		output[i++] = texCoords.y() * scaleY - shiftY * scaleY;
+		output[i++] = x * scaleX + shiftX * scaleX;
+		output[i++] = y * scaleY - shiftY * scaleY;
 		output[i++] = m_uniformColor.x();
 		output[i++] = m_uniformColor.y();
 		output[i++] = m_uniformColor.z();

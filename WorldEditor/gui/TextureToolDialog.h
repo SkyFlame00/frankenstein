@@ -29,6 +29,8 @@ private:
 	void handleScaleXEditingFinished();
 	void handleScaleYChange(double val);
 	void handleScaleYEditingFinished();
+	void handleRotationChange(int val);
+	void handleRotationEditingFinished();
 	void handleUndefined(QSpinBox* control, int val, bool* isUndefined);
 	void handleUndefined(QDoubleSpinBox* control, double val, bool* isUndefined);
 	void showEvent(QShowEvent* event) override;
@@ -39,8 +41,8 @@ private:
 	int shiftMin = -(shiftMax - 1);
 	float scaleMax = 20.0f;
 	float scaleMin = 0.1f;
-	int rotationMax = 180;
-	int rotationMin = -181;
+	int rotationMax = std::numeric_limits<int>::max();
+	int rotationMin = -(rotationMax - 1);
 
 	/* Layout */
 	QVBoxLayout* m_mainLayout;
@@ -59,22 +61,25 @@ private:
 	
 	/* Shift Y */
 	QSpinBox* m_shiftYControl;
-	QLabel* m_shiftYLabel;
 	bool m_shiftY_editingStarted = false;
 	Actions::TextureShiftData* m_textureShiftYData;
 	bool m_shiftY_isUndefined = false;
 
 	/* Scale X */
 	QDoubleSpinBox* m_scaleXControl;
-	QLabel* m_scaleXLabel;
 	bool m_scaleX_editingStarted = false;
 	Actions::TextureScaleData* m_textureScaleXData;
 	bool m_scaleX_isUndefined = false;
 
 	/* Scale Y */
 	QDoubleSpinBox* m_scaleYControl;
-	QLabel* m_scaleYLabel;
 	bool m_scaleY_editingStarted = false;
 	Actions::TextureScaleData* m_textureScaleYData;
 	bool m_scaleY_isUndefined = false;
+
+	/* Rotation */
+	QSpinBox* m_rotationControl;
+	bool m_rotation_editingStarted = false;
+	Actions::TextureRotationData* m_textureRotationData;
+	bool m_rotation_isUndefined = false;
 };

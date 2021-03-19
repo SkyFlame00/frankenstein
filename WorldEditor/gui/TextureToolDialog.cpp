@@ -82,11 +82,24 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_scaleYLayout->addWidget(m_scaleYControl);
 	m_scaleYContainer->setLayout(m_scaleYLayout);
 
+	/* Rotation */
+	QWidget* m_rotationContainer = new QWidget;
+	QHBoxLayout* m_rotationLayout = new QHBoxLayout;
+	QLabel* m_rotationLabel = new QLabel("Rotation");
+	m_rotationControl = new QSpinBox;
+	m_rotationControl->setSpecialValueText("-");
+	m_rotationControl->setMinimum(rotationMin);
+	m_rotationControl->setMaximum(rotationMax);
+	m_rotationLayout->addWidget(m_rotationLabel);
+	m_rotationLayout->addWidget(m_rotationControl);
+	m_rotationContainer->setLayout(m_rotationLayout);
+
 	/* Populate with created widgets */
 	m_textureParamsLayout->addWidget(m_shiftXContainer, 0, 0, 1, 1);
 	m_textureParamsLayout->addWidget(m_shiftYContainer, 0, 1, 1, 1);
 	m_textureParamsLayout->addWidget(m_scaleXContainer, 1, 0, 1, 1);
 	m_textureParamsLayout->addWidget(m_scaleYContainer, 1, 1, 1, 1);
+	m_textureParamsLayout->addWidget(m_rotationContainer, 2, 0, 1, 1);
 
 	setLayout(m_mainLayout);
 	connect(m_shiftXControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftXChange);
@@ -97,6 +110,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	connect(m_scaleXControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleXEditingFinished);
 	connect(m_scaleYControl, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &TextureToolDialog::handleScaleYChange);
 	connect(m_scaleYControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleYEditingFinished);
+	connect(m_rotationControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleRotationChange);
+	connect(m_rotationControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleRotationEditingFinished);
 }
 
 void TextureToolDialog::showEvent(QShowEvent* event)
@@ -162,6 +177,8 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 	double scaleX_val = pickedPolygons.begin()->first->scale.x();
 	bool scaleY_sameVal = true;
 	double scaleY_val = pickedPolygons.begin()->first->scale.y();
+	bool rotation_sameVal = true;
+	int rotation_val = pickedPolygons.begin()->first->rotationAngle;
 
 	for (auto it = ++pickedPolygons.begin(); it != pickedPolygons.end(); it++)
 	{
@@ -175,8 +192,10 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 			scaleX_sameVal = false;
 		if (!Helpers::areEqual(scaleY_val, polygon->scale.y()))
 			scaleY_sameVal = false;
+		if (rotation_val != polygon->rotationAngle)
+			rotation_sameVal = false;
 
-		if (!shiftX_sameVal && !shiftY_sameVal && scaleX_sameVal && !scaleY_sameVal)
+		if (!shiftX_sameVal && !shiftY_sameVal && scaleX_sameVal && !scaleY_sameVal && !rotation_sameVal)
 			break;
 	}
 
@@ -246,6 +265,23 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 		m_scaleYControl->blockSignals(false);
 
 		m_scaleY_isUndefined = true;
+	}
+
+	if (rotation_sameVal)
+	{
+		m_rotationControl->blockSignals(true);
+			m_rotationControl->setValue(rotation_val);
+		m_rotationControl->blockSignals(false);
+
+		m_rotationControl->setDisabled(false);
+	}
+	else
+	{
+		m_rotationControl->blockSignals(true);
+			m_rotationControl->setValue(rotationMin);
+		m_rotationControl->blockSignals(false);
+
+		m_rotation_isUndefined = true;
 	}
 }
 
@@ -469,12 +505,61 @@ void TextureToolDialog::handleScaleYEditingFinished()
 	m_scaleY_editingStarted = false;
 }
 
+void TextureToolDialog::handleRotationChange(double val)
+{
+	auto global = GlobalData::getInstance();
+	auto& data = global->textureToolData;
+
+	handleUndefined(m_rotationControl, val, &m_rotation_isUndefined);
+
+	if (!m_rotation_editingStarted)
+	{
+		m_textureRotationData = new Actions::TextureRotationData;
+
+		for (auto& pair : data.pickedPolygons)
+		{
+			auto* polygon = pair.first;
+			auto* brush = pair.second;
+			m_textureRotationData->insert(std::pair<Types::Polygon*, Actions::TextureRotationStruct>(polygon, { brush, polygon->rotationAngle }));
+		}
+
+		m_rotation_editingStarted = true;
+	}
+
+	for (auto& [polygon, brush] : data.pickedPolygons)
+	{
+		polygon->rotationAngle = m_rotationControl->value();
+		brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void TextureToolDialog::handleRotationEditingFinished()
+{
+	if (!m_rotation_editingStarted)
+		return;
+
+	auto global = GlobalData::getInstance();
+	auto& data = global->textureToolData;
+
+	for (auto& pair : data.pickedPolygons)
+	{
+		auto* polygon = pair.first;
+		(*m_textureRotationData)[polygon].newRotation = m_rotationControl->value();
+	}
+
+	ActionHistoryTool::addAction(Actions::texturerotation_undo, Actions::texturerotation_redo, Actions::texturerotation_cleanup, m_textureRotationData);
+
+	m_textureRotationData = nullptr;
+	m_rotation_editingStarted = false;
+}
+
 void TextureToolDialog::disableControls()
 {
 	m_shiftXControl->setDisabled(true);
 	m_shiftYControl->setDisabled(true);
 	m_scaleXControl->setDisabled(true);
 	m_scaleYControl->setDisabled(true);
+	m_rotationControl->setDisabled(true);
 
 	m_shiftXControl->blockSignals(true);
 		m_shiftXControl->setValue(shiftMin);
@@ -491,4 +576,8 @@ void TextureToolDialog::disableControls()
 	m_scaleYControl->blockSignals(true);
 		m_scaleYControl->setValue(scaleMin);
 	m_scaleYControl->blockSignals(false);
+
+	m_rotationControl->blockSignals(true);
+		m_rotationControl->setValue(rotationMin);
+	m_rotationControl->blockSignals(false);
 }
