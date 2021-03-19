@@ -25,19 +25,20 @@ private:
 	void handleShiftXEditingFinished();
 	void handleShiftYChange(int val);
 	void handleShiftYEditingFinished();
-	void handleScaleXChange(int val);
+	void handleScaleXChange(double val);
 	void handleScaleXEditingFinished();
-	void handleScaleYChange(int val);
+	void handleScaleYChange(double val);
 	void handleScaleYEditingFinished();
 	void handleUndefined(QSpinBox* control, int val, bool* isUndefined);
+	void handleUndefined(QDoubleSpinBox* control, double val, bool* isUndefined);
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void disableControls();
 
 	int shiftMax = std::numeric_limits<int>::max();
 	int shiftMin = -(shiftMax - 1);
-	int scaleMax = std::numeric_limits<int>::max();
-	int scaleMin = -(scaleMax - 1);
+	float scaleMax = 20.0f;
+	float scaleMin = 0.1f;
 	int rotationMax = 180;
 	int rotationMin = -181;
 

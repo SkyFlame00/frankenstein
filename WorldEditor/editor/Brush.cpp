@@ -1432,11 +1432,15 @@ void Brush::makePolygonVertices(Types::Polygon* polygon, int& i, float* output)
 		auto& texCoords = polygon->verticesMap[v];
 		auto x = texCoords.x();
 		auto y = texCoords.y();
+		auto scaleX = 1.0f / polygon->scale.x();
+		auto scaleY = 1.0f / polygon->scale.y();
+		auto shiftX = (polygon->shift.x() / polygon->textureWidth);
+		auto shiftY = (polygon->shift.y() / polygon->textureHeight);
 		output[i++] = v->x();
 		output[i++] = v->y();
 		output[i++] = v->z();
-		output[i++] = texCoords.x() + (polygon->shift.x() / polygon->textureWidth);
-		output[i++] = texCoords.y() - (polygon->shift.y() / polygon->textureHeight);
+		output[i++] = texCoords.x() * scaleX + shiftX * scaleX;
+		output[i++] = texCoords.y() * scaleY - shiftY * scaleY;
 		output[i++] = m_uniformColor.x();
 		output[i++] = m_uniformColor.y();
 		output[i++] = m_uniformColor.z();

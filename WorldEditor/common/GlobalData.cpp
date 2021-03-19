@@ -77,6 +77,9 @@ bool GlobalData::onModeChange(EditorMode nextMode)
 	prevTool->setChecked(false);
 	nextTool->setChecked(true);
 
+	if (prevMode == nextMode)
+		return false;
+
 	switch (prevMode)
 	{
 	case EditorMode::SELECTION_MODE:

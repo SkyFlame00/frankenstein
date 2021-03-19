@@ -1,5 +1,7 @@
 #include "actions.h"
 
+/* Brush creating */
+
 void Actions::brushcreating_undo(void* rawData)
 {
 	auto* global = GlobalData::getInstance();
@@ -32,6 +34,8 @@ void Actions::brushcreating_cleanup(void* rawData)
 	delete data->brush;
 }
 
+/* Texture shift */
+
 void Actions::textureshift_undo(void* rawData)
 {
 	auto* list = static_cast<TextureShiftData*>(rawData);
@@ -61,5 +65,39 @@ void Actions::textureshift_redo(void* rawData)
 void Actions::textureshift_cleanup(void* rawData)
 {
 	auto* data = static_cast<TextureShiftData*>(rawData);
+	delete data;
+}
+
+/* Texture scale */
+
+void Actions::texturescale_undo(void* rawData)
+{
+	auto* list = static_cast<TextureScaleData*>(rawData);
+
+	for (auto& pair : *list)
+	{
+		auto* polygon = pair.first;
+		auto& st = pair.second;
+		polygon->scale = st.oldScale;
+		st.brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void Actions::texturescale_redo(void* rawData)
+{
+	auto* list = static_cast<TextureScaleData*>(rawData);
+
+	for (auto& pair : *list)
+	{
+		auto* polygon = pair.first;
+		auto& st = pair.second;
+		polygon->scale = st.newScale;
+		st.brush->sendPolygonDataToGPU(polygon);
+	}
+}
+
+void Actions::texturescale_cleanup(void* rawData)
+{
+	auto* data = static_cast<TextureScaleData*>(rawData);
 	delete data;
 }
