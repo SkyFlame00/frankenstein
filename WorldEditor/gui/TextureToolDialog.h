@@ -11,6 +11,7 @@
 #include <set>
 #include "../common/types.h"
 #include "../common/actions.h"
+#include "TexturePickModal.h"
 
 class TextureToolDialog : public QDialog
 {
@@ -19,6 +20,7 @@ class TextureToolDialog : public QDialog
 public:
 	TextureToolDialog(QWidget* parent, Qt::WindowFlags flags);
 	void onPickedPolygonsChange(std::unordered_map<Types::Polygon*, Brush*>& pickedPolygons);
+	void init();
 
 private:
 	void handleShiftXChange(int val);
@@ -33,6 +35,9 @@ private:
 	void handleRotationEditingFinished();
 	void handleUndefined(QSpinBox* control, int val, bool* isUndefined);
 	void handleUndefined(QDoubleSpinBox* control, double val, bool* isUndefined);
+	void handleChangeTextureButtonClick();
+	void handleTexturePickModalSubmit(Texture texture);
+	void handleTexturePickModalCancel();
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void disableControls();
@@ -51,6 +56,9 @@ private:
 
 	/* Preview */
 	QPushButton* m_changeTextureButton;
+
+	/* Texture picking modal */
+	TexturePickModal* m_texturePickModal;
 
 	/* Shift X */
 	QSpinBox* m_shiftXControl;

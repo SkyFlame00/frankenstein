@@ -73,6 +73,7 @@ public:
 	int m_maxTextureUnits = 16;
 	bool isSelectionForTextureToolActivated = false;
 	bool isCameraForTextureToolActivated = false;
+	static QString texturesPath;
 
 private:
 	GlobalData();

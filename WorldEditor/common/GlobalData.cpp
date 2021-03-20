@@ -6,6 +6,7 @@ GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
 const int GlobalData::CONTEXTS_NUM = 4;
 int GlobalData::contextsReady = 0;
+QString GlobalData::texturesPath = "resources/textures/";
 
 GlobalData::GlobalData()
 {
@@ -190,6 +191,9 @@ void GlobalData::onContextReady()
 		m_instance->m_clippingToolData.point1->m_enableScale = false;
 		m_instance->m_clippingToolData.point2->m_enableScale = false;
 		m_instance->m_clippingToolData.line = new Line;
+
+		auto* mainWindow = MainWindow::getInstance();
+		mainWindow->getTextureToolDialog()->init();
 	}
 }
 

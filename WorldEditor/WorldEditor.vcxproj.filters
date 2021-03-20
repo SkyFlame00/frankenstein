@@ -117,6 +117,15 @@
     <ClCompile Include="gui\GLWidget3D\GLWidget3D_TextureTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui\TexturePickModal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\TextureCard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\FlowLayout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
@@ -129,6 +138,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gui\TextureToolDialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\TexturePickModal.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\TextureCard.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
@@ -196,10 +211,13 @@
     <ClInclude Include="common\ActionHistoryTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="editor\Texture.h">
+    <ClInclude Include="common\constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common\constants.h">
+    <ClInclude Include="gui\FlowLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

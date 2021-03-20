@@ -4,6 +4,8 @@
 #include <limits>
 #include "../common/ActionHistoryTool.h"
 #include "MainWindow.h"
+#include "../common/ActionHistoryTool.h"
+#include "../common/actions.h"
 
 TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	: QDialog(parent, flags)
@@ -21,11 +23,15 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	QWidget* m_texturePreviewContainer = new QWidget;
 	m_texturePreviewContainer->setLayout(m_texturePreviewLayout);
 	m_mainLayout->addWidget(m_texturePreviewContainer);
+
+	/* Texture picking modal */
+	m_texturePickModal = new TexturePickModal;
 	
 	/* Change texture button */
 	m_changeTextureButton = new QPushButton;
 	m_changeTextureButton->setText("Change texture");
 	m_texturePreviewLayout->addWidget(m_changeTextureButton);
+	connect(m_changeTextureButton, &QAbstractButton::clicked, this, &TextureToolDialog::handleChangeTextureButtonClick);
 
 	/* Texture parameters */
 	QWidget* m_textureParamsContainer = new QWidget;
@@ -43,6 +49,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_shiftXLayout->addWidget(m_shiftXLabel);
 	m_shiftXLayout->addWidget(m_shiftXControl);
 	m_shiftXContainer->setLayout(m_shiftXLayout);
+	connect(m_shiftXControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftXChange);
+	connect(m_shiftXControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftXEditingFinished);
 
 	/* Shift Y */
 	QWidget* m_shiftYContainer = new QWidget;
@@ -55,6 +63,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_shiftYLayout->addWidget(m_shiftYLabel);
 	m_shiftYLayout->addWidget(m_shiftYControl);
 	m_shiftYContainer->setLayout(m_shiftYLayout);
+	connect(m_shiftYControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftYChange);
+	connect(m_shiftYControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftYEditingFinished);
 
 	/* Scale X */
 	QWidget* m_scaleXContainer = new QWidget;
@@ -68,6 +78,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_scaleXLayout->addWidget(m_scaleXLabel);
 	m_scaleXLayout->addWidget(m_scaleXControl);
 	m_scaleXContainer->setLayout(m_scaleXLayout);
+	connect(m_scaleXControl, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &TextureToolDialog::handleScaleXChange);
+	connect(m_scaleXControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleXEditingFinished);
 
 	/* Scale Y */
 	QWidget* m_scaleYContainer = new QWidget;
@@ -81,6 +93,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_scaleYLayout->addWidget(m_scaleYLabel);
 	m_scaleYLayout->addWidget(m_scaleYControl);
 	m_scaleYContainer->setLayout(m_scaleYLayout);
+	connect(m_scaleYControl, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &TextureToolDialog::handleScaleYChange);
+	connect(m_scaleYControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleYEditingFinished);
 
 	/* Rotation */
 	QWidget* m_rotationContainer = new QWidget;
@@ -93,6 +107,8 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_rotationLayout->addWidget(m_rotationLabel);
 	m_rotationLayout->addWidget(m_rotationControl);
 	m_rotationContainer->setLayout(m_rotationLayout);
+	connect(m_rotationControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleRotationChange);
+	connect(m_rotationControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleRotationEditingFinished);
 
 	/* Populate with created widgets */
 	m_textureParamsLayout->addWidget(m_shiftXContainer, 0, 0, 1, 1);
@@ -102,16 +118,14 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	m_textureParamsLayout->addWidget(m_rotationContainer, 2, 0, 1, 1);
 
 	setLayout(m_mainLayout);
-	connect(m_shiftXControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftXChange);
-	connect(m_shiftXControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftXEditingFinished);
-	connect(m_shiftYControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleShiftYChange);
-	connect(m_shiftYControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleShiftYEditingFinished);
-	connect(m_scaleXControl, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &TextureToolDialog::handleScaleXChange);
-	connect(m_scaleXControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleXEditingFinished);
-	connect(m_scaleYControl, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &TextureToolDialog::handleScaleYChange);
-	connect(m_scaleYControl, &QDoubleSpinBox::editingFinished, this, &TextureToolDialog::handleScaleYEditingFinished);
-	connect(m_rotationControl, qOverload<int>(&QSpinBox::valueChanged), this, &TextureToolDialog::handleRotationChange);
-	connect(m_rotationControl, &QSpinBox::editingFinished, this, &TextureToolDialog::handleRotationEditingFinished);
+
+	connect(m_texturePickModal, &TexturePickModal::submit, this, &TextureToolDialog::handleTexturePickModalSubmit);
+	connect(m_texturePickModal, &TexturePickModal::cancel, this, &TextureToolDialog::handleTexturePickModalCancel);
+}
+
+void TextureToolDialog::init()
+{
+	m_texturePickModal->init();
 }
 
 void TextureToolDialog::showEvent(QShowEvent* event)
@@ -580,4 +594,31 @@ void TextureToolDialog::disableControls()
 	m_rotationControl->blockSignals(true);
 		m_rotationControl->setValue(rotationMin);
 	m_rotationControl->blockSignals(false);
+}
+
+void TextureToolDialog::handleChangeTextureButtonClick()
+{
+	m_texturePickModal->open();
+}
+
+void TextureToolDialog::handleTexturePickModalSubmit(Texture texture)
+{
+	auto global = GlobalData::getInstance();
+	auto& data = global->textureToolData;
+	Actions::TexturePickingData* historyData = new Actions::TexturePickingData;
+
+	for (auto& pair : data.pickedPolygons)
+	{
+		auto* polygon = pair.first;
+		auto* brush = pair.second;
+		Texture oldTexture{ polygon->textureId, polygon->textureWidth, polygon->textureHeight };
+		historyData->append({ brush, polygon, oldTexture, texture });
+		brush->updatePolygonTexture(polygon, texture);
+	}
+
+	ActionHistoryTool::addAction(Actions::texturepicking_undo, Actions::texturepicking_redo, Actions::texturepicking_cleanup, historyData);
+}
+
+void TextureToolDialog::handleTexturePickModalCancel()
+{
 }

@@ -955,7 +955,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 				std::string idx1 = std::to_string(i);
 				std::string idx2 = std::to_string(i + 1);
 				std::string textureCount = std::to_string(i / 2);
-				GLuint textureLoc = m_program3D->attributeLocation(("u_Textures[" + textureCount + "]").c_str());
+				GLuint textureLoc = m_program3D->uniformLocation(("u_Textures[" + textureCount + "]").c_str());
 
 				GLCall(m_program3D->setUniformValue(("u_TextureMap[" + idx1 + "]").c_str(), renderCall.textureMap[i]));
 				GLCall(m_program3D->setUniformValue(("u_TextureMap[" + idx2 + "]").c_str(), renderCall.textureMap[i + 1]));
@@ -1378,6 +1378,8 @@ void Brush::setupTextures()
 	int verticesCount = 0;
 	std::unordered_map<GLuint, GLuint> map;
 
+	m_renderCalls.clear();
+
 	for (auto* polygon : m_polygons)
 	{
 		if (map.find(polygon->textureId) == map.end())
@@ -1388,7 +1390,6 @@ void Brush::setupTextures()
 
 		if (map.size() >= global->m_maxTextureUnits)
 		{
-			int n = polygon->triangles.size() * 3;
 			QList<int> textureMap;
 
 			for (auto [textureId, activeTextureId] : map)
@@ -1567,4 +1568,29 @@ void Brush::sendPolygonDataToGPU(Types::Polygon* polygon)
 	makePolygonVertices(polygon, i, data);
 	m_trianglesVbo.subdata(polygon->begin, size * sizeof(float), data);
 	delete[] data;
+}
+
+void Brush::updatePolygonTexture(Types::Polygon* polygon, Texture& texture)
+{
+	polygon->textureId = texture.id;
+	polygon->textureWidth = texture.width;
+	polygon->textureHeight = texture.height;
+
+	QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+	polygon->minX = std::numeric_limits<float>::max();
+	polygon->minY = std::numeric_limits<float>::max();
+
+	for (auto v : polygon->vertices)
+	{
+		QVector3D pos = model * *v;
+
+		if (pos.x() < polygon->minX)
+			polygon->minX = pos.x();
+		if (pos.y() < polygon->minY)
+			polygon->minY = pos.y();
+	}
+
+	calcTexCoords(polygon);
+	sendPolygonDataToGPU(polygon);
+	setupTextures();
 }

@@ -135,3 +135,31 @@ void Actions::texturerotation_cleanup(void* rawData)
 	auto* data = static_cast<TextureRotationData*>(rawData);
 	delete data;
 }
+
+/* Texture picking */
+
+void Actions::texturepicking_undo(void* rawData)
+{
+	auto* list = static_cast<TexturePickingData*>(rawData);
+
+	for (auto& [brush, polygon, oldTexture, _] : *list)
+	{
+		brush->updatePolygonTexture(polygon, oldTexture);
+	}
+}
+
+void Actions::texturepicking_redo(void* rawData)
+{
+	auto* list = static_cast<TexturePickingData*>(rawData);
+
+	for (auto& [brush, polygon, _, newTexture] : *list)
+	{
+		brush->updatePolygonTexture(polygon, newTexture);
+	}
+}
+
+void Actions::texturepicking_cleanup(void* rawData)
+{
+	auto* list = static_cast<TexturePickingData*>(rawData);
+	delete list;
+}

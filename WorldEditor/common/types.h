@@ -6,6 +6,7 @@
 #include <QVector2D>
 #include <QList>
 #include <qopengl.h>
+#include "../editor/Texture.h"
 
 enum class ButtonState
 {
@@ -163,4 +164,23 @@ namespace Types
 	typedef void (*undo_t)(void* data);
 	typedef void (*redo_t)(void* data);
 	typedef void (*cleanup_t)(void* data);
+}
+
+namespace TextureBrowser
+{
+	enum class NodeType
+	{
+		TEXTURE,
+		DIRECTORY
+	};
+
+	typedef struct Node
+	{
+		NodeType type;
+		QString path;
+		QString name;
+		Node* parent = nullptr;
+		Texture texture;
+		QList<Node*> children;
+	};
 }

@@ -117,6 +117,7 @@
     <ClCompile Include="editor\Grid2D.cpp" />
     <ClCompile Include="common\GlobalData.cpp" />
     <ClCompile Include="editor\Renderable.cpp" />
+    <ClCompile Include="gui\FlowLayout.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_ClippingTool.cpp" />
     <ClCompile Include="gui\GLWidget2D\GLWidget2D_SelectionTool.cpp" />
     <ClCompile Include="gui\GLWidget3D\GLWidget3D_SelectionTool.cpp" />
@@ -137,6 +138,8 @@
     <ClCompile Include="editor\grid2d\Point.cpp" />
     <ClCompile Include="editor\VertexBufferObject.cpp" />
     <ClCompile Include="gui\TextureToolDialog.cpp" />
+    <ClCompile Include="gui\TexturePickModal.cpp" />
+    <ClCompile Include="gui\TextureCard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -157,9 +160,12 @@
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
     <ClInclude Include="editor\grid2d\Line.h" />
-    <ClInclude Include="editor\Texture.h" />
+    <QtMoc Include="gui\TextureCard.h" />
+    <QtMoc Include="gui\TexturePickModal.h" />
     <QtMoc Include="gui\TextureToolDialog.h" />
     <QtMoc Include="gui\GLWidgetsContainer.h" />
+    <ClInclude Include="editor\Texture.h" />
+    <ClInclude Include="gui\FlowLayout.h" />
     <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />

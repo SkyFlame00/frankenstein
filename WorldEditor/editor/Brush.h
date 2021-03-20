@@ -35,6 +35,7 @@ public:
 	void makePolygonVertices(Types::Polygon* polygon, int& i, float* output);
 	inline VertexBufferObject& getTrianglesVbo() { return m_trianglesVbo; }
 	void sendPolygonDataToGPU(Types::Polygon* polygon);
+	void updatePolygonTexture(Types::Polygon* polygon, Texture& texture);
 
 	QVector3D m_origin;
 	bool m_selected = false;

@@ -99,15 +99,17 @@ QOpenGLShaderProgram* ResourceManager::getProgram(const QString& vertexShaderNam
 	return program;
 }
 
-Texture& ResourceManager::getTexture(const QString& texturePath)
+Texture& ResourceManager::getTexture(const QString& texturePath, bool isAbsolute)
 {
-	if (m_textureMap.find(texturePath) != m_textureMap.end())
+	QString path = isAbsolute ? texturePath : (m_texturesDirPath + "/" + texturePath);
+
+	if (m_textureMap.find(path) != m_textureMap.end())
 	{
-		return *m_textureMap[texturePath];
+		return *m_textureMap[path];
 	}
 
 	auto $ = GL::functions();
-	QImage image = QImage(m_texturesDirPath + "/" + texturePath)
+	QImage image = QImage(path)
 		.mirrored()
 		.convertToFormat(QImage::Format_RGBA8888);
 	GLuint textureId;
@@ -120,7 +122,7 @@ Texture& ResourceManager::getTexture(const QString& texturePath)
 	GLCall($->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	GLCall($->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bits()));
 
-	Texture* texture = new Texture{ textureId, image.width(), image.height() };
+	Texture* texture = new Texture{ textureId, image.width(), image.height(), image.mirrored() };
 	m_textureMap[texturePath] = texture;
 	return *texture;
 }

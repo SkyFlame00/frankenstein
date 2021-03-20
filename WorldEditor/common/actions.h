@@ -3,6 +3,7 @@
 #include "../editor/Brush.h"
 #include "GlobalData.h"
 #include <unordered_map>
+#include "../editor/Texture.h"
 
 namespace Actions
 {
@@ -58,4 +59,18 @@ namespace Actions
 	void texturerotation_undo(void* data);
 	void texturerotation_redo(void* data);
 	void texturerotation_cleanup(void* data);
+
+	/* Texture picking */
+	struct TexturePickingStruct
+	{
+		Brush* brush;
+		Types::Polygon* polygon;
+		Texture oldTexture;
+		Texture newTexture;
+	};
+	typedef QList<TexturePickingStruct> TexturePickingData;
+
+	void texturepicking_undo(void* data);
+	void texturepicking_redo(void* data);
+	void texturepicking_cleanup(void* data);
 }

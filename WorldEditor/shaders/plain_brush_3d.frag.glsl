@@ -46,7 +46,7 @@ void main()
     {
         if (u_TextureMap[i] == textureId)
         {
-            activeTextureId = i + 1;
+            activeTextureId = u_TextureMap[i + 1];
             break;
         }
     }

@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
 	auto window = MainWindow::getInstance();
 	//window.showMaximized();
-	window->setMinimumSize(320, 240);
+	window->setMinimumSize(800, 640);
 	window->show();
 
 	int status = app.exec();
