@@ -31,10 +31,14 @@ private:
 	void closeEvent(QCloseEvent* e) override;
 	void handleCardClicked(TextureCard* card);
 	void handleCardDoubleClicked(TextureBrowser::Node* node);
+	void displayContents(TextureBrowser::Node* dir);
+	void clearContents();
 
 	TextureBrowser::Node m_textureRootDir;
+	TextureBrowser::Node* m_currentDir;
 	QPushButton* m_okButton;
 	FlowLayout* m_texturesWindowLayout;
 	TextureCard* m_clickedCard = nullptr;
 	QList<TextureCard*> m_textureCards;
+	Texture m_folderIconTexture;
 };

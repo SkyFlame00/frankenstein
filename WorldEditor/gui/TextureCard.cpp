@@ -1,6 +1,6 @@
 #include "TextureCard.h"
 
-TextureCard::TextureCard(TextureBrowser::Node* node, QWidget* parent)
+TextureCard::TextureCard(TextureBrowser::Node* node, QString labelStr, QWidget* parent)
 	: QWidget(parent)
 {
 	m_node = node;
@@ -43,7 +43,7 @@ TextureCard::TextureCard(TextureBrowser::Node* node, QWidget* parent)
 	mainLayout->addWidget(m_textureContainer);
 
 	/* Texture name */
-	QLabel* label = new QLabel(node->name);
+	QLabel* label = new QLabel(labelStr.size() > 0 ? labelStr : node->name);
 	label->setContentsMargins(5, 5, 5, 5);
 	mainLayout->addWidget(label);
 }

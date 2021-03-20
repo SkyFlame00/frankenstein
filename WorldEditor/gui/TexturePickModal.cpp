@@ -33,6 +33,12 @@ TexturePickModal::TexturePickModal(QWidget* parent)
 	/* Bottom panel */
 	m_okButton = new QPushButton("OK");
 	mainLayout->addWidget(m_okButton);
+
+	m_currentDir = &m_textureRootDir;
+
+	/* Folder icon texture */
+	QString folderIconPath = QDir::currentPath() + "/assets/icons/folder.png";
+	m_folderIconTexture = ResourceManager::getTexture(folderIconPath, true);
 }
 
 TexturePickModal::~TexturePickModal()
@@ -41,10 +47,11 @@ TexturePickModal::~TexturePickModal()
 }
 
 void TexturePickModal::init()
-{
+{	
 	m_textureRootDir.type = TextureBrowser::NodeType::DIRECTORY;
 	m_textureRootDir.path = QDir::currentPath() + "/" + GlobalData::texturesPath;
 	m_textureRootDir.name = "/";
+	m_textureRootDir.texture = m_folderIconTexture;
 	makeFilesystemTree(&m_textureRootDir);
 }
 
@@ -61,7 +68,7 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 
 		if (entry.is_directory())
 		{
-			Node* node = new Node{ NodeType::DIRECTORY, path.c_str(), name.c_str(), parent };
+			Node* node = new Node{ NodeType::DIRECTORY, path.c_str(), name.c_str(), parent, m_folderIconTexture };
 			makeFilesystemTree(node);
 			parent->children.append(node);
 		}
@@ -76,27 +83,13 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 
 void TexturePickModal::showEvent(QShowEvent* event)
 {
-	for (auto* node : m_textureRootDir.children)
-	{
-		TextureCard* textureCard = new TextureCard(node);
-		m_texturesWindowLayout->addWidget(textureCard);
-		connect(textureCard, &TextureCard::clicked, this, &TexturePickModal::handleCardClicked);
-		connect(textureCard, &TextureCard::doubleClicked, this, &TexturePickModal::handleCardDoubleClicked);
-		m_textureCards.append(textureCard);
-	}
+	m_currentDir = &m_textureRootDir;
+	displayContents(m_currentDir);
 }
 
 void TexturePickModal::hideEvent(QHideEvent* event)
 {
-	for (auto* card : m_textureCards)
-	{
-		disconnect(card, &TextureCard::clicked, this, &TexturePickModal::handleCardClicked);
-		disconnect(card, &TextureCard::doubleClicked, this, &TexturePickModal::handleCardDoubleClicked);
-		delete card;
-	}
-
-	m_clickedCard = nullptr;
-	m_textureCards.clear();
+	clearContents();
 }
 
 void TexturePickModal::handleCardClicked(TextureCard* card)
@@ -112,11 +105,52 @@ void TexturePickModal::handleCardClicked(TextureCard* card)
 
 void TexturePickModal::handleCardDoubleClicked(TextureBrowser::Node* node)
 {
-	emit submit(node->texture);
-	hide();
+	if (node->type == TextureBrowser::NodeType::DIRECTORY)
+	{
+		m_currentDir = node;
+		displayContents(node);
+	}
+	else if (node->type == TextureBrowser::NodeType::TEXTURE)
+	{
+		emit submit(node->texture);
+		hide();
+	}
 }
 
 void TexturePickModal::closeEvent(QCloseEvent* e)
 {
 	emit cancel();
+}
+
+void TexturePickModal::displayContents(TextureBrowser::Node* dir)
+{
+	clearContents();
+
+	auto createCard = [&](TextureBrowser::Node* node, QString labelStr = "")
+	{
+		TextureCard* textureCard = new TextureCard(node, labelStr);
+		m_texturesWindowLayout->addWidget(textureCard);
+		connect(textureCard, &TextureCard::clicked, this, &TexturePickModal::handleCardClicked);
+		connect(textureCard, &TextureCard::doubleClicked, this, &TexturePickModal::handleCardDoubleClicked);
+		m_textureCards.append(textureCard);
+	};
+
+	if (dir->parent)
+		createCard(dir->parent, "...");
+
+	for (auto* node : dir->children)
+		createCard(node);
+}
+
+void TexturePickModal::clearContents()
+{
+	for (auto* card : m_textureCards)
+	{
+		disconnect(card, &TextureCard::clicked, this, &TexturePickModal::handleCardClicked);
+		disconnect(card, &TextureCard::doubleClicked, this, &TexturePickModal::handleCardDoubleClicked);
+		delete card;
+	}
+
+	m_clickedCard = nullptr;
+	m_textureCards.clear();
 }

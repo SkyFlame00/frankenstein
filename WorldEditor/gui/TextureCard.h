@@ -13,7 +13,7 @@ class TextureCard : public QWidget
 	Q_OBJECT
 
 public:
-	TextureCard(TextureBrowser::Node* node, QWidget* parent = nullptr);
+	TextureCard(TextureBrowser::Node* node, QString labelStr = "", QWidget* parent = nullptr);
 	~TextureCard();
 
 signals:
