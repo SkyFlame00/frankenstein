@@ -36,6 +36,8 @@ public:
 	inline VertexBufferObject& getTrianglesVbo() { return m_trianglesVbo; }
 	void sendPolygonDataToGPU(Types::Polygon* polygon);
 	void updatePolygonTexture(Types::Polygon* polygon, Texture& texture);
+	inline void setDefaultTexture(Texture texture) { m_defaultTexture = texture; }
+	inline Texture getDefaultTexture() { return m_defaultTexture; }
 
 	QVector3D m_origin;
 	bool m_selected = false;
@@ -110,5 +112,5 @@ private:
 	int m_bboxLinesVerticesCount;
 	QList<RenderCall> m_renderCalls;
 	QVector3D m_targetAxis = QVector3D(0, 0, 1);
-	Texture* m_defaultTexture;
+	Texture m_defaultTexture;
 };

@@ -22,6 +22,8 @@ public:
 	void onPickedPolygonsChange(std::unordered_map<Types::Polygon*, Brush*>& pickedPolygons);
 	void init();
 
+	bool shouldChangeDefaultTexture = false;
+
 private:
 	void handleShiftXChange(int val);
 	void handleShiftXEditingFinished();

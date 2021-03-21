@@ -20,6 +20,8 @@ void GLWidget3D::processTextureTool()
 			if (!isBrushPicked || !global->isSelectionForTextureToolActivated)
 				return;
 
+			ttDialog->shouldChangeDefaultTexture = false;
+
 			if (m_inputData.keyCtrl == ButtonDownState::DOWN_NOT_PROCESSED || m_inputData.keyCtrl == ButtonDownState::DOWN_PROCESSED)
 			{
 				if (data.pickedPolygons.find(polygon) != data.pickedPolygons.end())

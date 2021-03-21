@@ -139,6 +139,7 @@ void TextureToolDialog::showEvent(QShowEvent* event)
 		auto* brush = sdata.renderable;
 		sdata.renderable->m_selected = false;
 		sdata.renderable = nullptr;
+		this->shouldChangeDefaultTexture = true;
 
 		for (auto* polygon : brush->getPolygons())
 		{
@@ -606,6 +607,12 @@ void TextureToolDialog::handleTexturePickModalSubmit(Texture texture)
 	auto global = GlobalData::getInstance();
 	auto& data = global->textureToolData;
 	Actions::TexturePickingData* historyData = new Actions::TexturePickingData;
+
+	if (this->shouldChangeDefaultTexture)
+	{
+		auto* brush = data.pickedPolygons.begin()->second;
+		brush->setDefaultTexture(texture);
+	}
 
 	for (auto& pair : data.pickedPolygons)
 	{

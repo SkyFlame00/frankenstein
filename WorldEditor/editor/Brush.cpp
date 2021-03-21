@@ -11,7 +11,7 @@
 Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor)
 	: m_selectionColor(1.0f, 0.0f, 0.0f),
 	m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f),
-	m_isUsingColor(isUsingColor), m_defaultTexture(&texture)
+	m_isUsingColor(isUsingColor), m_defaultTexture(texture)
 {
 	QVector3D color(Helpers::getRandom(), Helpers::getRandom(), Helpers::getRandom());
 	m_uniformColor = color;
@@ -612,9 +612,9 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 		else
 		{
 			polygon->isUsingColor = m_isUsingColor;
-			polygon->textureId = m_defaultTexture->id;
-			polygon->textureWidth = m_defaultTexture->width;
-			polygon->textureHeight = m_defaultTexture->height;
+			polygon->textureId = m_defaultTexture.id;
+			polygon->textureWidth = m_defaultTexture.width;
+			polygon->textureHeight = m_defaultTexture.height;
 			polygon->scale = QVector2D(1.0f, 1.0f);
 			polygon->shift = QVector2D(0.0f, 0.0f);
 			polygon->rotationAngle = 0;
