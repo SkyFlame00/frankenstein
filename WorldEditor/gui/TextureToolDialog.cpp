@@ -6,6 +6,7 @@
 #include "MainWindow.h"
 #include "../common/ActionHistoryTool.h"
 #include "../common/actions.h"
+#include <QDir>
 
 TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	: QDialog(parent, flags)
@@ -13,28 +14,37 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 	setWindowTitle("Texture tool");
 	setWindowFlag(Qt::MSWindowsFixedSizeDialogHint);
 
-	/* Main layouts */
-	QHBoxLayout* m_mainLayout = new QHBoxLayout;
-	QHBoxLayout* m_texturePreviewLayout = new QHBoxLayout;
-	QGridLayout* m_textureParamsLayout = new QGridLayout;
-	m_textureParamsLayout->setSizeConstraint(QLayout::SetFixedSize);
+	/* Main layout */
+	QHBoxLayout* m_mainLayout = new QHBoxLayout(this);
+	
+	/* Texture preview and change texture button */
+	QWidget* leftSideContainer = new QWidget(this);
+	QVBoxLayout* leftSideLayout = new QVBoxLayout(leftSideContainer);
+	leftSideContainer->setLayout(leftSideLayout);
+	m_mainLayout->addWidget(leftSideContainer);
 
-	/* Texture preview */
-	QWidget* m_texturePreviewContainer = new QWidget;
-	m_texturePreviewContainer->setLayout(m_texturePreviewLayout);
-	m_mainLayout->addWidget(m_texturePreviewContainer);
+	m_previewContainer = new QWidget(leftSideContainer);
+	m_previewContainer->setStyleSheet("border: 1px solid rgb(100, 100, 100);");
+	QGridLayout* previewContainerLayout = new QGridLayout(m_previewContainer);
+	m_previewContainer->setLayout(previewContainerLayout);
+	previewContainerLayout->setMargin(0);
+	previewContainerLayout->setSpacing(0);
+	m_previewLabel = new QLabel(m_previewContainer);
+	previewContainerLayout->addWidget(m_previewLabel);
+	leftSideLayout->addWidget(m_previewContainer);
+
+	m_changeTextureButton = new QPushButton(leftSideContainer);
+	m_changeTextureButton->setText("Change texture");
+	leftSideLayout->addWidget(m_changeTextureButton);
+	connect(m_changeTextureButton, &QAbstractButton::clicked, this, &TextureToolDialog::handleChangeTextureButtonClick);
 
 	/* Texture picking modal */
-	m_texturePickModal = new TexturePickModal;
-	
-	/* Change texture button */
-	m_changeTextureButton = new QPushButton;
-	m_changeTextureButton->setText("Change texture");
-	m_texturePreviewLayout->addWidget(m_changeTextureButton);
-	connect(m_changeTextureButton, &QAbstractButton::clicked, this, &TextureToolDialog::handleChangeTextureButtonClick);
+	m_texturePickModal = new TexturePickModal(this);
 
 	/* Texture parameters */
 	QWidget* m_textureParamsContainer = new QWidget;
+	QGridLayout* m_textureParamsLayout = new QGridLayout(m_textureParamsContainer);
+	m_textureParamsLayout->setSizeConstraint(QLayout::SetFixedSize);
 	m_textureParamsContainer->setLayout(m_textureParamsLayout);
 	m_mainLayout->addWidget(m_textureParamsContainer);
 
@@ -125,7 +135,32 @@ TextureToolDialog::TextureToolDialog(QWidget* parent, Qt::WindowFlags flags)
 
 void TextureToolDialog::init()
 {
+	changePreviewTexture(GlobalData::applyingTexture);
 	m_texturePickModal->init();
+}
+
+void TextureToolDialog::changePreviewTexture(Texture texture)
+{
+	auto& image = texture.image;
+	int width = image.width();
+	int height = image.height();
+	int max = std::max(image.width(), image.height());
+	QPixmap pixmap;
+
+	if (max > PREVIEW_SIZE)
+	{
+		pixmap = QPixmap::fromImage(image).scaled({ PREVIEW_SIZE, PREVIEW_SIZE }, Qt::KeepAspectRatio);
+	}
+	else
+	{
+		pixmap = QPixmap::fromImage(image);
+	}
+
+	m_previewLabel->setPixmap(pixmap);
+
+	int marginLeft = (float)PREVIEW_SIZE / 2 - (float)pixmap.width() / 2;
+	m_previewContainer->setContentsMargins(marginLeft, 0, 0, 0);
+	m_previewContainer->setFixedSize(PREVIEW_SIZE, PREVIEW_SIZE);
 }
 
 void TextureToolDialog::showEvent(QShowEvent* event)
@@ -133,6 +168,8 @@ void TextureToolDialog::showEvent(QShowEvent* event)
 	auto* global = GlobalData::getInstance();
 	auto& sdata = global->m_selectionToolData;
 	auto& tdata = global->textureToolData;
+
+	changePreviewTexture(GlobalData::applyingTexture);
 
 	if (sdata.renderable)
 	{
@@ -194,6 +231,8 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 	double scaleY_val = pickedPolygons.begin()->first->scale.y();
 	bool rotation_sameVal = true;
 	int rotation_val = pickedPolygons.begin()->first->rotationAngle;
+	bool textureId_sameVal = true;
+	int textureId_val = pickedPolygons.begin()->first->textureId;
 
 	for (auto it = ++pickedPolygons.begin(); it != pickedPolygons.end(); it++)
 	{
@@ -209,8 +248,10 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 			scaleY_sameVal = false;
 		if (rotation_val != polygon->rotationAngle)
 			rotation_sameVal = false;
+		if (textureId_val != polygon->textureId)
+			textureId_sameVal = false;
 
-		if (!shiftX_sameVal && !shiftY_sameVal && scaleX_sameVal && !scaleY_sameVal && !rotation_sameVal)
+		if (!shiftX_sameVal && !shiftY_sameVal && scaleX_sameVal && !scaleY_sameVal && !rotation_sameVal && !textureId_sameVal)
 			break;
 	}
 
@@ -297,6 +338,17 @@ void TextureToolDialog::onPickedPolygonsChange(std::unordered_map<Types::Polygon
 		m_rotationControl->blockSignals(false);
 
 		m_rotation_isUndefined = true;
+	}
+
+	if (textureId_sameVal)
+	{
+		Texture* texture = ResourceManager::getTextureById(textureId_val);
+		changePreviewTexture(*texture);
+	}
+	else
+	{
+		Texture dtTexture = ResourceManager::getTexture(QDir::currentPath() + "/assets/differing_textures.png", true);
+		changePreviewTexture(dtTexture);
 	}
 }
 
@@ -607,6 +659,9 @@ void TextureToolDialog::handleTexturePickModalSubmit(Texture texture)
 	auto global = GlobalData::getInstance();
 	auto& data = global->textureToolData;
 	Actions::TexturePickingData* historyData = new Actions::TexturePickingData;
+
+	GlobalData::applyingTexture = texture;
+	changePreviewTexture(texture);
 
 	if (this->shouldChangeDefaultTexture)
 	{

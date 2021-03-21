@@ -126,3 +126,11 @@ Texture& ResourceManager::getTexture(const QString& texturePath, bool isAbsolute
 	m_textureMap[texturePath] = texture;
 	return *texture;
 }
+
+Texture* ResourceManager::getTextureById(GLuint id)
+{
+	for (auto* texture : m_textureMap)
+		if (texture->id == id)
+			return texture;
+	return nullptr;
+}

@@ -315,9 +315,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 	{
 		if (global->m_editorMode == EditorMode::BLOCK_MODE && bdata.state == BlockToolState::READY_TO_EDIT)
 		{
-			//Texture& texture = ResourceManager::getTexture("wall.jpg");
-			//Texture& texture = ResourceManager::getTexture("container.png");
-			Texture& texture = ResourceManager::getTexture("container2.jpg");
+			Texture& texture = GlobalData::applyingTexture;
 
 			auto block = bdata.blockInstance;
 			auto brush = new Brush(*block->getVertices(), texture);

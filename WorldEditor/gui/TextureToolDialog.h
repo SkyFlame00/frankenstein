@@ -43,6 +43,7 @@ private:
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void disableControls();
+	void changePreviewTexture(Texture texture);
 
 	int shiftMax = std::numeric_limits<int>::max();
 	int shiftMin = -(shiftMax - 1);
@@ -51,12 +52,10 @@ private:
 	int rotationMax = std::numeric_limits<int>::max();
 	int rotationMin = -(rotationMax - 1);
 
-	/* Layout */
-	QVBoxLayout* m_mainLayout;
-	QHBoxLayout* m_texturePreviewLayout;
-	QGridLayout* m_textureParamsLayout;
-
 	/* Preview */
+	const int PREVIEW_SIZE = 100;
+	QWidget* m_previewContainer;
+	QLabel* m_previewLabel;
 	QPushButton* m_changeTextureButton;
 
 	/* Texture picking modal */

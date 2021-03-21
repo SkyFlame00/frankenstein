@@ -74,6 +74,7 @@ public:
 	bool isSelectionForTextureToolActivated = false;
 	bool isCameraForTextureToolActivated = false;
 	static QString texturesPath;
+	static Texture applyingTexture;
 
 private:
 	GlobalData();

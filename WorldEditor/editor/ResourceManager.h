@@ -13,6 +13,7 @@ public:
 	static void Cleanup();
 	static QOpenGLShaderProgram* getProgram(const QString& vertexShaderName, const QString& fragmentShaderName);
 	static Texture& getTexture(const QString& texturePath, bool isAbsolute = false);
+	static Texture* getTextureById(GLuint id);
 
 private:
 	struct ShaderTriplet {

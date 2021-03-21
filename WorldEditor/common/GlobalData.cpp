@@ -1,12 +1,15 @@
 #include "GlobalData.h"
 #include <QDebug>
 #include "../gui/MainWindow.h"
+#include "../editor/ResourceManager.h"
+#include <QDir>
 
 GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
 const int GlobalData::CONTEXTS_NUM = 4;
 int GlobalData::contextsReady = 0;
 QString GlobalData::texturesPath = "resources/textures/";
+Texture GlobalData::applyingTexture;
 
 GlobalData::GlobalData()
 {
@@ -191,6 +194,8 @@ void GlobalData::onContextReady()
 		m_instance->m_clippingToolData.point1->m_enableScale = false;
 		m_instance->m_clippingToolData.point2->m_enableScale = false;
 		m_instance->m_clippingToolData.line = new Line;
+
+		applyingTexture = ResourceManager::getTexture(QDir::currentPath() + "/assets/missing_texture.png", true);
 
 		auto* mainWindow = MainWindow::getInstance();
 		mainWindow->getTextureToolDialog()->init();
