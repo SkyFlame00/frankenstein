@@ -12,6 +12,7 @@ namespace fs = std::filesystem;
 TexturePickModal::TexturePickModal(QWidget* parent)
 	: QDialog(parent)
 {
+	setWindowTitle("Texture browser");
 	setMinimumSize(800, 640);
 
 	/* Main layout */

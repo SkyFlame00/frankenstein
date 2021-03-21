@@ -247,9 +247,8 @@ void GLWidget2D::clipBrush()
 	}
 
 	std::vector<INEXACT_K::Point_3> intersectionPts;
-	QList<QVector3D> ipts;
 
-	auto isIntersectionPt = [&](QVector3D& pt) {
+	auto isIntersectionPt = [&](QVector3D pt) {
 		auto res = std::find_if(intersectionPts.begin(), intersectionPts.end(), [&](INEXACT_K::Point_3 _pt)
 			{
 				return Helpers::areEqual(pt.x(), _pt.x()) &&
@@ -263,7 +262,6 @@ void GLWidget2D::clipBrush()
 	for (auto& seg : brush->getUniqueEdges())
 	{
 		QVector3D pt;
-
 		QMatrix4x4 model;
 		model.setToIdentity();
 		model.translate(brush->m_origin);
@@ -273,23 +271,17 @@ void GLWidget2D::clipBrush()
 
 		if (Helpers::lineSegmentPlaneIntersection(v0, v1, cdata->plane.p0, cdata->plane.norm, &pt))
 		{
-			if (!isIntersectionPt(pt))
-			{
-				auto x = pt.x() - brush->m_origin.x();
-				auto y = pt.y() - brush->m_origin.y();
-				auto z = pt.z() - brush->m_origin.z();
-				INEXACT_K::Point_3 pp(x, y, z);
-				intersectionPts.push_back(pp);
-				ipts.push_back({ x,y,z });
-			}
+			auto x = pt.x() - brush->m_origin.x();
+			auto y = pt.y() - brush->m_origin.y();
+			auto z = pt.z() - brush->m_origin.z();
+
+			if (!isIntersectionPt({ x, y, z }))
+				intersectionPts.push_back({ x, y, z });
 		}
 	}
 
 	std::vector<INEXACT_K::Point_3> clippedBrushVertices{ intersectionPts };
 	std::vector<INEXACT_K::Point_3> remainingBrushVertices{ intersectionPts };
-
-	QList<QVector3D> cpv{ ipts };
-	QList<QVector3D> rpv{ ipts };
 
 	QVector3D norm = cdata->plane.norm;
 	QVector3D p0 = cdata->plane.p0;
@@ -306,18 +298,10 @@ void GLWidget2D::clipBrush()
 		float sign = QVector3D::dotProduct(norm, v - p0);
 
 		if (sign < 0)
-		{
-			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
-			clippedBrushVertices.push_back(pp);
-			cpv.push_back(v);
-		}
+			clippedBrushVertices.push_back({ vertex->x(), vertex->y(), vertex->z() });
 			
 		else if (sign > 0)
-		{
-			INEXACT_K::Point_3 pp(vertex->x(), vertex->y(), vertex->z());
-			remainingBrushVertices.push_back(pp);
-			rpv.push_back(v);
-		}
+			remainingBrushVertices.push_back({ vertex->x(), vertex->y(), vertex->z() });
 	}
 
 	Brush* clippedBrush = nullptr;
@@ -328,7 +312,6 @@ void GLWidget2D::clipBrush()
 	{
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(clippedBrushVertices.begin(), clippedBrushVertices.end(), poly);
-
 		clippedBrush = new Brush(poly, brush);
 	}
 
@@ -336,7 +319,6 @@ void GLWidget2D::clipBrush()
 	{
 		Polyhedron_3 poly;
 		CGAL::convex_hull_3(remainingBrushVertices.begin(), remainingBrushVertices.end(), poly);
-
 		remainingBrush = new Brush(poly, brush);
 	}
 
