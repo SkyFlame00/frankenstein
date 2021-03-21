@@ -33,10 +33,14 @@ private:
 	void handleCardDoubleClicked(TextureBrowser::Node* node);
 	void displayContents(TextureBrowser::Node* dir);
 	void clearContents();
+	void handleSubmit(TextureBrowser::Node* node);
+	void handleOkButtonClicked();
+	void handleCancelButtonClicked();
 
 	TextureBrowser::Node m_textureRootDir;
 	TextureBrowser::Node* m_currentDir;
 	QPushButton* m_okButton;
+	QPushButton* m_cancelButton;
 	FlowLayout* m_texturesWindowLayout;
 	TextureCard* m_clickedCard = nullptr;
 	QList<TextureCard*> m_textureCards;

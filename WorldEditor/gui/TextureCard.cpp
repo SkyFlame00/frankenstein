@@ -4,6 +4,7 @@ TextureCard::TextureCard(TextureBrowser::Node* node, QString labelStr, QWidget* 
 	: QWidget(parent)
 {
 	m_node = node;
+	isDirectory = node->type == TextureBrowser::NodeType::DIRECTORY;
 	setFixedWidth(SIZE);
 
 	QGridLayout* mainLayout = new QGridLayout;

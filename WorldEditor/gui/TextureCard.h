@@ -15,6 +15,9 @@ class TextureCard : public QWidget
 public:
 	TextureCard(TextureBrowser::Node* node, QString labelStr = "", QWidget* parent = nullptr);
 	~TextureCard();
+	inline TextureBrowser::Node* getNode() { return m_node; }
+
+	bool isDirectory;
 
 signals:
 	void clicked(TextureCard* card);

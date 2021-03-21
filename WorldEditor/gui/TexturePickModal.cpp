@@ -15,24 +15,34 @@ TexturePickModal::TexturePickModal(QWidget* parent)
 	setMinimumSize(800, 640);
 
 	/* Main layout */
-	QVBoxLayout* mainLayout = new QVBoxLayout;
+	QVBoxLayout* mainLayout = new QVBoxLayout(this);
 	setLayout(mainLayout);
 
 	/* Texture viewing window */
-	QScrollArea* texturesWindow = new QScrollArea;
+	QScrollArea* texturesWindow = new QScrollArea(this);
 	texturesWindow->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
 	texturesWindow->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAsNeeded);
 	texturesWindow->setWidgetResizable(true);
 
-	QWidget* textureCardsContainer = new QWidget;
-	m_texturesWindowLayout = new FlowLayout;
+	QWidget* textureCardsContainer = new QWidget(texturesWindow);
+	m_texturesWindowLayout = new FlowLayout(textureCardsContainer);
 	textureCardsContainer->setLayout(m_texturesWindowLayout);
 	texturesWindow->setWidget(textureCardsContainer);
 	mainLayout->addWidget(texturesWindow);
 
 	/* Bottom panel */
-	m_okButton = new QPushButton("OK");
-	mainLayout->addWidget(m_okButton);
+	QWidget* bottomPanel = new QWidget(this);
+	QBoxLayout* bottomPanelLayout = new QBoxLayout(QBoxLayout::RightToLeft, bottomPanel);
+	bottomPanel->setLayout(bottomPanelLayout);
+	m_okButton = new QPushButton("OK", bottomPanel);
+	connect(m_okButton, &QPushButton::clicked, this, &TexturePickModal::handleOkButtonClicked);
+	m_cancelButton = new QPushButton("Cancel", bottomPanel);
+	connect(m_cancelButton, &QPushButton::clicked, this, &TexturePickModal::handleCancelButtonClicked);
+	bottomPanelLayout->addWidget(m_cancelButton);
+	bottomPanelLayout->addWidget(m_okButton);
+	bottomPanelLayout->addStretch();
+	bottomPanelLayout->setMargin(0);
+	mainLayout->addWidget(bottomPanel);
 
 	m_currentDir = &m_textureRootDir;
 
@@ -47,7 +57,7 @@ TexturePickModal::~TexturePickModal()
 }
 
 void TexturePickModal::init()
-{	
+{
 	m_textureRootDir.type = TextureBrowser::NodeType::DIRECTORY;
 	m_textureRootDir.path = QDir::currentPath() + "/" + GlobalData::texturesPath;
 	m_textureRootDir.name = "/";
@@ -83,6 +93,7 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 
 void TexturePickModal::showEvent(QShowEvent* event)
 {
+	m_okButton->setDisabled(true);
 	m_currentDir = &m_textureRootDir;
 	displayContents(m_currentDir);
 }
@@ -101,6 +112,7 @@ void TexturePickModal::handleCardClicked(TextureCard* card)
 
 	card->setStyleSheet("background-color: rgba(89, 143, 255, 1);");
 	m_clickedCard = card;
+	m_okButton->setDisabled(card->isDirectory);
 }
 
 void TexturePickModal::handleCardDoubleClicked(TextureBrowser::Node* node)
@@ -112,8 +124,7 @@ void TexturePickModal::handleCardDoubleClicked(TextureBrowser::Node* node)
 	}
 	else if (node->type == TextureBrowser::NodeType::TEXTURE)
 	{
-		emit submit(node->texture);
-		hide();
+		handleSubmit(node);
 	}
 }
 
@@ -153,4 +164,20 @@ void TexturePickModal::clearContents()
 
 	m_clickedCard = nullptr;
 	m_textureCards.clear();
+}
+
+void TexturePickModal::handleSubmit(TextureBrowser::Node* node)
+{
+	emit submit(node->texture);
+	hide();
+}
+
+void TexturePickModal::handleOkButtonClicked()
+{
+	handleSubmit(m_clickedCard->getNode());
+}
+
+void TexturePickModal::handleCancelButtonClicked()
+{
+	hide();
 }
