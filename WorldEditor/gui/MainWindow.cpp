@@ -9,6 +9,10 @@
 #include <QDebug>
 #include <QEvent>
 #include <QVector3D>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDir>
+#include <nlohmann/json.hpp>
 
 #include "../common/types.h"
 #include "../common/GlobalData.h"
@@ -16,6 +20,8 @@
 #include "../common/actions.h"
 #include "../common/ActionHistoryTool.h"
 #include "../editor/ResourceManager.h"
+
+using nlohmann::json;
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -79,11 +85,41 @@ void MainWindow::cleanup()
 
 void MainWindow::setupMenu()
 {
-	menuBar = new QMenuBar;
+	menuBar = new QMenuBar(this);
 	fileMenu = menuBar->addMenu("File");
-	QAction* closeLevel = new QAction(fileMenu);
-	closeLevel->setText("Close");
-	fileMenu->addAction(closeLevel);
+
+	/* New */
+	m_newBtn = new QAction("New", fileMenu);
+	fileMenu->addAction(m_newBtn);
+	connect(m_newBtn, &QAction::triggered, this, &MainWindow::handleNewButtonClicked);
+
+	/* Open file */
+	m_openFileBtn = new QAction("Open", fileMenu);
+	fileMenu->addAction(m_openFileBtn);
+	connect(m_openFileBtn, &QAction::triggered, this, &MainWindow::handleOpenFileButtonClicked);
+
+	/* Separator */
+	fileMenu->addSeparator();
+
+	/* Save */
+
+	/* Save as */
+	m_saveAsBtn = new QAction("Save as...", fileMenu);
+	fileMenu->addAction(m_saveAsBtn);
+	connect(m_saveAsBtn, &QAction::triggered, this, &MainWindow::handleSaveAsButtonClicked);
+
+	/* Separator */
+	fileMenu->addSeparator();
+
+	/* Close */
+	m_closeBtn = new QAction("Close", fileMenu);
+	fileMenu->addAction(m_closeBtn);
+	connect(m_closeBtn, &QAction::triggered, this, &MainWindow::handleCloseButtonClicked);
+
+	/* Exit */
+	m_exitBtn = new QAction("Exit", fileMenu);
+	fileMenu->addAction(m_exitBtn);
+	connect(m_exitBtn, &QAction::triggered, this, &MainWindow::handleExitButtonClicked);
 
 	setAnimated(false);
 	setMenuBar(menuBar);
@@ -177,6 +213,8 @@ void MainWindow::setupEditor()
 	m_glWidget2D_Y = new GLWidget2D(Axis::Y, m_camera2D_Y, m_renderer2D_Y, m_scene);
 	m_glWidget2D_Z = new GLWidget2D(Axis::Z, m_camera2D_Z, m_renderer2D_Z, m_scene);
 	m_glWidgetsContainer = new GLWidgetsContainer(m_glWidget3D, m_glWidget2D_X, m_glWidget2D_Y, m_glWidget2D_Z);
+
+	closeEditor();
 
 	layout->addWidget(m_glWidgetsContainer);
 	m_centralWidget->setLayout(layout);
@@ -561,10 +599,324 @@ void MainWindow::endInputProcessing(bool isReleased)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+	bool agreed = true;
+
+	if (GlobalData::isStateTouched)
+	{
+		auto btn = QMessageBox::question(this, "Close map", "All unsaved changes will be lost. Are you sure?");
+		agreed = btn != QMessageBox::StandardButton::No;
+	}
+
+	if (!agreed)
+	{
+		event->ignore();
+		return;
+	}
+
 	if (m_textureToolDialog)
 	{
 		m_textureToolDialog->close();
 	}
 
 	QMainWindow::closeEvent(event);
+}
+
+void MainWindow::handleSaveAsButtonClicked(bool checked)
+{
+	QString filename = QFileDialog::getSaveFileName(this,
+		"Save map", QDir::currentPath(),
+		"F3D map (*.map);");
+
+	if (filename.isEmpty())
+		return;
+
+	QFile file(filename);
+	if (!file.open(QIODevice::WriteOnly)) {
+		QMessageBox::information(this, "Unable to open file", file.errorString());
+		return;
+	}
+
+	QTextStream outStream(&file);
+	json output;
+	auto& brushes = GlobalData::getInstance()->m_scene->getObjects();
+
+	for (auto* brush : brushes)
+	{
+		if (!brush->isOnScene)
+			continue;
+
+		QDir cwd = QDir::currentPath();
+		auto& defaultTexture = brush->getDefaultTexture();
+		QString defaultTexturePath = cwd.relativeFilePath(defaultTexture.path);
+
+		json b = {
+			{"type", "brush"},
+			{"origin", {
+				{"x", brush->m_origin.x()},
+				{"y", brush->m_origin.y()},
+				{"z", brush->m_origin.z()}
+			}},
+			{"color", {
+				{"r", brush->getColor().x()},
+				{"g", brush->getColor().y()},
+				{"b", brush->getColor().z()}
+			}},
+			{"default_texture_path", defaultTexturePath.toStdString()},
+			{"is_default_texture_missing", defaultTexture.isMissing}
+		};
+
+		json uniqueVertices;
+		std::unordered_map<QVector3D*, int> indexMap;
+		int i = 0;
+		for (auto* v : brush->getUniqueVertices())
+		{
+			uniqueVertices.push_back({
+				{"x", v->x()},
+				{"y", v->y()},
+				{"z", v->z()},
+				});
+
+			indexMap[v] = i++;
+		}
+		b["unique_vertices"] = uniqueVertices;
+
+		json uniqueEdges;
+		for (auto& edge : brush->getUniqueEdges())
+		{
+			uniqueEdges.push_back({
+				{"v0", indexMap[edge.v0]},
+				{"v1", indexMap[edge.v1]},
+				});
+		}
+		b["unique_edges"] = uniqueEdges;
+
+		json polygons;
+		for (auto* polygon : brush->getPolygons())
+		{
+			auto* texture = ResourceManager::getTextureById(polygon->textureId);
+			QString texturePath = cwd.relativeFilePath(texture->path);
+
+			json p = {
+				{"norm", {
+					{"x", polygon->norm.x()},
+					{"y", polygon->norm.y()},
+					{"z", polygon->norm.z()}
+				}},
+				{"shift", {
+					{"x", polygon->shift.x()},
+					{"y", polygon->shift.y()}
+				}},
+				{"scale", {
+					{"x", polygon->scale.x()},
+					{"y", polygon->scale.y()}
+				}},
+				{"texture_path", texturePath.toStdString()},
+				{"is_texture_missing", texture->isMissing}
+			};
+
+			json vertices;
+			for (auto* v : polygon->vertices)
+			{
+				vertices.push_back(indexMap[v]);
+			}
+			p["vertices"] = vertices;
+
+			json edges;
+			for (auto& edge : polygon->edges)
+			{
+				edges.push_back({
+					{"v0", indexMap[edge.v0]},
+					{"v1", indexMap[edge.v1]}
+					});
+			}
+			p["edges"] = edges;
+
+			json trianglesLines;
+			for (auto& edge : polygon->trianglesLines)
+			{
+				trianglesLines.push_back({
+					{"v0", indexMap[edge.v0]},
+					{"v1", indexMap[edge.v1]}
+					});
+			}
+			p["trianglesLines"] = trianglesLines;
+
+			json texCoords;
+			for (auto& [vertex, vec] : polygon->verticesMap)
+			{
+				texCoords.push_back({
+					{"vertex_index", indexMap[vertex]},
+					{"u", vec.x()},
+					{"v", vec.y()}
+				});
+			}
+			p["tex_coords"] = texCoords;
+
+			json triangles;
+			for (auto& triangle : polygon->triangles)
+			{
+				triangles.push_back({
+					{"v0",  indexMap[triangle.v0]},
+					{"v1",  indexMap[triangle.v1]},
+					{"v2",  indexMap[triangle.v2]},
+					});
+			}
+			p["triangles"] = triangles;
+
+			polygons.push_back(p);
+		}
+		b["polygons"] = polygons;
+
+		output["objects"].push_back(b);
+	}
+
+	outStream << output.dump().c_str();
+	GlobalData::isStateTouched = false;
+}
+
+void MainWindow::handleOpenFileButtonClicked(bool checked)
+{
+	bool agreed = true;
+
+	if (GlobalData::isStateTouched)
+	{
+		auto btn = QMessageBox::question(this, "Close map", "All unsaved changes will be lost. Are you sure?");
+		agreed = btn != QMessageBox::StandardButton::NoButton;
+	}
+
+	if (!agreed)
+	{
+		return;
+	}
+
+	QString filename = QFileDialog::getOpenFileName(this,
+		"Open map", QDir::currentPath(),
+		"F3D maps (*.map);");
+
+	if (filename.isEmpty())
+		return;
+
+	if (!isEditorOpened)
+	{
+		openEditor();
+	}
+
+	GlobalData::clearScene();
+
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
+		QMessageBox::information(this, "Unable to open file", file.errorString());
+		return;
+	}
+
+	QTextStream inStream(&file);
+	QString input = inStream.readAll();
+	auto mapData = json::parse(input.toStdString()).get<Types::MapJSON>();
+	auto global = GlobalData::getInstance();
+
+	for (auto& object : mapData.objects)
+	{
+		if (object.type == "brush")
+		{
+			global->m_scene->addObject(new Brush(object));
+		}
+	}
+
+	GlobalData::isStateTouched = false;
+}
+
+void MainWindow::showGLWidgets()
+{
+	m_glWidget3D->show();
+	m_glWidget2D_X->show();
+	m_glWidget2D_Y->show();
+	m_glWidget2D_Z->show();
+}
+
+void MainWindow::hideGLWidgets()
+{
+	m_glWidget3D->hide();
+	m_glWidget2D_X->hide();
+	m_glWidget2D_Y->hide();
+	m_glWidget2D_Z->hide();
+}
+
+void MainWindow::openEditor()
+{
+	showGLWidgets();
+	enableTools();
+	m_glWidgetsContainer->doResize();
+	isEditorOpened = true;
+}
+
+void MainWindow::closeEditor()
+{
+	hideGLWidgets();
+	disableTools();
+	isEditorOpened = false;
+}
+
+void MainWindow::enableTools()
+{
+	m_selectionToolButton->setEnabled(true);
+	m_cameraToolButton->setEnabled(true);
+	m_blockToolButton->setEnabled(true);
+	m_clippingToolButton->setEnabled(true);
+	m_textureToolButton->setEnabled(true);
+}
+
+void MainWindow::disableTools()
+{
+	m_selectionToolButton->setDisabled(true);
+	m_cameraToolButton->setDisabled(true);
+	m_blockToolButton->setDisabled(true);
+	m_clippingToolButton->setDisabled(true);
+	m_textureToolButton->setDisabled(true);
+}
+
+void MainWindow::handleNewButtonClicked(bool checked)
+{
+	if (!isEditorOpened)
+	{
+		openEditor();
+		return;
+	}
+
+	if (!GlobalData::isStateTouched)
+	{
+		GlobalData::clearScene();
+		return;
+	}
+
+	auto btn = QMessageBox::question(this, "New map", "All unsaved changes will be lost. Are you sure?");
+	bool agreed = btn != QMessageBox::StandardButton::NoButton;
+
+	if (agreed)
+	{
+		GlobalData::clearScene();
+	}
+}
+
+void MainWindow::handleCloseButtonClicked(bool checked)
+{
+	bool agreed = true;
+
+	if (GlobalData::isStateTouched)
+	{
+		auto btn = QMessageBox::question(this, "Close map", "All unsaved changes will be lost. Are you sure?");
+		agreed = btn != QMessageBox::StandardButton::No;
+	}
+
+	if (!agreed)
+	{
+		return;
+	}
+
+	GlobalData::clearScene();
+	closeEditor();
+}
+
+void MainWindow::handleExitButtonClicked(bool checked)
+{
+	close();
 }

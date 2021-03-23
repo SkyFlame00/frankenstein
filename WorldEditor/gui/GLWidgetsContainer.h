@@ -13,6 +13,7 @@ class GLWidgetsContainer : public QWidget
 
 public:
 	GLWidgetsContainer(GLWidget3D* gl3D, GLWidget2D* gl2DX, GLWidget2D* gl2DY, GLWidget2D* gl2DZ, QWidget* parent = nullptr);
+	void doResize();
 
 private:
 	enum class ResizeDirection

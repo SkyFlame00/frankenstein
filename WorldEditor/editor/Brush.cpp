@@ -656,6 +656,136 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 		*v -= shift;
 	}
 
+	calcBoundingBox();
+	recalcParams();
+	setupTextures();
+	setup();
+}
+
+Brush::Brush(Types::BrushJSON& brushData)
+	: m_selectionColor(1.0f, 0.0f, 0.0f)
+	, m_resizePoint(RESIZE_POINT_SIZE, 0.0f, 0.0f, 0.0f)
+{
+	m_uniformColor = QVector3D(brushData.color.r, brushData.color.g, brushData.color.b);
+	m_origin = QVector3D(brushData.origin.x, brushData.origin.y, brushData.origin.z);
+	m_isUsingColor = false;
+
+	Texture defaultTexture;
+	if (brushData.is_default_texture_missing)
+		defaultTexture = ResourceManager::getMissingTexture();
+	else
+		defaultTexture = ResourceManager::getTexture(brushData.default_texture_path.c_str());
+	m_defaultTexture = defaultTexture;
+
+	std::unordered_map<int, QVector3D*> indexMap;
+	int i = 0;
+
+	for (auto& vData : brushData.unique_vertices)
+	{
+		QVector3D* v = new QVector3D(vData.x, vData.y, vData.z);
+		indexMap[i++] = v;
+		m_uniqueVertices.append(v);
+	}
+
+	for (auto& eData : brushData.unique_edges)
+	{
+		Types::Edge edge{ indexMap[eData.v0], indexMap[eData.v1] };
+		m_uniqueEdges.append(edge);
+	}
+
+	for (auto& polygonData : brushData.polygons)
+	{
+		Types::Polygon* polygon = new Types::Polygon;
+
+		for (auto& index : polygonData.vertices)
+		{
+			polygon->vertices.append(indexMap[index]);
+		}
+
+		for (auto& edge : polygonData.edges)
+		{
+			Types::Edge e{ indexMap[edge.v0], indexMap[edge.v1] };
+			polygon->edges.append(e);
+		}
+
+		for (auto& edge : polygonData.trianglesLines)
+		{
+			Types::Edge e{ indexMap[edge.v0], indexMap[edge.v1] };
+			polygon->trianglesLines.append(e);
+		}
+
+		for (auto& triangle : polygonData.triangles)
+		{
+			Types::Triangle t{ indexMap[triangle.v0], indexMap[triangle.v1], indexMap[triangle.v2] };
+			polygon->triangles.append(t);
+		}
+
+		for (auto& tc : polygonData.tex_coords)
+		{
+			polygon->verticesMap[indexMap[tc.vertex_index]] = QVector2D(tc.u, tc.v);
+		}
+
+		Texture texture;
+		if (polygonData.is_texture_missing)
+			texture = ResourceManager::getMissingTexture();
+		else
+			texture = ResourceManager::getTexture(polygonData.texture_path.c_str());
+
+		polygon->isUsingColor = false;
+		polygon->color = QVector3D(brushData.color.r, brushData.color.g, brushData.color.b);
+		polygon->textureId = texture.id;
+		polygon->textureWidth = texture.width;
+		polygon->textureHeight = texture.height;
+		polygon->scale = QVector2D(polygonData.scale.x, polygonData.scale.y);
+		polygon->shift = QVector2D(polygonData.shift.x, polygonData.shift.y);
+
+		calcNorm(polygon);
+		{
+			/* Calculate norm and plane coefficients */
+			QVector3D norm(polygonData.norm.x, polygonData.norm.y, polygonData.norm.z);
+			float a = norm.x();
+			float b = norm.y();
+			float c = norm.z();
+			float d = -QVector3D::dotProduct(norm, *polygon->vertices[0]);
+
+			polygon->norm = norm;
+			polygon->a = a;
+			polygon->b = b;
+			polygon->c = c;
+			polygon->d = d;
+		}
+
+		m_polygons.push_back(polygon);
+	}
+
+	calcBoundingBox();
+	setupTextures();
+	setup();
+}
+
+Brush::~Brush()
+{
+	delete m_linesVerticesX_renderable;
+	delete m_linesVerticesY_renderable;
+	delete m_linesVerticesZ_renderable;
+	delete m_linesRenderable;
+	delete m_trianglesRenderable;
+	delete m_trianglesLinesRenderable;
+
+	if (m_clippedBrush)
+		delete m_clippedBrush;
+	if (m_remainingBrush)
+		delete m_remainingBrush;
+
+	for (auto* v : m_uniqueVertices)
+		delete v;
+
+	for (auto* p : m_polygons)
+		delete p;
+}
+
+void Brush::calcBoundingBox()
+{
 	/* Bounding box struct */
 	m_boundingBox.startX = std::numeric_limits<float>::max();
 	m_boundingBox.endX = -std::numeric_limits<float>::max();
@@ -686,31 +816,6 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 	m_boundingBox.endY += m_origin.y();
 	m_boundingBox.startZ += m_origin.z();
 	m_boundingBox.endZ += m_origin.z();
-
-	recalcParams();
-	setupTextures();
-	setup();
-}
-
-Brush::~Brush()
-{
-	delete m_linesVerticesX_renderable;
-	delete m_linesVerticesY_renderable;
-	delete m_linesVerticesZ_renderable;
-	delete m_linesRenderable;
-	delete m_trianglesRenderable;
-	delete m_trianglesLinesRenderable;
-
-	if (m_clippedBrush)
-		delete m_clippedBrush;
-	if (m_remainingBrush)
-		delete m_remainingBrush;
-
-	for (auto* v : m_uniqueVertices)
-		delete v;
-
-	for (auto* p : m_polygons)
-		delete p;
 }
 
 void Brush::setup()

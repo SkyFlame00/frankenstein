@@ -30,8 +30,14 @@ void Actions::brushcreating_redo(void* rawData)
 
 void Actions::brushcreating_cleanup(void* rawData)
 {
+	auto* global = GlobalData::getInstance();
 	auto* data = static_cast<BrushCreatingData*>(rawData);
-	delete data->brush;
+	
+	if (global->m_scene->contains(data->brush))
+	{
+		global->m_scene->removeObject(data->brush);
+		delete data->brush;
+	}
 }
 
 /* Texture shift */

@@ -6,6 +6,7 @@
 #include "GL.h"
 #include "../common/GlobalData.h"
 
+QString ResourceManager::m_rootPath;
 QString ResourceManager::m_shadersDirPath;
 QString ResourceManager::m_texturesDirPath;
 QMap<QString, QString> ResourceManager::m_vsMap;
@@ -15,13 +16,19 @@ QMap<QString, Texture*> ResourceManager::m_textureMap;
 
 void ResourceManager::Init()
 {
-	m_shadersDirPath = QDir::currentPath() + "/shaders";
-	m_texturesDirPath = QDir::currentPath() + "/resources/textures";
+	m_rootPath = QDir::currentPath();
+	m_shadersDirPath = m_rootPath + "/shaders";
 }
 
 void ResourceManager::Cleanup()
 {
 	/* DELETE SHADERS */
+}
+
+void ResourceManager::setupTextures()
+{
+	auto& texture = getMissingTexture();
+	texture.isMissing = true;
 }
 
 QOpenGLShaderProgram* ResourceManager::getProgram(const QString& vertexShaderName, const QString& fragmentShaderName)
@@ -101,11 +108,16 @@ QOpenGLShaderProgram* ResourceManager::getProgram(const QString& vertexShaderNam
 
 Texture& ResourceManager::getTexture(const QString& texturePath, bool isAbsolute)
 {
-	QString path = isAbsolute ? texturePath : (m_texturesDirPath + "/" + texturePath);
+	QString path = isAbsolute ? texturePath : (m_rootPath + "/" + texturePath);
 
 	if (m_textureMap.find(path) != m_textureMap.end())
 	{
 		return *m_textureMap[path];
+	}
+
+	if (!QFile::exists(path))
+	{
+		return getMissingTexture();
 	}
 
 	auto $ = GL::functions();
@@ -122,7 +134,7 @@ Texture& ResourceManager::getTexture(const QString& texturePath, bool isAbsolute
 	GLCall($->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	GLCall($->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bits()));
 
-	Texture* texture = new Texture{ textureId, image.width(), image.height(), image.mirrored() };
+	Texture* texture = new Texture{ textureId, image.width(), image.height(), image.mirrored(), path, false };
 	m_textureMap[texturePath] = texture;
 	return *texture;
 }
@@ -133,4 +145,9 @@ Texture* ResourceManager::getTextureById(GLuint id)
 		if (texture->id == id)
 			return texture;
 	return nullptr;
+}
+
+Texture& ResourceManager::getMissingTexture()
+{
+	return getTexture(m_rootPath + "/assets/missing_texture.png", true);
 }

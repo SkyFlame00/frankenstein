@@ -3,6 +3,7 @@
 #include "../gui/MainWindow.h"
 #include "../editor/ResourceManager.h"
 #include <QDir>
+#include "ActionHistoryTool.h"
 
 GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
@@ -10,6 +11,7 @@ const int GlobalData::CONTEXTS_NUM = 4;
 int GlobalData::contextsReady = 0;
 QString GlobalData::texturesPath = "resources/textures/";
 Texture GlobalData::applyingTexture;
+bool GlobalData::isStateTouched = false;
 
 GlobalData::GlobalData()
 {
@@ -63,7 +65,10 @@ void GlobalData::setMode(EditorMode nextMode)
 	bool hasChanged = onModeChange(nextMode);
 
 	if (hasChanged)
+	{
 		inst->m_editorMode = nextMode;
+		GlobalData::isStateTouched = true;
+	}
 }
 
 bool GlobalData::onModeChange(EditorMode nextMode)
@@ -195,7 +200,8 @@ void GlobalData::onContextReady()
 		m_instance->m_clippingToolData.point2->m_enableScale = false;
 		m_instance->m_clippingToolData.line = new Line;
 
-		applyingTexture = ResourceManager::getTexture(QDir::currentPath() + "/assets/missing_texture.png", true);
+		ResourceManager::setupTextures();
+		applyingTexture = ResourceManager::getMissingTexture();
 
 		auto* mainWindow = MainWindow::getInstance();
 		mainWindow->getTextureToolDialog()->init();
@@ -219,4 +225,39 @@ QAction* GlobalData::getToolButtonByMode(EditorMode mode)
 	case EditorMode::TEXTURE_TOOL:
 		return mainWindow->getTextureToolButton();
 	}
+}
+
+void GlobalData::clearScene()
+{
+	auto inst = getInstance();
+	auto sdata = inst->m_selectionToolData;
+	auto bdata = inst->m_blockToolData;
+	auto cdata = inst->m_clippingToolData;
+	auto tdata = inst->textureToolData;
+
+	/* Clear selection tool data */
+	sdata.state = Types::SelectionToolState::READY_TO_SELECT;
+	sdata.renderable = nullptr;
+
+	/* Clear block tool data */
+	bdata.state = BlockToolState::CREATING;
+	bdata.blockInstance = nullptr;
+	bdata.shouldCreate = false;
+
+	/* Clear clipping tool data */
+	cdata.axis = Axis::NONE;
+	cdata.state = Types::ClippingToolState::READY;
+	cdata.pt1_placed = false;
+	cdata.pt2_placed = false;
+	cdata.glWidget = nullptr;
+
+	/* Clear texture tool data */
+	tdata.pickedPolygons.clear();
+
+	inst->isSelectionForTextureToolActivated = false;
+	inst->isCameraForTextureToolActivated = false;
+	ActionHistoryTool::clear();
+	inst->m_scene->clear();
+	
+	GlobalData::isStateTouched = false;
 }

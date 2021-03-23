@@ -27,6 +27,7 @@ public:
 	static QOpenGLVertexArrayObject* getRenderableVAO(QOpenGLContext& context, Renderable& renderable);
 	static void setMode(EditorMode mode);
 	static void onContextReady();
+	static void clearScene();
 	
 	struct {
 		BlockToolState state = BlockToolState::CREATING;
@@ -75,6 +76,7 @@ public:
 	bool isCameraForTextureToolActivated = false;
 	static QString texturesPath;
 	static Texture applyingTexture;
+	static bool isStateTouched;
 
 private:
 	GlobalData();

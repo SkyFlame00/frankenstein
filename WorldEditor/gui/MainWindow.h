@@ -57,6 +57,17 @@ private:
 	void processShortcuts();
 	void endInputProcessing(bool isReleased);
 	void closeEvent(QCloseEvent* event);
+	void handleSaveAsButtonClicked(bool checked);
+	void handleOpenFileButtonClicked(bool checked);
+	void handleNewButtonClicked(bool checked);
+	void handleCloseButtonClicked(bool checked);
+	void handleExitButtonClicked(bool checked);
+	void openEditor();
+	void closeEditor();
+	void showGLWidgets();
+	void hideGLWidgets();
+	void enableTools();
+	void disableTools();
 
 	static MainWindow* m_instance;
 
@@ -69,6 +80,15 @@ private:
 	Renderer3D* m_renderer3D;
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
 	GLWidgetsContainer* m_glWidgetsContainer;
+	bool isEditorOpened = false;
+
+	/* Menu */
+	QAction* m_newBtn;
+	QAction* m_openFileBtn;
+	QAction* m_saveBtn;
+	QAction* m_saveAsBtn;
+	QAction* m_closeBtn;
+	QAction* m_exitBtn;
 
 	/* Top toolbar */
 	QToolBar* m_topToolbar;

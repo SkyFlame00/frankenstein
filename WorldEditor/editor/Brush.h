@@ -18,6 +18,7 @@ class Brush : public Renderable, public ChangeableRenderable
 public:
 	Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor = false);
 	Brush(Polyhedron_3& polyhedron, Brush* parentBrush);
+	Brush(Types::BrushJSON& brushData);
 	~Brush();
 
 	void setup();
@@ -38,8 +39,9 @@ public:
 	void updatePolygonTexture(Types::Polygon* polygon, Texture& texture);
 	inline void setDefaultTexture(Texture texture) { m_defaultTexture = texture; }
 	inline Texture getDefaultTexture() { return m_defaultTexture; }
+	inline QVector3D getColor() { return m_uniformColor; }
 
-	QVector3D m_origin;
+	QVector3D m_origin = QVector3D(0, 0, 0);
 	bool m_selected = false;
 	QVector3D m_selectionColor;
 	Brush* m_clippedBrush = nullptr;
@@ -47,7 +49,7 @@ public:
 	bool m_beingClipped = false;
 	bool m_beingCut = false;
 	bool m_isInClippingMode = false;
-	bool m_isUsingColor;
+	bool m_isUsingColor = false;
 	bool isOnScene = true;
 
 private:
@@ -81,6 +83,7 @@ private:
 	bool shouldRotate(QVector3D norm);
 	QMatrix4x4 get2DTransformMatrix(QVector3D norm);
 	void recalcParams();
+	void calcBoundingBox();
 
 	QList<QVector3D*> m_uniqueVertices;
 	QList<Types::Edge> m_uniqueEdges;

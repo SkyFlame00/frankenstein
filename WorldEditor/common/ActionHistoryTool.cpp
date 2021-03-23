@@ -129,3 +129,19 @@ void ActionHistoryTool::adjustGlobalState()
 		dialog->onPickedPolygonsChange(pickedPolygons);
 	}
 }
+
+void ActionHistoryTool::clear()
+{
+	auto it = m_instance->m_end;
+	while (!(*it)->isRoot)
+	{
+		it--;
+		delete m_instance->m_actions.takeLast();
+	}
+
+	m_instance->m_cur = m_instance->m_actions.begin();
+	m_instance->m_end = m_instance->m_actions.begin();
+
+	MainWindow::getHistoryBackButton()->setDisabled(true);
+	MainWindow::getHistoryForthButton()->setDisabled(true);
+}

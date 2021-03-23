@@ -17,6 +17,7 @@ public:
 	static void addAction(undo_t undo, redo_t redo, cleanup_t cleanup, void* data);
 	static bool isRoot();
 	static bool isTerminal();
+	static void clear();
 
 private:
 	struct Action

@@ -299,7 +299,6 @@ void GLWidget2D::clipBrush()
 
 		if (sign < 0)
 			clippedBrushVertices.push_back({ vertex->x(), vertex->y(), vertex->z() });
-			
 		else if (sign > 0)
 			remainingBrushVertices.push_back({ vertex->x(), vertex->y(), vertex->z() });
 	}

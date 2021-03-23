@@ -19,13 +19,17 @@ GLWidgetsContainer::GLWidgetsContainer(GLWidget3D* gl3D, GLWidget2D* gl2DX, GLWi
 
 void GLWidgetsContainer::resizeEvent(QResizeEvent* event)
 {
-    m_handleCenter = rect().center();
-	m_gl3D->setGeometry(QRect(QPoint(m_margin, m_margin), m_handleCenter - QPoint(m_margin, m_margin)));
-	m_gl2DX->setGeometry(QRect(QPoint(width() / 2 + m_margin, m_margin), QPoint(width() - m_margin, height() / 2 - m_margin)));
-	m_gl2DY->setGeometry(QRect(QPoint(m_margin, height() / 2 + m_margin), QPoint(width() / 2 - m_margin, height() - m_margin)));
-	m_gl2DZ->setGeometry(QRect(QPoint(width() / 2 + m_margin, height() / 2 + m_margin), QPoint(width() - m_margin, height() - m_margin)));
+    doResize();
 }
 
+void GLWidgetsContainer::doResize()
+{
+    m_handleCenter = rect().center();
+    m_gl3D->setGeometry(QRect(QPoint(m_margin, m_margin), m_handleCenter - QPoint(m_margin, m_margin)));
+    m_gl2DX->setGeometry(QRect(QPoint(width() / 2 + m_margin, m_margin), QPoint(width() - m_margin, height() / 2 - m_margin)));
+    m_gl2DY->setGeometry(QRect(QPoint(m_margin, height() / 2 + m_margin), QPoint(width() / 2 - m_margin, height() - m_margin)));
+    m_gl2DZ->setGeometry(QRect(QPoint(width() / 2 + m_margin, height() / 2 + m_margin), QPoint(width() - m_margin, height() - m_margin)));
+}
 
 void GLWidgetsContainer::mouseMoveEvent(QMouseEvent* e)
 {

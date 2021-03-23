@@ -10,4 +10,6 @@ public:
 	int width;
 	int height;
 	QImage image;
+	QString path;
+	bool isMissing;
 };

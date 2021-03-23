@@ -10,7 +10,6 @@ Scene::~Scene()
 
 void Scene::setup()
 {
-	//m_objects.append(new Brush);
 }
 
 QList<Brush*>& Scene::getObjects()
@@ -28,3 +27,17 @@ void Scene::removeObject(Brush* brush)
 	m_objects.removeOne(brush);
 }
 
+bool Scene::contains(Brush* brush)
+{
+	for (auto obj : m_objects)
+		if (obj == brush)
+			return true;
+	return false;
+}
+
+void Scene::clear()
+{
+	for (auto obj : m_objects)
+		delete obj;
+	m_objects.clear();
+}

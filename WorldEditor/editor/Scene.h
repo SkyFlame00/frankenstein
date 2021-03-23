@@ -15,6 +15,8 @@ public:
 	QList<Brush*>& getObjects();
 	void addObject(Brush* brush);
 	void removeObject(Brush* brush);
+	void clear();
+	bool contains(Brush* brush);
 
 	QList<Renderable*> m_gui2DObjects;
 	QList<Renderable*> m_gui3DObjects;
