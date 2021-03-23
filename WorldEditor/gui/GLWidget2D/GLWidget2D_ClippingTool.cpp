@@ -294,6 +294,15 @@ void GLWidget2D::clipBrush()
 
 	for (auto& vertex : brush->getUniqueVertices())
 	{
+		auto found = std::find_if(intersectionPts.begin(), intersectionPts.end(), [&](INEXACT_K::Point_3 v) {
+			return Helpers::areEqual(*vertex, QVector3D(v.x(), v.y(), v.z()));
+		});
+
+		if (found != intersectionPts.end())
+		{
+			continue;
+		}
+
 		QVector3D v(model * QVector4D(*vertex, 1.0f));
 		float sign = QVector3D::dotProduct(norm, v - p0);
 
