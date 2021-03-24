@@ -180,6 +180,7 @@ void Actions::brushdeleting_undo(void* rawData)
 	auto* global = GlobalData::getInstance();
 
 	global->m_scene->addObject(data->brush);
+	data->brush->isOnScene = true;
 }
 
 void Actions::brushdeleting_redo(void* rawData)
@@ -188,6 +189,7 @@ void Actions::brushdeleting_redo(void* rawData)
 	auto* global = GlobalData::getInstance();
 
 	global->m_scene->removeObject(data->brush);
+	data->brush->isOnScene = false;
 }
 
 void Actions::brushdeleting_cleanup(void* rawData)
@@ -233,5 +235,43 @@ void Actions::brushmoving_redo(void* rawData)
 void Actions::brushmoving_cleanup(void* rawData)
 {
 	auto* data = static_cast<BrushMovingData*>(rawData);
+	delete data;
+}
+
+/* Brush clipping */
+
+void Actions::brushclipping_undo(void* rawData)
+{
+	auto* data = static_cast<BrushClippingData*>(rawData);
+	auto* global = GlobalData::getInstance();
+	global->m_scene->removeObject(data->newBrush);
+	global->m_scene->addObject(data->oldBrush);
+	data->oldBrush->isOnScene = true;
+	data->newBrush->isOnScene = false;
+	data->oldBrush->m_selected = false;
+}
+
+void Actions::brushclipping_redo(void* rawData)
+{
+	auto* data = static_cast<BrushClippingData*>(rawData);
+	auto* global = GlobalData::getInstance();
+	global->m_scene->removeObject(data->oldBrush);
+	global->m_scene->addObject(data->newBrush);
+	data->oldBrush->isOnScene = false;
+	data->newBrush->isOnScene = true;
+	data->newBrush->m_selected = false;
+}
+
+void Actions::brushclipping_cleanup(void* rawData)
+{
+	auto* data = static_cast<BrushClippingData*>(rawData);
+	auto* global = GlobalData::getInstance();
+
+	if (global->m_scene->contains(data->newBrush))
+	{
+		global->m_scene->removeObject(data->newBrush);
+		delete data->newBrush;
+	}
+
 	delete data;
 }

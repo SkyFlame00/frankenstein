@@ -3,6 +3,8 @@
 #include "../../common/helpers.h"
 #include <algorithm>
 #include "../../common/cgal_bindings.h"
+#include "../../common/ActionHistoryTool.h"
+#include "../../common/actions.h"
 
 void GLWidget2D::processClippingTool()
 {
@@ -351,9 +353,16 @@ void GLWidget2D::applyClipping()
 	auto cdata = &globalData->m_clippingToolData;
 	auto& brush = sdata->renderable;
 
+	Actions::BrushClippingData* actionsData = new Actions::BrushClippingData;
+	actionsData->oldBrush = brush;
+	actionsData->newBrush = brush->m_remainingBrush;
+	ActionHistoryTool::addAction(Actions::brushclipping_undo, Actions::brushclipping_redo,
+		Actions::brushclipping_cleanup, actionsData);
+
 	if (brush->m_remainingBrush)
 	{
 		m_scene->addObject(brush->m_remainingBrush);
+		brush->m_remainingBrush->isOnScene = true;
 	}
 
 	if (brush->m_clippedBrush)
@@ -361,10 +370,12 @@ void GLWidget2D::applyClipping()
 		delete brush->m_clippedBrush;
 	}
 
+	brush->m_selected = false;
+	brush->m_beingClipped = false;
+	brush->isOnScene = false;
 	brush->m_remainingBrush = nullptr;
 	brush->m_clippedBrush = nullptr;
 	m_scene->removeObject(brush);
-	delete brush;
 
 	m_guiObjects.removeOne(cdata->point1);
 	m_guiObjects.removeOne(cdata->point2);

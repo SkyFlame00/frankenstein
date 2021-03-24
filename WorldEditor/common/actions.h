@@ -32,7 +32,7 @@ namespace Actions
 	void brushdeleting_cleanup(void* data);
 
 	/* Brush moving */
-	struct BrushMovingStruct
+	struct BrushMovingData
 	{
 		struct MovingData
 		{
@@ -48,11 +48,21 @@ namespace Actions
 		MovingData prevMove;
 		MovingData nextMove;
 	};
-	typedef BrushMovingStruct BrushMovingData;
 
 	void brushmoving_undo(void* data);
 	void brushmoving_redo(void* data);
 	void brushmoving_cleanup(void* data);
+
+	/* Brush clipping */
+	struct BrushClippingData
+	{
+		Brush* oldBrush;
+		Brush* newBrush;
+	};
+
+	void brushclipping_undo(void* data);
+	void brushclipping_redo(void* data);
+	void brushclipping_cleanup(void* data);
 
 	/* Texture tool dialog: shift actions */
 	struct TextureShiftStruct
