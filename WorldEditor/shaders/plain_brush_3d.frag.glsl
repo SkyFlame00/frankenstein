@@ -7,7 +7,6 @@
 #define LOOP8(a, n) LOOP4(a, n) LOOP4(a, n + 4)
 #define LOOP16(a, n) LOOP8(a, n) LOOP8(a, n + 8)
 #define LOOP32(a, n) LOOP16(a, n) LOOP16(a, n + 16)
-#define LOOPN(n, a) LOOP##n(a, 0)
 
 #define TEXTURE_CONDITION(i) if (activeTextureId == i) { \
             ambient = light.ambient  * vec3(texture(u_Textures[i], texCoords)); \
@@ -95,7 +94,11 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId
     }
     else
     {
-        LOOPN(MAX_TEXTURE_UNITS, TEXTURE_CONDITION)
+        #if MAX_TEXTURE_UNITS == 16
+            LOOP16(TEXTURE_CONDITION, 0);
+        #elif MAX_TEXTURE_UNITS == 32
+            LOOP32(TEXTURE_CONDITION, 0);
+        #endif
     }
 
     return (ambient + diffuse /*+ specular*/);
