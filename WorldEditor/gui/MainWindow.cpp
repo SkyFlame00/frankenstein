@@ -73,6 +73,7 @@ void MainWindow::init()
 	if (m_instance)
 	{
 		qInfo() << "MainWindow has already been initialized";
+		return;
 	}
 
 	m_instance = new MainWindow;
@@ -380,6 +381,19 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		if (m_glWidget2D_Z->m_inputData.keyReturn == ButtonDownState::RELEASED_PROCESSED)
 		{
 			m_glWidget2D_Z->m_inputData.keyReturn = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_Delete)
+	{
+		if (global->m_editorMode == EditorMode::SELECTION_MODE && sdata.renderable)
+		{
+			Actions::BrushDeletingData* data = new Actions::BrushDeletingData{ sdata.renderable };
+			ActionHistoryTool::addAction(Actions::brushdeleting_undo, Actions::brushdeleting_redo, Actions::brushdeleting_cleanup, data);
+			global->m_scene->removeObject(sdata.renderable);
+			
+			sdata.renderable->m_selected = false;
+			sdata.renderable = nullptr;
+			sdata.state = Types::SelectionToolState::READY_TO_SELECT;
 		}
 	}
 

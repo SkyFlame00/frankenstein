@@ -38,6 +38,8 @@ void Actions::brushcreating_cleanup(void* rawData)
 		global->m_scene->removeObject(data->brush);
 		delete data->brush;
 	}
+
+	delete data;
 }
 
 /* Texture shift */
@@ -168,4 +170,26 @@ void Actions::texturepicking_cleanup(void* rawData)
 {
 	auto* list = static_cast<TexturePickingData*>(rawData);
 	delete list;
+}
+
+void Actions::brushdeleting_undo(void* rawData)
+{
+	auto* data = static_cast<BrushDeletingData*>(rawData);
+	auto* global = GlobalData::getInstance();
+
+	global->m_scene->addObject(data->brush);
+}
+
+void Actions::brushdeleting_redo(void* rawData)
+{
+	auto* data = static_cast<BrushDeletingData*>(rawData);
+	auto* global = GlobalData::getInstance();
+
+	global->m_scene->removeObject(data->brush);
+}
+
+void Actions::brushdeleting_cleanup(void* rawData)
+{
+	auto* data = static_cast<BrushDeletingData*>(rawData);
+	delete data;
 }

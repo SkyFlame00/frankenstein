@@ -21,6 +21,16 @@ namespace Actions
 	void brushcreating_redo(void* data);
 	void brushcreating_cleanup(void* data);
 
+	/* Deleting brush */
+	struct BrushDeletingData
+	{
+		Brush* brush;
+	};
+
+	void brushdeleting_undo(void* data);
+	void brushdeleting_redo(void* data);
+	void brushdeleting_cleanup(void* data);
+
 	/* Texture tool dialog: shift actions */
 	struct TextureShiftStruct
 	{
