@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QLinkedList >
+#include <QLinkedList>
 #include "types.h"
 
 class ActionHistoryTool

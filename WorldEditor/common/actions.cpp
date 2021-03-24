@@ -172,6 +172,8 @@ void Actions::texturepicking_cleanup(void* rawData)
 	delete list;
 }
 
+/* Brush deleting */
+
 void Actions::brushdeleting_undo(void* rawData)
 {
 	auto* data = static_cast<BrushDeletingData*>(rawData);
@@ -191,5 +193,45 @@ void Actions::brushdeleting_redo(void* rawData)
 void Actions::brushdeleting_cleanup(void* rawData)
 {
 	auto* data = static_cast<BrushDeletingData*>(rawData);
+	delete data;
+}
+
+/* Brush moving */
+
+void Actions::brushmoving_undo(void* rawData)
+{
+	auto* data = static_cast<BrushMovingData*>(rawData);
+	auto* brush = data->brush;
+	auto& prevMove = data->prevMove;
+	auto& bbox = brush->getBoundingBox();
+
+	brush->m_origin = prevMove.origin;
+	bbox.startX = prevMove.bbox.startX;
+	bbox.endX = prevMove.bbox.endX;
+	bbox.startY = prevMove.bbox.startY;
+	bbox.endY = prevMove.bbox.endY;
+	bbox.startZ = prevMove.bbox.startZ;
+	bbox.endZ = prevMove.bbox.endZ;
+}
+
+void Actions::brushmoving_redo(void* rawData)
+{
+	auto* data = static_cast<BrushMovingData*>(rawData);
+	auto* brush = data->brush;
+	auto& nextMove = data->nextMove;
+	auto& bbox = brush->getBoundingBox();
+
+	brush->m_origin = nextMove.origin;
+	bbox.startX = nextMove.bbox.startX;
+	bbox.endX = nextMove.bbox.endX;
+	bbox.startY = nextMove.bbox.startY;
+	bbox.endY = nextMove.bbox.endY;
+	bbox.startZ = nextMove.bbox.startZ;
+	bbox.endZ = nextMove.bbox.endZ;
+}
+
+void Actions::brushmoving_cleanup(void* rawData)
+{
+	auto* data = static_cast<BrushMovingData*>(rawData);
 	delete data;
 }

@@ -31,6 +31,29 @@ namespace Actions
 	void brushdeleting_redo(void* data);
 	void brushdeleting_cleanup(void* data);
 
+	/* Brush moving */
+	struct BrushMovingStruct
+	{
+		struct MovingData
+		{
+			QVector3D origin;
+			struct {
+				float startX, endX;
+				float startY, endY;
+				float startZ, endZ;
+			} bbox;
+		};
+
+		Brush* brush;
+		MovingData prevMove;
+		MovingData nextMove;
+	};
+	typedef BrushMovingStruct BrushMovingData;
+
+	void brushmoving_undo(void* data);
+	void brushmoving_redo(void* data);
+	void brushmoving_cleanup(void* data);
+
 	/* Texture tool dialog: shift actions */
 	struct TextureShiftStruct
 	{

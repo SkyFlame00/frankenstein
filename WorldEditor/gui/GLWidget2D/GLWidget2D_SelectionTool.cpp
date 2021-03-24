@@ -1,6 +1,10 @@
 #include "GLWidget2D.h"
 #include "../../common/GlobalData.h"
 #include "../../common/helpers.h"
+#include "../../common/ActionHistoryTool.h"
+#include "../../common/actions.h"
+
+Actions::BrushMovingData* movingData;
 
 void GLWidget2D::processSelectionTool()
 {
@@ -33,9 +37,23 @@ void GLWidget2D::processSelectionTool()
 			Types::BrushAction _state = data->renderable->startDrag(m_axis, QVector2D(x, y), getZoomFactor());
 			auto state = Helpers::mapToSelectionToolState(_state);
 			data->state = state;
+			auto* brush = data->renderable;
 
 			if (state == Types::SelectionToolState::MOVE)
+			{
+				movingData = new Actions::BrushMovingData;
+				movingData->brush = brush;
+				auto bbox = brush->getBoundingBox();
+				movingData->prevMove.origin = brush->m_origin;
+				movingData->prevMove.bbox.startX = bbox.startX;
+				movingData->prevMove.bbox.endX = bbox.endX;
+				movingData->prevMove.bbox.startY = bbox.startY;
+				movingData->prevMove.bbox.endY = bbox.endY;
+				movingData->prevMove.bbox.startZ = bbox.startZ;
+				movingData->prevMove.bbox.endZ = bbox.endZ;
+
 				setCursor(Qt::ClosedHandCursor);
+			}
 		}
 	}
 	else if (data->state == Types::SelectionToolState::RESIZE)
@@ -53,6 +71,8 @@ void GLWidget2D::processSelectionTool()
 	}
 	else if (data->state == Types::SelectionToolState::MOVE)
 	{
+		auto* brush = data->renderable;
+
 		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
 		{
 			float step = static_cast<float>(m_grid->getStep());
@@ -62,6 +82,18 @@ void GLWidget2D::processSelectionTool()
 		{
 			data->state = Types::SelectionToolState::READY_TO_SELECT;
 			setCursor(Qt::ArrowCursor);
+
+			const auto& bbox = brush->getBoundingBox();
+			movingData->nextMove.origin = brush->m_origin;
+			movingData->nextMove.bbox.startX = bbox.startX;
+			movingData->nextMove.bbox.endX = bbox.endX;
+			movingData->nextMove.bbox.startY = bbox.startY;
+			movingData->nextMove.bbox.endY = bbox.endY;
+			movingData->nextMove.bbox.startZ = bbox.startZ;
+			movingData->nextMove.bbox.endZ = bbox.endZ;
+
+			ActionHistoryTool::addAction(Actions::brushmoving_undo, Actions::brushmoving_redo,
+				Actions::brushmoving_cleanup, movingData);
 		}
 	}
 }
