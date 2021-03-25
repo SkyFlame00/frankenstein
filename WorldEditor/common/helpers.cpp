@@ -132,3 +132,43 @@ bool Helpers::areEqual(QVector3D v1, QVector3D v2, float delta)
 		std::abs(v1.y() - v2.y()) <= delta &&
 		std::abs(v1.z() - v2.z()) <= delta;
 }
+
+void Helpers::callCalcResizeParams(Brush* brush, ResizeDirection resizeDirection, Axis axis, float stepsX, float stepsY)
+{
+	if (resizeDirection == ResizeDirection::LEFT_TOP)
+	{
+		brush->calcResize(axis, true, true, stepsX);
+		brush->calcResize(axis, false, false, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::CENTER_TOP)
+	{
+		brush->calcResize(axis, false, false, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::RIGHT_TOP)
+	{
+		brush->calcResize(axis, true, false, stepsX);
+		brush->calcResize(axis, false, false, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::RIGHT_CENTER)
+	{
+		brush->calcResize(axis, true, false, stepsX);
+	}
+	else if (resizeDirection == ResizeDirection::RIGHT_BOTTOM)
+	{
+		brush->calcResize(axis, true, false, stepsX);
+		brush->calcResize(axis, false, true, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::CENTER_BOTTOM)
+	{
+		brush->calcResize(axis, false, true, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::LEFT_BOTTOM)
+	{
+		brush->calcResize(axis, true, true, stepsX);
+		brush->calcResize(axis, false, true, stepsY);
+	}
+	else if (resizeDirection == ResizeDirection::LEFT_CENTER)
+	{
+		brush->calcResize(axis, true, true, stepsX);
+	}
+}

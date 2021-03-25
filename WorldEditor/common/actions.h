@@ -4,6 +4,7 @@
 #include "GlobalData.h"
 #include <unordered_map>
 #include "../editor/Texture.h"
+#include "types.h"
 
 namespace Actions
 {
@@ -63,6 +64,20 @@ namespace Actions
 	void brushclipping_undo(void* data);
 	void brushclipping_redo(void* data);
 	void brushclipping_cleanup(void* data);
+
+	/* Brush resizing */
+	struct BrushResizingData
+	{
+		Brush* brush;
+		Axis axis;
+		float stepsX = 0.0f;
+		float stepsY = 0.0f;
+		ResizeDirection resizeDirection;
+	};
+
+	void brushresizing_undo(void* data);
+	void brushresizing_redo(void* data);
+	void brushresizing_cleanup(void* data);
 
 	/* Texture tool dialog: shift actions */
 	struct TextureShiftStruct

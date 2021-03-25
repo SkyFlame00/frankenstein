@@ -1,4 +1,5 @@
 #include "actions.h"
+#include "helpers.h"
 
 /* Brush creating */
 
@@ -273,5 +274,29 @@ void Actions::brushclipping_cleanup(void* rawData)
 		delete data->newBrush;
 	}
 
+	delete data;
+}
+
+/* Brush resizing */
+
+void Actions::brushresizing_undo(void* rawData)
+{
+	auto* data = static_cast<BrushResizingData*>(rawData);
+
+	Helpers::callCalcResizeParams(data->brush, data->resizeDirection, data->axis,
+		-data->stepsX, -data->stepsY);
+}
+
+void Actions::brushresizing_redo(void* rawData)
+{
+	auto* data = static_cast<BrushResizingData*>(rawData);
+
+	Helpers::callCalcResizeParams(data->brush, data->resizeDirection, data->axis,
+		data->stepsX, data->stepsY);
+}
+
+void Actions::brushresizing_cleanup(void* rawData)
+{
+	auto* data = static_cast<BrushResizingData*>(rawData);
 	delete data;
 }

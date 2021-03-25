@@ -1,7 +1,7 @@
 #include "ChangeableRenderable.h"
 #include "../common/helpers.h"
 
-void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
+void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step, float* outStepsX, float* outStepsY)
 {
 	float hor = pos.x();
 	float ver = pos.y();
@@ -36,7 +36,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, true, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 
 		if (std::abs(m_moveDeltaY) >= step)
@@ -59,7 +63,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, false, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* CENTER TOP */
@@ -87,7 +95,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, false, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* RIGHT TOP */
@@ -116,7 +128,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, false, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 
 		if (std::abs(m_moveDeltaY) >= step)
@@ -139,7 +155,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, false, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* RIGHT CENTER */
@@ -167,7 +187,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, false, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 	}
 	/* RIGHT BOTTOM */
@@ -196,7 +220,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, false, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 
 		if (std::abs(m_moveDeltaY) >= step)
@@ -219,7 +247,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, true, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* CENTER BOTTOM */
@@ -247,7 +279,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, true, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* LEFT BOTTOM */
@@ -276,7 +312,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, true, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 
 		if (std::abs(m_moveDeltaY) >= step)
@@ -299,7 +339,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, false, true, steps);
+				if (outStepsY)
+					*outStepsY = steps;
+			}
 		}
 	}
 	/* LEFT CENTER */
@@ -327,7 +371,11 @@ void ChangeableRenderable::doResizeStep(Axis axis, QVector2D pos, float step)
 			}
 
 			if (steps != 0.0f)
+			{
 				calcResize(axis, true, true, steps);
+				if (outStepsX)
+					*outStepsX = steps;
+			}
 		}
 	}
 

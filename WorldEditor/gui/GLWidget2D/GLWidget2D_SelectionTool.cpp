@@ -6,6 +6,10 @@
 
 Actions::BrushMovingData* movingData;
 
+float stepsX = 0.0f;
+float stepsY = 0.0f;
+ResizeDirection resizeDirection;
+
 void GLWidget2D::processSelectionTool()
 {
 	auto globalData = GlobalData::getInstance();
@@ -54,6 +58,10 @@ void GLWidget2D::processSelectionTool()
 
 				setCursor(Qt::ClosedHandCursor);
 			}
+			else if (state == Types::SelectionToolState::RESIZE)
+			{
+				resizeDirection = data->renderable->getResizeDirection();
+			}
 		}
 	}
 	else if (data->state == Types::SelectionToolState::RESIZE)
@@ -61,10 +69,28 @@ void GLWidget2D::processSelectionTool()
 		if (m_inputData.leftMouseDown == ButtonDownState::DOWN_PROCESSED)
 		{
 			float step = static_cast<float>(m_grid->getStep());
-			data->renderable->doResizeStep(m_axis, QVector2D(x, y), step);
+			float deltaStepsX = 0.0f;
+			float deltaStepsY = 0.0f;
+			data->renderable->doResizeStep(m_axis, QVector2D(x, y), step, &deltaStepsX, &deltaStepsY);
+
+			stepsX += deltaStepsX;
+			stepsY += deltaStepsY;
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
 		{
+			Actions::BrushResizingData* resizingData = new Actions::BrushResizingData;
+			resizingData->brush = data->renderable;
+			resizingData->axis = m_axis;
+			resizingData->resizeDirection = resizeDirection;
+			resizingData->stepsX = stepsX;
+			resizingData->stepsY = stepsY;
+
+			ActionHistoryTool::addAction(Actions::brushresizing_undo, Actions::brushresizing_redo,
+				Actions::brushresizing_cleanup, resizingData);
+
+			stepsX = 0.0f;
+			stepsY = 0.0f;
+
 			data->state = Types::SelectionToolState::READY_TO_SELECT;
 			setCursor(Qt::ArrowCursor);
 		}

@@ -44,6 +44,7 @@ public:
 	void calcPolygonsCenters();
 	/* Normals should always point towards outside of the polygon. Otherwise, we correct them */
 	void correctNormals();
+	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
 
 	QVector3D m_origin = QVector3D(0, 0, 0);
 	bool m_selected = false;
@@ -80,7 +81,6 @@ private:
 	void makeTrianglesBufferData();
 	void makeTrianglesLinesBufferData();
 	void calcNorm(Types::Polygon* polygon);
-	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
 	void setupTextures();
 	QVector2D get2DOrigin(Axis axis);
 	void calcTexCoords(Types::Polygon* polygon);
