@@ -103,9 +103,15 @@ void MainWindow::setupMenu()
 	fileMenu->addSeparator();
 
 	/* Save */
+	m_saveBtn = new QAction("Save", fileMenu);
+	m_saveBtn->setShortcut(QKeySequence::Save);
+	m_saveBtn->setDisabled(true);
+	fileMenu->addAction(m_saveBtn);
+	connect(m_saveBtn, &QAction::triggered, this, &MainWindow::handleSaveButtonClicked);
 
 	/* Save as */
 	m_saveAsBtn = new QAction("Save as...", fileMenu);
+	m_saveAsBtn->setDisabled(true);
 	fileMenu->addAction(m_saveAsBtn);
 	connect(m_saveAsBtn, &QAction::triggered, this, &MainWindow::handleSaveAsButtonClicked);
 
@@ -114,6 +120,7 @@ void MainWindow::setupMenu()
 
 	/* Close */
 	m_closeBtn = new QAction("Close", fileMenu);
+	m_closeBtn->setDisabled(true);
 	fileMenu->addAction(m_closeBtn);
 	connect(m_closeBtn, &QAction::triggered, this, &MainWindow::handleCloseButtonClicked);
 
@@ -656,15 +663,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	QMainWindow::closeEvent(event);
 }
 
-void MainWindow::handleSaveAsButtonClicked(bool checked)
+void MainWindow::saveMap(const QString& filename)
 {
-	QString filename = QFileDialog::getSaveFileName(this,
-		"Save map", QDir::currentPath(),
-		"F3D map (*.map);");
-
-	if (filename.isEmpty())
-		return;
-
 	QFile file(filename);
 	if (!file.open(QIODevice::WriteOnly)) {
 		QMessageBox::information(this, "Unable to open file", file.errorString());
@@ -673,6 +673,8 @@ void MainWindow::handleSaveAsButtonClicked(bool checked)
 
 	QTextStream outStream(&file);
 	json output;
+	json objects = json::array();
+	output["objects"] = objects;
 	auto& brushes = GlobalData::getInstance()->m_scene->getObjects();
 
 	for (auto* brush : brushes)
@@ -783,7 +785,7 @@ void MainWindow::handleSaveAsButtonClicked(bool checked)
 					{"vertex_index", indexMap[vertex]},
 					{"u", vec.x()},
 					{"v", vec.y()}
-				});
+					});
 			}
 			p["tex_coords"] = texCoords;
 
@@ -807,6 +809,21 @@ void MainWindow::handleSaveAsButtonClicked(bool checked)
 
 	outStream << output.dump().c_str();
 	GlobalData::isStateTouched = false;
+}
+
+void MainWindow::handleSaveAsButtonClicked(bool checked)
+{
+	QString filename = QFileDialog::getSaveFileName(this,
+		"Save map", QDir::currentPath(),
+		"F3D map (*.map);");
+
+	if (filename.isEmpty())
+		return;
+
+	saveMap(filename);
+
+	m_isFilepathDefined = true;
+	m_filepath = filename;
 }
 
 void MainWindow::handleOpenFileButtonClicked(bool checked)
@@ -858,6 +875,8 @@ void MainWindow::handleOpenFileButtonClicked(bool checked)
 	}
 
 	GlobalData::isStateTouched = false;
+	m_isFilepathDefined = true;
+	m_filepath = filename;
 }
 
 void MainWindow::showGLWidgets()
@@ -882,6 +901,9 @@ void MainWindow::openEditor()
 	enableTools();
 	m_glWidgetsContainer->doResize();
 	isEditorOpened = true;
+	m_saveBtn->setEnabled(true);
+	m_saveAsBtn->setEnabled(true);
+	m_closeBtn->setEnabled(true);
 }
 
 void MainWindow::closeEditor()
@@ -889,6 +911,9 @@ void MainWindow::closeEditor()
 	hideGLWidgets();
 	disableTools();
 	isEditorOpened = false;
+	m_saveBtn->setDisabled(true);
+	m_saveAsBtn->setDisabled(true);
+	m_closeBtn->setDisabled(true);
 }
 
 void MainWindow::enableTools()
@@ -914,12 +939,14 @@ void MainWindow::handleNewButtonClicked(bool checked)
 	if (!isEditorOpened)
 	{
 		openEditor();
+		m_isFilepathDefined = false;
 		return;
 	}
 
 	if (!GlobalData::isStateTouched)
 	{
 		GlobalData::clearScene();
+		m_isFilepathDefined = false;
 		return;
 	}
 
@@ -954,4 +981,18 @@ void MainWindow::handleCloseButtonClicked(bool checked)
 void MainWindow::handleExitButtonClicked(bool checked)
 {
 	close();
+}
+
+void MainWindow::handleSaveButtonClicked(bool checked)
+{
+	qInfo() << "hit";
+
+	if (m_isFilepathDefined)
+	{
+		saveMap(m_filepath);
+	}
+	else
+	{
+		handleSaveAsButtonClicked(false);
+	}
 }

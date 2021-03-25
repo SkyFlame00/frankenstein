@@ -58,6 +58,7 @@ private:
 	void processShortcuts();
 	void endInputProcessing(bool isReleased);
 	void closeEvent(QCloseEvent* event);
+	void handleSaveButtonClicked(bool checked);
 	void handleSaveAsButtonClicked(bool checked);
 	void handleOpenFileButtonClicked(bool checked);
 	void handleNewButtonClicked(bool checked);
@@ -69,6 +70,7 @@ private:
 	void hideGLWidgets();
 	void enableTools();
 	void disableTools();
+	void saveMap(const QString& filename);
 
 	static MainWindow* m_instance;
 
@@ -82,6 +84,8 @@ private:
 	Renderer2D* m_renderer2D_X, *m_renderer2D_Y, *m_renderer2D_Z;
 	GLWidgetsContainer* m_glWidgetsContainer;
 	bool isEditorOpened = false;
+	bool m_isFilepathDefined = false;
+	QString m_filepath;
 
 	/* Menu */
 	QAction* m_newBtn;
