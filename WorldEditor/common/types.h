@@ -136,6 +136,7 @@ namespace Types
 		int textureHeight;
 		bool isSelected = false;
 		int rotationAngle = 0;
+		QVector3D center;
 	};
 
 	enum class SelectionToolState

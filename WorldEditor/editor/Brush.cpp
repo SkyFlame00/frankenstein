@@ -373,6 +373,8 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor
 	for (auto* polygon : m_polygons)
 		calcTexCoords(polygon);
 
+	calcPolygonsCenters();
+	correctNormals();
 	setupTextures();
 	setup();
 }
@@ -516,10 +518,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 		auto& oldPolygons = parentBrush->getPolygons();
 		auto res = std::find_if(oldPolygons.begin(), oldPolygons.end(), [&](Types::Polygon* oldPolygon)
 			{
-				return Helpers::areEqual(polygon->a, oldPolygon->a) &&
-					Helpers::areEqual(polygon->b, oldPolygon->b) &&
-					Helpers::areEqual(polygon->c, oldPolygon->c) &&
-					Helpers::areEqual(polygon->d, oldPolygon->d);
+				return Helpers::areEqual(polygon->norm, oldPolygon->norm);
 			});
 
 		if (res != oldPolygons.end())
@@ -656,6 +655,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 		*v -= shift;
 	}
 
+	calcPolygonsCenters();
 	calcBoundingBox();
 	recalcParams();
 	setupTextures();
@@ -758,6 +758,8 @@ Brush::Brush(Types::BrushJSON& brushData)
 		m_polygons.push_back(polygon);
 	}
 
+	calcPolygonsCenters();
+	correctNormals();
 	calcBoundingBox();
 	setupTextures();
 	setup();
@@ -1436,6 +1438,7 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 		}
 	}
 
+	calcPolygonsCenters();
 	recalcParams();
 	makeTrianglesBufferData();
 	makeLinesBufferData();
@@ -1738,19 +1741,55 @@ void Brush::makeNormalsBufferData()
 	
 	for (auto* polygon : m_polygons)
 	{
-		QVector3D total(0, 0, 0);
-
-		for (auto* v : polygon->vertices)
-			total += *v;
-
-		QVector3D origin(total / polygon->vertices.size());
-		QVector3D end(origin + polygon->norm);
-
-		lines.push_back({ origin, end });
-		addVertex(origin);
+		QVector3D end(polygon->center + polygon->norm);
+		lines.push_back({ polygon->center, end });
+		addVertex(polygon->center);
 		addVertex(end);
 	}
 
 	m_normalsVbo.allocate(vertices, size * sizeof(float));
 	delete[] vertices;
+}
+
+void Brush::calcPolygonsCenters()
+{
+	for (auto* polygon : m_polygons)
+	{
+		QVector3D total(0, 0, 0);
+
+		for (auto* v : polygon->vertices)
+			total += *v;
+
+		polygon->center = QVector3D(total / polygon->vertices.size());;
+	}
+}
+
+void Brush::correctNormals()
+{
+	for (auto* polygon : m_polygons)
+	{
+		float max = Grid2D::HALF_LENGTH;
+		QVector3D start(max, max, max); /* Point which is guaranteed to be outside of the shape */
+		QVector3D end = polygon->center + polygon->norm * 0.1;
+		int intersectionCount = 0;
+		QVector3D output; /* Only needed as parameter for function to work */
+
+		for (auto* p : m_polygons)
+		{
+			bool intersects = Helpers::lineSegmentPlaneIntersection(start, end,
+				*p->vertices[0], p->norm, &output);
+
+			if (intersects)
+				intersectionCount++;
+		}
+
+		if (intersectionCount % 2 != 0)
+		{
+			polygon->norm *= -1;
+			polygon->a = polygon->norm.x();
+			polygon->b = polygon->norm.y();
+			polygon->c = polygon->norm.z();
+			polygon->d = -QVector3D::dotProduct(polygon->norm, *polygon->vertices[0]);
+		}
+	}
 }

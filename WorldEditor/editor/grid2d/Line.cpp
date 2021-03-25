@@ -37,3 +37,25 @@ void Line::render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVe
 	GLCall(vao->bind());
 	GLCall($->glDrawArrays(GL_LINES, 0, m_verticesCount));
 }
+
+void Line::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera)
+{
+	auto vao = GlobalData::getRenderableVAO(*context, *this);
+	QMatrix4x4 pt1Model, pt2Model;
+
+	pt1Model.setToIdentity();
+	pt1Model.translate(m_pt1Origin * scaleVec);
+
+	pt2Model.setToIdentity();
+	pt2Model.translate(m_pt2Origin * scaleVec);
+
+	useContext(context);
+	GLCall(m_program->bind());
+	GLCall(m_program->setUniformValue("u_Proj", proj));
+	GLCall(m_program->setUniformValue("u_View", camera.getViewMatrix()));
+	GLCall(m_program->setUniformValue("u_Pt1Model", pt1Model));
+	GLCall(m_program->setUniformValue("u_Pt2Model", pt2Model));
+
+	GLCall(vao->bind());
+	GLCall($->glDrawArrays(GL_LINES, 0, m_verticesCount));
+}

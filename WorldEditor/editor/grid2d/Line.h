@@ -9,6 +9,7 @@ public:
 	Line();
 	int verticesCount() { return m_verticesCount; };
 	void render2D(QOpenGLContext* context, QMatrix4x4& proj, QVector3D& zoomVec, Camera& camera, Axis axis, float factor) override;
+	void render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D& scaleVec, Camera& camera) override;
 
 	QVector3D m_pt1Origin;
 	QVector3D m_pt2Origin;

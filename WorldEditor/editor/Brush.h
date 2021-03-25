@@ -41,6 +41,9 @@ public:
 	inline Texture getDefaultTexture() { return m_defaultTexture; }
 	inline QVector3D getColor() { return m_uniformColor; }
 	void makeNormalsBufferData();
+	void calcPolygonsCenters();
+	/* Normals should always point towards outside of the polygon. Otherwise, we correct them */
+	void correctNormals();
 
 	QVector3D m_origin = QVector3D(0, 0, 0);
 	bool m_selected = false;
