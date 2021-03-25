@@ -328,6 +328,14 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			m_inputData.keyZ = ButtonDownState::DOWN_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_Q)
+	{
+		if (m_inputData.keyQ == ButtonDownState::RELEASED_PROCESSED)
+		{
+			global->displayNormals = !global->displayNormals;
+			m_inputData.keyQ = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Shift)
 	{
 		if (m_inputData.keyShift == ButtonDownState::RELEASED_PROCESSED)
@@ -478,6 +486,13 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 			m_inputData.keyZ = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_Q)
+	{
+		if (m_inputData.keyQ == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.keyQ = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
 	if (key == Qt::Key_Shift)
 	{
 		if (m_inputData.keyShift == ButtonDownState::DOWN_PROCESSED)
@@ -597,6 +612,9 @@ void MainWindow::endInputProcessing(bool isReleased)
 
 		if (d.keyShift == ButtonDownState::RELEASED_NOT_PROCESSED)
 			d.keyShift = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.keyQ == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.keyQ = ButtonDownState::RELEASED_PROCESSED;
 	}
 	else
 	{
@@ -608,6 +626,9 @@ void MainWindow::endInputProcessing(bool isReleased)
 
 		if (d.keyShift == ButtonDownState::DOWN_NOT_PROCESSED)
 			d.keyShift = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.keyQ == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.keyQ = ButtonDownState::DOWN_PROCESSED;
 	}
 }
 

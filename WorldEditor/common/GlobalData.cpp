@@ -12,6 +12,7 @@ int GlobalData::contextsReady = 0;
 QString GlobalData::texturesPath = "resources/textures/";
 Texture GlobalData::applyingTexture;
 bool GlobalData::isStateTouched = false;
+bool GlobalData::displayNormals = false;
 
 GlobalData::GlobalData()
 {

@@ -42,6 +42,7 @@ public:
 		ButtonDownState keyCtrl = ButtonDownState::RELEASED_PROCESSED;
 		ButtonDownState keyZ = ButtonDownState::RELEASED_PROCESSED;
 		ButtonDownState keyShift = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState keyQ = ButtonDownState::RELEASED_PROCESSED;
 	} m_inputData;
 
 private:

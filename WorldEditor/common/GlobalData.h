@@ -77,6 +77,7 @@ public:
 	static QString texturesPath;
 	static Texture applyingTexture;
 	static bool isStateTouched;
+	static bool displayNormals;
 
 private:
 	GlobalData();

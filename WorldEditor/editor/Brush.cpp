@@ -885,12 +885,17 @@ void Brush::setup()
 	m_linesVerticesZ_renderable = new BrushRenderable(&m_linesVerticesZ_vbo, 8);
 	delete[] linesVerticesZ;
 
+	m_normalsVbo.addAttribute<float>(3); // position
+	m_normalsRenderable = new BrushRenderable(&m_normalsVbo, 0);
+	makeNormalsBufferData();
+
 	m_bboxLinesVerticesCount = 8;
 
 	/* Shaders */
 	m_program2D = ResourceManager::getProgram("plain_brush_2d", "plain_brush_2d");
 	m_program3D = ResourceManager::getProgram("plain_brush_3d", "plain_brush_3d");
 	m_programSelection = ResourceManager::getProgram("brush_selection", "brush_selection");
+	m_programNormals = ResourceManager::getProgram("plain_with_uniform_color", "plain_with_uniform_color");
 
 	m_trianglesVbo.addAttribute<float>(3); // position
 	m_trianglesVbo.addAttribute<float>(2); // tex coords
@@ -1021,6 +1026,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 	auto trianglesVao = GlobalData::getRenderableVAO(*context, *m_trianglesRenderable);
 	auto linesVao = GlobalData::getRenderableVAO(*context, *m_linesRenderable);
 	auto trianglesLinesVao = GlobalData::getRenderableVAO(*context, *m_trianglesLinesRenderable);
+	auto normalsVao = GlobalData::getRenderableVAO(*context, *m_normalsRenderable);
 	float ambient = 0.4f;
 	float diffuse = 0.7f;
 	float specular = 1.0f;
@@ -1029,6 +1035,18 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 	model.setToIdentity();
 	model.scale(scaleVec);
 	model.translate(m_origin);
+
+	/* Render normals */
+	if (global->displayNormals)
+	{
+		GLCall(normalsVao->bind());
+		GLCall(m_programNormals->bind());
+		GLCall(m_programNormals->setUniformValue("proj", proj));
+		GLCall(m_programNormals->setUniformValue("view", camera.getViewMatrix()));
+		GLCall(m_programNormals->setUniformValue("model", model));
+		GLCall(m_programNormals->setUniformValue("color", 0.0f, 1.0f, 0.0f));
+		GLCall($->glDrawArrays(GL_LINES, 0, m_normalsVerticesCount));
+	}
 
 	auto setUniforms = [&]()
 	{
@@ -1651,6 +1669,8 @@ void Brush::recalcParams()
 		polygon->c = norm.z();
 		polygon->d = -QVector3D::dotProduct(norm, v0);
 	}
+	
+	makeNormalsBufferData();
 }
 
 void Brush::selectPolygon(Types::Polygon* polygon)
@@ -1698,4 +1718,39 @@ void Brush::updatePolygonTexture(Types::Polygon* polygon, Texture& texture)
 	calcTexCoords(polygon);
 	sendPolygonDataToGPU(polygon);
 	setupTextures();
+}
+
+void Brush::makeNormalsBufferData()
+{
+	m_normalsVerticesCount = m_polygons.size() * 2;
+	int size = m_normalsVerticesCount * 3;
+	float* vertices = new float[size];
+	struct Line { QVector3D v0; QVector3D v1; };
+	std::list<Line> lines;
+
+	int i = 0;
+	auto addVertex = [&](QVector3D& pt)
+	{
+		vertices[i++] = pt.x();
+		vertices[i++] = pt.y();
+		vertices[i++] = pt.z();
+	};
+	
+	for (auto* polygon : m_polygons)
+	{
+		QVector3D total(0, 0, 0);
+
+		for (auto* v : polygon->vertices)
+			total += *v;
+
+		QVector3D origin(total / polygon->vertices.size());
+		QVector3D end(origin + polygon->norm);
+
+		lines.push_back({ origin, end });
+		addVertex(origin);
+		addVertex(end);
+	}
+
+	m_normalsVbo.allocate(vertices, size * sizeof(float));
+	delete[] vertices;
 }

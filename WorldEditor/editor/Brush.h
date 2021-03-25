@@ -40,6 +40,7 @@ public:
 	inline void setDefaultTexture(Texture texture) { m_defaultTexture = texture; }
 	inline Texture getDefaultTexture() { return m_defaultTexture; }
 	inline QVector3D getColor() { return m_uniformColor; }
+	void makeNormalsBufferData();
 
 	QVector3D m_origin = QVector3D(0, 0, 0);
 	bool m_selected = false;
@@ -96,12 +97,13 @@ private:
 	BrushRenderable* m_linesRenderable;
 	BrushRenderable* m_trianglesRenderable;
 	BrushRenderable* m_trianglesLinesRenderable;
-	float m_trianglesVerticesCount = 0;
-	float m_linesVerticesCount = 0;
-	float m_trianglesLinesVerticesCount = 0;
+	int m_trianglesVerticesCount = 0;
+	int m_linesVerticesCount = 0;
+	int m_trianglesLinesVerticesCount = 0;
 	QOpenGLShaderProgram* m_program2D;
 	QOpenGLShaderProgram* m_program3D;
 	QOpenGLShaderProgram* m_programSelection;
+	QOpenGLShaderProgram* m_programNormals;
 	Point m_resizePoint;
 	float* m_linesVerticesX;
 	float* m_linesVerticesY;
@@ -116,4 +118,7 @@ private:
 	QList<RenderCall> m_renderCalls;
 	QVector3D m_targetAxis = QVector3D(0, 0, 1);
 	Texture m_defaultTexture;
+	VertexBufferObject m_normalsVbo;
+	BrushRenderable* m_normalsRenderable;
+	int m_normalsVerticesCount = 0;
 };

@@ -370,6 +370,7 @@ void GLWidget2D::applyClipping()
 		delete brush->m_clippedBrush;
 	}
 
+	brush->m_isInClippingMode = false;
 	brush->m_selected = false;
 	brush->m_beingClipped = false;
 	brush->isOnScene = false;
