@@ -13,6 +13,8 @@
 
 class GLWidget2D : public QOpenGLWidget
 {
+	Q_OBJECT
+
 public:
 	enum class MouseScroll
 	{
@@ -43,6 +45,10 @@ public:
 	GLWidget2D(Axis axis, Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent = nullptr);
 	~GLWidget2D();
 	void discardClipping();
+
+signals:
+	void shown(GLWidget2D* instance);
+	void hidden(GLWidget2D* instance);
 
 private:
 	const SceneZoom REFERENCE_ZOOM = SceneZoom::X1;
@@ -83,6 +89,8 @@ private:
 	void processClippingTool();
 	void clipBrush();
 	void applyClipping();
+	void showEvent(QShowEvent* event) override;
+	void hideEvent(QHideEvent* event) override;
 };
 
 

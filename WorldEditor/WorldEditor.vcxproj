@@ -170,7 +170,7 @@
     <QtMoc Include="gui\GLWidgetsContainer.h" />
     <ClInclude Include="editor\Texture.h" />
     <ClInclude Include="gui\FlowLayout.h" />
-    <ClInclude Include="gui\GLWidget2D\GLWidget2D.h" />
+    <QtMoc Include="gui\GLWidget2D\GLWidget2D.h" />
     <ClInclude Include="gui\Debug.h" />
     <ClInclude Include="editor\Camera.h" />
     <ClInclude Include="editor\Renderer3D.h" />

@@ -445,3 +445,15 @@ float GLWidget2D::getZoomFactor()
 	float factor = referenceFactor / currentfactor;
 	return factor;
 }
+
+void GLWidget2D::showEvent(QShowEvent* event)
+{
+	emit shown(this);
+	QWidget::showEvent(event);
+}
+
+void GLWidget2D::hideEvent(QHideEvent* event)
+{
+	emit hidden(this);
+	QWidget::hideEvent(event);
+}

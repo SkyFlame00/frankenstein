@@ -3,18 +3,42 @@
 GLWidgetsContainer::GLWidgetsContainer(GLWidget3D* gl3D, GLWidget2D* gl2DX, GLWidget2D* gl2DY, GLWidget2D* gl2DZ, QWidget* parent)
 	: QWidget(parent), m_gl3D(gl3D), m_gl2DX(gl2DX), m_gl2DY(gl2DY), m_gl2DZ(gl2DZ)
 {
-	QHBoxLayout* layout = new QHBoxLayout;
+    connect(gl2DX, &GLWidget2D::shown, this, &GLWidgetsContainer::handleGLWidgetShown);
+    connect(gl2DX, &GLWidget2D::hidden, this, &GLWidgetsContainer::handleGLWidgetHidden);
+    connect(gl2DY, &GLWidget2D::shown, this, &GLWidgetsContainer::handleGLWidgetShown);
+    connect(gl2DY, &GLWidget2D::hidden, this, &GLWidgetsContainer::handleGLWidgetHidden);
+    connect(gl2DZ, &GLWidget2D::shown, this, &GLWidgetsContainer::handleGLWidgetShown);
+    connect(gl2DZ, &GLWidget2D::hidden, this, &GLWidgetsContainer::handleGLWidgetHidden);
+
+    QString styleSheetString = "background: black; color: white; padding: 2px;";
+
+    /* Z/Y label */
+    m_axisLabel_X = new QLabel("Z/Y view", parent);
+    m_axisLabel_X->raise();
+    m_axisLabel_X->setStyleSheet(styleSheetString);
+    m_axisLabel_X->hide();
+
+    /* X/Z label */
+    m_axisLabel_Y = new QLabel("X/Z view", parent);
+    m_axisLabel_Y->raise();
+    m_axisLabel_Y->setStyleSheet(styleSheetString);
+    m_axisLabel_Y->hide();
+
+    /* X/Y label */
+    m_axisLabel_Z = new QLabel("X/Y view", parent);
+    m_axisLabel_Z->raise();
+    m_axisLabel_Z->setStyleSheet(styleSheetString);
+    m_axisLabel_Z->hide();
+
+    QHBoxLayout* layout = new QHBoxLayout;
 	layout->addWidget(gl3D);
 	layout->addWidget(gl2DX);
 	layout->addWidget(gl2DY);
 	layout->addWidget(gl2DZ);
+    layout->addWidget(m_axisLabel_X);
+    layout->addWidget(m_axisLabel_Y);
+    layout->addWidget(m_axisLabel_Z);
 	setLayout(layout);
-
-	m_handleCenter = rect().center();
-	m_gl3D->setGeometry(QRect(QPoint(m_margin, m_margin), m_handleCenter - QPoint(m_margin, m_margin)));
-	m_gl2DX->setGeometry(QRect(QPoint(width() / 2 + m_margin, m_margin), QPoint(width() - m_margin, height() / 2 - m_margin)));
-	m_gl2DY->setGeometry(QRect(QPoint(m_margin, height() / 2 + m_margin), QPoint(width() / 2 - m_margin, height() - m_margin)));
-	m_gl2DZ->setGeometry(QRect(QPoint(width() / 2 + m_margin, height() / 2 + m_margin), QPoint(width() - m_margin, height() - m_margin)));
 }
 
 void GLWidgetsContainer::resizeEvent(QResizeEvent* event)
@@ -24,11 +48,20 @@ void GLWidgetsContainer::resizeEvent(QResizeEvent* event)
 
 void GLWidgetsContainer::doResize()
 {
+    auto gl2DX_pos = QPoint(width() / 2 + m_margin, m_margin);
+    auto gl2DY_pos = QPoint(m_margin, height() / 2 + m_margin);
+    auto gl2DZ_pos = QPoint(width() / 2 + m_margin, height() / 2 + m_margin);
+
     m_handleCenter = rect().center();
     m_gl3D->setGeometry(QRect(QPoint(m_margin, m_margin), m_handleCenter - QPoint(m_margin, m_margin)));
-    m_gl2DX->setGeometry(QRect(QPoint(width() / 2 + m_margin, m_margin), QPoint(width() - m_margin, height() / 2 - m_margin)));
-    m_gl2DY->setGeometry(QRect(QPoint(m_margin, height() / 2 + m_margin), QPoint(width() / 2 - m_margin, height() - m_margin)));
-    m_gl2DZ->setGeometry(QRect(QPoint(width() / 2 + m_margin, height() / 2 + m_margin), QPoint(width() - m_margin, height() - m_margin)));
+    m_gl2DX->setGeometry(QRect(gl2DX_pos, QPoint(width() - m_margin, height() / 2 - m_margin)));
+    m_gl2DY->setGeometry(QRect(gl2DY_pos, QPoint(width() / 2 - m_margin, height() - m_margin)));
+    m_gl2DZ->setGeometry(QRect(gl2DZ_pos, QPoint(width() - m_margin, height() - m_margin)));
+
+    m_axisLabel_X->setGeometry(gl2DX_pos.x(), gl2DX_pos.y(), LABEL_WIDTH, LABEL_HEIGHT);
+    m_axisLabel_Y->setGeometry(gl2DY_pos.x(), gl2DY_pos.y(), LABEL_WIDTH, LABEL_HEIGHT);
+    m_axisLabel_Z->setGeometry(gl2DZ_pos.x(), gl2DZ_pos.y(), LABEL_WIDTH, LABEL_HEIGHT);
+
 }
 
 void GLWidgetsContainer::mouseMoveEvent(QMouseEvent* e)
@@ -107,12 +140,15 @@ void GLWidgetsContainer::mouseMoveEvent(QMouseEvent* e)
 
     newGeo_2DX.setBottomLeft(bottomLeftPt);
     m_gl2DX->setGeometry(newGeo_2DX);
+    m_axisLabel_X->setGeometry(m_gl2DX->x(), m_gl2DX->y(), LABEL_WIDTH, LABEL_HEIGHT);
 
     newGeo_2DY.setTopRight(topRightPt);
     m_gl2DY->setGeometry(newGeo_2DY);
+    m_axisLabel_Y->setGeometry(m_gl2DY->x(), m_gl2DY->y(), LABEL_WIDTH, LABEL_HEIGHT);
 
     newGeo_2DZ.setTopLeft(topLeftPt);
     m_gl2DZ->setGeometry(newGeo_2DZ);
+    m_axisLabel_Z->setGeometry(m_gl2DZ->x(), m_gl2DZ->y(), LABEL_WIDTH, LABEL_HEIGHT);
 
     m_handleCenter = QPoint(handleCenterX, handleCenterY);
 }
@@ -162,5 +198,37 @@ void GLWidgetsContainer::mouseReleaseEvent(QMouseEvent* e)
         m_leftMouseDown = ButtonDownState::RELEASED_PROCESSED;
         m_resizeDir = ResizeDirection::NONE;
         setCursor(Qt::ArrowCursor);
+    }
+}
+
+void GLWidgetsContainer::handleGLWidgetShown(GLWidget2D* instance)
+{
+    if (instance == m_gl2DX)
+    {
+        m_axisLabel_X->show();
+    }
+    else if (instance == m_gl2DY)
+    {
+        m_axisLabel_Y->show();
+    }
+    else if (instance == m_gl2DZ)
+    {
+        m_axisLabel_Z->show();
+    }
+}
+
+void GLWidgetsContainer::handleGLWidgetHidden(GLWidget2D* instance)
+{
+    if (instance == m_gl2DX)
+    {
+        m_axisLabel_X->hide();
+    }
+    else if (instance == m_gl2DY)
+    {
+        m_axisLabel_Y->hide();
+    }
+    else if (instance == m_gl2DZ)
+    {
+        m_axisLabel_Z->hide();
     }
 }

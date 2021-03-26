@@ -158,6 +158,9 @@
     <QtMoc Include="gui\TexturesSettings.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="gui\GLWidget2D\GLWidget2D.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="editor\Renderer3D.h">
@@ -203,9 +206,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="editor\VertexBufferObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\GLWidget2D\GLWidget2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="editor\ChangeableRenderable.h">
