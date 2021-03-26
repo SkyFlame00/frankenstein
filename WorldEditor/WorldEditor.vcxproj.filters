@@ -126,6 +126,12 @@
     <ClCompile Include="gui\FlowLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gui\SettingsWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\TexturesSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h">
@@ -144,6 +150,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="gui\TextureCard.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\SettingsWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="gui\TexturesSettings.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

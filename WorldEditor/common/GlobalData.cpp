@@ -4,15 +4,20 @@
 #include "../editor/ResourceManager.h"
 #include <QDir>
 #include "ActionHistoryTool.h"
+#include <QFile>
+#include <nlohmann/json.hpp>
+
+using nlohmann::json;
 
 GlobalData* GlobalData::m_instance = nullptr;
 std::unordered_map<QOpenGLContext*, GlobalData::ContextVAOMap*> GlobalData::openglContexts;
 const int GlobalData::CONTEXTS_NUM = 4;
 int GlobalData::contextsReady = 0;
-QString GlobalData::texturesPath = "resources/textures/";
+QString GlobalData::texturesPath;
 Texture GlobalData::applyingTexture;
 bool GlobalData::isStateTouched = false;
 bool GlobalData::displayNormals = false;
+QString GlobalData::configPath = "worldeditor.config.json";
 
 GlobalData::GlobalData()
 {
@@ -31,6 +36,8 @@ void GlobalData::init()
 	}
 
 	m_instance = new GlobalData;
+
+	loadConfiguration();
 }
 
 void GlobalData::cleanup()
@@ -261,4 +268,22 @@ void GlobalData::clearScene()
 	inst->m_scene->clear();
 	
 	GlobalData::isStateTouched = false;
+}
+
+void GlobalData::loadConfiguration()
+{
+	QFile file(configPath);
+
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		texturesPath = QDir::currentPath() + "/resources/textures/";
+		return;
+	}
+
+	auto config = json::parse(file.readAll().toStdString()).get<Configuration::ConfigurationJSON>();
+
+	if (config.texture_settings.texture_path.size() > 0)
+	{
+		texturesPath = config.texture_settings.texture_path.c_str();
+	}
 }

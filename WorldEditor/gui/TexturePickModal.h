@@ -19,6 +19,8 @@ public:
 	TexturePickModal(QWidget* parent = nullptr);
 	~TexturePickModal();
 	void init();
+	void updateFilesystemTree();
+	static inline TexturePickModal* getInstance() { return m_instance; }
 
 signals:
 	void submit(Texture texture);
@@ -26,6 +28,8 @@ signals:
 
 private:
 	void makeFilesystemTree(TextureBrowser::Node* parent);
+	void makeFilesystemTreeFromRoot();
+	void deleteFilesystemTree(TextureBrowser::Node* node);
 	void showEvent(QShowEvent* event) override;
 	void hideEvent(QHideEvent* event) override;
 	void closeEvent(QCloseEvent* e) override;
@@ -37,7 +41,8 @@ private:
 	void handleOkButtonClicked();
 	void handleCancelButtonClicked();
 
-	TextureBrowser::Node m_textureRootDir;
+	static TexturePickModal* m_instance;
+	TextureBrowser::Node* m_textureRootDir;
 	TextureBrowser::Node* m_currentDir;
 	QPushButton* m_okButton;
 	QPushButton* m_cancelButton;

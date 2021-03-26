@@ -9,6 +9,8 @@
 
 namespace fs = std::filesystem;
 
+TexturePickModal* TexturePickModal::m_instance = nullptr;
+
 TexturePickModal::TexturePickModal(QWidget* parent)
 	: QDialog(parent)
 {
@@ -45,7 +47,8 @@ TexturePickModal::TexturePickModal(QWidget* parent)
 	bottomPanelLayout->setMargin(0);
 	mainLayout->addWidget(bottomPanel);
 
-	m_currentDir = &m_textureRootDir;
+	m_textureRootDir = new TextureBrowser::Node;
+	m_currentDir = m_textureRootDir;
 
 	/* Folder icon texture */
 	QString folderIconPath = QDir::currentPath() + "/assets/icons/folder.png";
@@ -54,16 +57,37 @@ TexturePickModal::TexturePickModal(QWidget* parent)
 
 TexturePickModal::~TexturePickModal()
 {
-	/* DELETE TREE */
+	if (m_textureRootDir)
+	{
+		deleteFilesystemTree(m_textureRootDir);
+	}
 }
 
 void TexturePickModal::init()
 {
-	m_textureRootDir.type = TextureBrowser::NodeType::DIRECTORY;
-	m_textureRootDir.path = QDir::currentPath() + "/" + GlobalData::texturesPath;
-	m_textureRootDir.name = "/";
-	m_textureRootDir.texture = m_folderIconTexture;
-	makeFilesystemTree(&m_textureRootDir);
+	if (!m_instance)
+	{
+		m_instance = this;
+	}
+
+	makeFilesystemTreeFromRoot();
+}
+
+void TexturePickModal::makeFilesystemTreeFromRoot()
+{
+	m_textureRootDir->type = TextureBrowser::NodeType::DIRECTORY;
+	m_textureRootDir->path = GlobalData::texturesPath;
+	m_textureRootDir->name = "/";
+	m_textureRootDir->texture = m_folderIconTexture;
+	makeFilesystemTree(m_textureRootDir);
+}
+
+void TexturePickModal::updateFilesystemTree()
+{
+	deleteFilesystemTree(m_textureRootDir);
+	m_textureRootDir = new TextureBrowser::Node;
+	m_currentDir = m_textureRootDir;
+	makeFilesystemTreeFromRoot();
 }
 
 void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
@@ -92,10 +116,20 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 	}
 }
 
+void TexturePickModal::deleteFilesystemTree(TextureBrowser::Node* node)
+{
+	for (auto* childNode : node->children)
+	{
+		deleteFilesystemTree(childNode);
+	}
+
+	delete node;
+}
+
 void TexturePickModal::showEvent(QShowEvent* event)
 {
 	m_okButton->setDisabled(true);
-	m_currentDir = &m_textureRootDir;
+	m_currentDir = m_textureRootDir;
 	displayContents(m_currentDir);
 }
 

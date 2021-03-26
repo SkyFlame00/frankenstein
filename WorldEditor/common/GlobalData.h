@@ -20,6 +20,7 @@ public:
 
 	static const int CONTEXTS_NUM;
 	static int contextsReady;
+	static QString configPath;
 
 	static void init();
 	static void cleanup();
@@ -28,6 +29,7 @@ public:
 	static void setMode(EditorMode mode);
 	static void onContextReady();
 	static void clearScene();
+	static void loadConfiguration();
 	
 	struct {
 		BlockToolState state = BlockToolState::CREATING;

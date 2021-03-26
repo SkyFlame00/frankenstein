@@ -275,3 +275,20 @@ namespace TextureBrowser
 		QList<Node*> children;
 	};
 }
+
+namespace Configuration
+{
+	struct TextureSettingsJSON
+	{
+		std::string texture_path;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(TextureSettingsJSON, texture_path)
+	};
+
+	struct ConfigurationJSON
+	{
+		TextureSettingsJSON texture_settings;
+
+		NLOHMANN_DEFINE_TYPE_INTRUSIVE(ConfigurationJSON, texture_settings)
+	};
+}

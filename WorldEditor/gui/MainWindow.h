@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 #include "GLWidgetsContainer.h"
 #include "TextureToolDialog.h"
+#include "SettingsWindow.h"
 
 class MainWindow : public QMainWindow
 {
@@ -47,6 +48,7 @@ public:
 
 private:
 	void setupMenu();
+	void setupToolsMenu();
 	void setupTopToolbar();
 	void setupLeftToolbar();
 	void setupDocks();
@@ -64,6 +66,7 @@ private:
 	void handleNewButtonClicked(bool checked);
 	void handleCloseButtonClicked(bool checked);
 	void handleExitButtonClicked(bool checked);
+	void handleSettingsButtonClicked(bool checked);
 	void openEditor();
 	void closeEditor();
 	void showGLWidgets();
@@ -95,6 +98,10 @@ private:
 	QAction* m_closeBtn;
 	QAction* m_exitBtn;
 
+	/* Tools */
+	QMenu* m_toolsMenu;
+	QAction* m_settingsBtn;
+
 	/* Top toolbar */
 	QToolBar* m_topToolbar;
 	QActionGroup* m_historyGroup;
@@ -111,4 +118,5 @@ private:
 	QAction* m_textureToolButton;
 
 	TextureToolDialog* m_textureToolDialog = nullptr;
+	SettingsWindow* m_settingsWindow = nullptr;
 };

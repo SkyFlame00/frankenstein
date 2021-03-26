@@ -47,6 +47,7 @@ MainWindow::MainWindow()
 	m_centralWidget->setMouseTracking(true);
 
 	setupMenu();
+	setupToolsMenu();
 	setupTopToolbar();
 	setupLeftToolbar();
 	setupDocks();
@@ -131,6 +132,16 @@ void MainWindow::setupMenu()
 
 	setAnimated(false);
 	setMenuBar(menuBar);
+}
+
+void MainWindow::setupToolsMenu()
+{
+	m_toolsMenu = menuBar->addMenu("Tools");
+
+	/* Settings */
+	m_settingsBtn = new QAction("Settings", m_toolsMenu);
+	m_toolsMenu->addAction(m_settingsBtn);
+	connect(m_settingsBtn, &QAction::triggered, this, &MainWindow::handleSettingsButtonClicked);
 }
 
 void MainWindow::setupTopToolbar()
@@ -231,6 +242,7 @@ void MainWindow::setupEditor()
 void MainWindow::setupWindows()
 {
 	m_textureToolDialog = new TextureToolDialog(this, Qt::Tool);
+	m_settingsWindow = new SettingsWindow(this);
 }
 
 void MainWindow::enableMouseTracking()
@@ -995,4 +1007,9 @@ void MainWindow::handleSaveButtonClicked(bool checked)
 	{
 		handleSaveAsButtonClicked(false);
 	}
+}
+
+void MainWindow::handleSettingsButtonClicked(bool checked)
+{
+	m_settingsWindow->open();
 }

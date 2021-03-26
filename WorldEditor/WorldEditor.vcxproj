@@ -140,6 +140,8 @@
     <ClCompile Include="gui\TextureToolDialog.cpp" />
     <ClCompile Include="gui\TexturePickModal.cpp" />
     <ClCompile Include="gui\TextureCard.cpp" />
+    <ClCompile Include="gui\SettingsWindow.cpp" />
+    <ClCompile Include="gui\TexturesSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="gui\MainWindow.h" />
@@ -160,6 +162,8 @@
     <ClInclude Include="editor\Grid2D.h" />
     <ClInclude Include="common\GlobalData.h" />
     <ClInclude Include="editor\grid2d\Line.h" />
+    <QtMoc Include="gui\TexturesSettings.h" />
+    <QtMoc Include="gui\SettingsWindow.h" />
     <QtMoc Include="gui\TextureCard.h" />
     <QtMoc Include="gui\TexturePickModal.h" />
     <QtMoc Include="gui\TextureToolDialog.h" />
