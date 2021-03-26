@@ -94,6 +94,11 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 {
 	using namespace TextureBrowser;
 
+	if (!QFile::exists(parent->path))
+	{
+		return;
+	}
+
 	for (const auto& entry : fs::directory_iterator(parent->path.toStdString()))
 	{
 		auto pathObj = entry.path();
