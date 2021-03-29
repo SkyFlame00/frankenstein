@@ -41,13 +41,13 @@ void GLWidget3D::processTextureTool()
 			{
 				for (auto& pair : data.pickedPolygons)
 				{
-					brush->unselectPolygon(pair.first);
+					pair.second->unselectPolygon(pair.first);
 				}
 
 				data.pickedPolygons.clear();
 
-				brush->selectPolygon(polygon);
 				data.pickedPolygons[polygon] = brush;
+				brush->selectPolygon(polygon);
 				ttDialog->onPickedPolygonsChange(data.pickedPolygons);
 			}
 		}

@@ -51,6 +51,13 @@ void GLWidget2D::resizeGL(int width, int height)
 	m_renderer->setFrustrum(m_frustrumWidth, m_frustrumHeight);
 }
 
+void GLWidget2D::setZoom(SceneZoom zoom)
+{
+	m_zoom = zoom;
+	m_grid->m_zoom = m_zoom;
+	m_renderer->setZoom(m_zoom);
+}
+
 void GLWidget2D::processInputData()
 {
 	float prevFactor = SCENE_ZOOM_FACTORS.find(m_zoom)->second;

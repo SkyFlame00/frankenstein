@@ -44,6 +44,9 @@ public:
 		ButtonDownState keyZ = ButtonDownState::RELEASED_PROCESSED;
 		ButtonDownState keyShift = ButtonDownState::RELEASED_PROCESSED;
 		ButtonDownState keyQ = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState key1 = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState key2 = ButtonDownState::RELEASED_PROCESSED;
+		ButtonDownState key3 = ButtonDownState::RELEASED_PROCESSED;
 	} m_inputData;
 
 private:
@@ -74,6 +77,7 @@ private:
 	void enableTools();
 	void disableTools();
 	void saveMap(const QString& filename);
+	void defaultCameras();
 
 	static MainWindow* m_instance;
 

@@ -423,6 +423,30 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			sdata.state = Types::SelectionToolState::READY_TO_SELECT;
 		}
 	}
+	if (key == Qt::Key_1)
+	{
+		if (m_inputData.key1 == ButtonDownState::RELEASED_PROCESSED)
+		{
+			global->drawMode = Types::DrawMode::TEXTURED;
+			m_inputData.key1 = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_2)
+	{
+		if (m_inputData.key2 == ButtonDownState::RELEASED_PROCESSED)
+		{
+			global->drawMode = Types::DrawMode::POLYGON;
+			m_inputData.key2 = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_3)
+	{
+		if (m_inputData.key3 == ButtonDownState::RELEASED_PROCESSED)
+		{
+			global->drawMode = Types::DrawMode::WIREFRAME;
+			m_inputData.key3 = ButtonDownState::DOWN_NOT_PROCESSED;
+		}
+	}
 
 	processShortcuts();
 	endInputProcessing(false);
@@ -549,6 +573,27 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 			m_glWidget2D_Z->m_inputData.keyReturn = ButtonDownState::RELEASED_NOT_PROCESSED;
 		}
 	}
+	if (key == Qt::Key_1)
+	{
+		if (m_inputData.key1 == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.key1 = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_2)
+	{
+		if (m_inputData.key2 == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.key2 = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
+	if (key == Qt::Key_3)
+	{
+		if (m_inputData.key3 == ButtonDownState::DOWN_PROCESSED)
+		{
+			m_inputData.key3 = ButtonDownState::RELEASED_NOT_PROCESSED;
+		}
+	}
 
 	processShortcuts();
 	endInputProcessing(true);
@@ -634,6 +679,15 @@ void MainWindow::endInputProcessing(bool isReleased)
 
 		if (d.keyQ == ButtonDownState::RELEASED_NOT_PROCESSED)
 			d.keyQ = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.key1 == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.key1 = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.key2 == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.key2 = ButtonDownState::RELEASED_PROCESSED;
+
+		if (d.key3 == ButtonDownState::RELEASED_NOT_PROCESSED)
+			d.key3 = ButtonDownState::RELEASED_PROCESSED;
 	}
 	else
 	{
@@ -648,6 +702,15 @@ void MainWindow::endInputProcessing(bool isReleased)
 
 		if (d.keyQ == ButtonDownState::DOWN_NOT_PROCESSED)
 			d.keyQ = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.key1 == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.key1 = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.key2 == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.key2 = ButtonDownState::DOWN_PROCESSED;
+
+		if (d.key3 == ButtonDownState::DOWN_NOT_PROCESSED)
+			d.key3 = ButtonDownState::DOWN_PROCESSED;
 	}
 }
 
@@ -889,6 +952,25 @@ void MainWindow::handleOpenFileButtonClicked(bool checked)
 	GlobalData::isStateTouched = false;
 	m_isFilepathDefined = true;
 	m_filepath = filename;
+
+	defaultCameras();
+}
+
+void MainWindow::defaultCameras()
+{
+	m_camera3D->setYaw(Camera::_DEFAULT_YAW);
+	m_camera3D->setPitch(Camera::_DEFAULT_PITCH);
+	m_camera3D->setPosition(QVector3D(0.0f, 0.0f, 0.0f));
+	m_camera3D->updateCameraVectors();
+	m_camera2D_X->setPosition(QVector3D(0.0f, 0.0f, 0.0f));
+	m_camera2D_Y->setPosition(QVector3D(0.0f, 0.0f, 0.0f));
+	m_camera2D_Z->setPosition(QVector3D(0.0f, 0.0f, 0.0f));
+	m_glWidget2D_X->setZoom(SceneZoom::X32);
+	m_glWidget2D_Y->setZoom(SceneZoom::X32);
+	m_glWidget2D_Z->setZoom(SceneZoom::X32);
+	m_renderer2D_X->setup(Axis::X, -Grid2D::HALF_LENGTH, Grid2D::HALF_LENGTH * 6);
+	m_renderer2D_Y->setup(Axis::Y, -Grid2D::HALF_LENGTH, Grid2D::HALF_LENGTH * 6);
+	m_renderer2D_Z->setup(Axis::Z, -Grid2D::HALF_LENGTH, Grid2D::HALF_LENGTH * 6);
 }
 
 void MainWindow::showGLWidgets()
@@ -952,6 +1034,7 @@ void MainWindow::handleNewButtonClicked(bool checked)
 	{
 		openEditor();
 		m_isFilepathDefined = false;
+		defaultCameras();
 		return;
 	}
 
@@ -959,6 +1042,7 @@ void MainWindow::handleNewButtonClicked(bool checked)
 	{
 		GlobalData::clearScene();
 		m_isFilepathDefined = false;
+		defaultCameras();
 		return;
 	}
 
@@ -968,6 +1052,7 @@ void MainWindow::handleNewButtonClicked(bool checked)
 	if (agreed)
 	{
 		GlobalData::clearScene();
+		defaultCameras();
 	}
 }
 

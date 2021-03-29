@@ -80,6 +80,7 @@ public:
 	static Texture applyingTexture;
 	static bool isStateTouched;
 	static bool displayNormals;
+	static Types::DrawMode drawMode;
 
 private:
 	GlobalData();

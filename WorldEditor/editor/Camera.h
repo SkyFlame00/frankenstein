@@ -8,6 +8,8 @@ class Camera
 {
 public:
 	const float MAX_FOV = 90.0f;
+	static const float _DEFAULT_YAW;
+	static const float _DEFAULT_PITCH;
 
 	enum class Direction
 	{
@@ -37,6 +39,8 @@ public:
 	void inline setWorldUpVec(QVector3D vec) { m_worldUp = vec; }
 	void inline setFrontVec(QVector3D vec) { m_front = vec; }
 	QVector3D getPickingRay(int x, int y, int screenWidth, int screenHeight, float nearPlane, float farPlane, QMatrix4x4& proj);
+	void inline setYaw(float yaw) { m_yaw = yaw; }
+	void inline setPitch(float pitch) { m_pitch = pitch; }
 
 private:
 	QVector3D m_position;

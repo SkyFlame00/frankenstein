@@ -18,6 +18,7 @@ Texture GlobalData::applyingTexture;
 bool GlobalData::isStateTouched = false;
 bool GlobalData::displayNormals = false;
 QString GlobalData::configPath = "worldeditor.config.json";
+Types::DrawMode GlobalData::drawMode = Types::DrawMode::TEXTURED;
 
 GlobalData::GlobalData()
 {

@@ -71,11 +71,6 @@ void GLWidget3D::updateCamera()
 		m_camera->processKeyboard(Camera::Direction::BACKWARD, deltaSec);
 	if (m_inputData.keyD == ButtonState::PRESSED && isWidgetActive)
 		m_camera->processKeyboard(Camera::Direction::RIGHT, deltaSec);
-
-	if (m_inputData.keyV == ButtonDownState::DOWN_NOT_PROCESSED)
-		global->m_isDrawingLines = !global->m_isDrawingLines;
-	if (m_inputData.keyF == ButtonDownState::DOWN_NOT_PROCESSED)
-		global->m_isWireframeMode = !global->m_isWireframeMode;
 	if (m_inputData.keyR == ButtonDownState::DOWN_NOT_PROCESSED && global->m_editorMode == EditorMode::CLIPPING_MODE)
 	{
 		auto* brush = sdata.renderable;

@@ -135,7 +135,7 @@ Texture& ResourceManager::getTexture(const QString& texturePath, bool isAbsolute
 	GLCall($->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bits()));
 
 	Texture* texture = new Texture{ textureId, image.width(), image.height(), image.mirrored(), path, false };
-	m_textureMap[texturePath] = texture;
+	m_textureMap[path] = texture;
 	return *texture;
 }
 

@@ -102,7 +102,7 @@ void TexturePickModal::makeFilesystemTree(TextureBrowser::Node* parent)
 	for (const auto& entry : fs::directory_iterator(parent->path.toStdString()))
 	{
 		auto pathObj = entry.path();
-		auto path = pathObj.string();
+		auto path = pathObj.make_preferred().string();
 		auto name = pathObj.filename().string();
 		auto ext = pathObj.extension().string();
 

@@ -255,6 +255,13 @@ namespace Types
 
 		NLOHMANN_DEFINE_TYPE_INTRUSIVE(MapJSON, objects)
 	};
+
+	enum class DrawMode
+	{
+		TEXTURED,
+		POLYGON,
+		WIREFRAME
+	};
 }
 
 namespace TextureBrowser

@@ -1,6 +1,8 @@
 #include "Camera.h"
-
 #include <QtMath>
+
+const float Camera::_DEFAULT_YAW = -90.0f;
+const float Camera::_DEFAULT_PITCH = 0.0f;
 
 Camera::Camera(QVector3D position, QVector3D up, float yaw, float pitch,
 	float fov, float mouseSensitivity, float movementSpeed)

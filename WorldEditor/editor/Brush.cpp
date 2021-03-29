@@ -674,7 +674,7 @@ Brush::Brush(Types::BrushJSON& brushData)
 	if (brushData.is_default_texture_missing)
 		defaultTexture = ResourceManager::getMissingTexture();
 	else
-		defaultTexture = ResourceManager::getTexture(brushData.default_texture_path.c_str());
+		defaultTexture = ResourceManager::getTexture(brushData.default_texture_path.c_str(), false);
 	m_defaultTexture = defaultTexture;
 
 	std::unordered_map<int, QVector3D*> indexMap;
@@ -729,7 +729,7 @@ Brush::Brush(Types::BrushJSON& brushData)
 		if (polygonData.is_texture_missing)
 			texture = ResourceManager::getMissingTexture();
 		else
-			texture = ResourceManager::getTexture(polygonData.texture_path.c_str());
+			texture = ResourceManager::getTexture(polygonData.texture_path.c_str(), false);
 
 		polygon->isUsingColor = false;
 		polygon->color = QVector3D(brushData.color.r, brushData.color.g, brushData.color.b);
@@ -1068,7 +1068,7 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 		GLCall(m_program3D->setUniformValue("u_UniformColor", m_uniformColor));
 	};
 
-	if (!m_isUsingColor && !global->m_isDrawingLines && !global->m_isWireframeMode)
+	if (!m_isUsingColor && global->drawMode == Types::DrawMode::TEXTURED)
 	{
 		for (auto& renderCall : m_renderCalls)
 		{
@@ -1104,25 +1104,17 @@ void Brush::render3D(QOpenGLContext* context, QMatrix4x4& proj, const QVector3D&
 	useContext(context);
 	setUniforms();
 
-	if (global->m_isDrawingLines)
+	if (global->drawMode == Types::DrawMode::POLYGON)
 	{
 		GLCall(linesVao->bind());
 		GLCall(m_program3D->setUniformValue("u_IsUsingColor", true));
 		GLCall($->glDrawArrays(GL_LINES, 0, m_linesVerticesCount));
 	}
-	else
+	else if (global->drawMode == Types::DrawMode::WIREFRAME)
 	{
-		if (global->m_isWireframeMode)
-		{
-			GLCall(trianglesLinesVao->bind());
-			GLCall(m_program3D->setUniformValue("u_IsUsingColor", true));
-			GLCall($->glDrawArrays(GL_LINES, 0, m_trianglesLinesVerticesCount));
-		}
-		else
-		{
-			GLCall(trianglesVao->bind());
-			GLCall($->glDrawArrays(GL_TRIANGLES, 0, m_trianglesVerticesCount));
-		}
+		GLCall(trianglesLinesVao->bind());
+		GLCall(m_program3D->setUniformValue("u_IsUsingColor", true));
+		GLCall($->glDrawArrays(GL_LINES, 0, m_trianglesLinesVerticesCount));
 	}
 }
 

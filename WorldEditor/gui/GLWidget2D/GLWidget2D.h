@@ -45,6 +45,7 @@ public:
 	GLWidget2D(Axis axis, Camera* camera, Renderer2D* renderer, Scene* scene, QWidget* parent = nullptr);
 	~GLWidget2D();
 	void discardClipping();
+	void setZoom(SceneZoom zoom);
 
 signals:
 	void shown(GLWidget2D* instance);
