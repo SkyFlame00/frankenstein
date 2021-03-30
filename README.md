@@ -4,15 +4,13 @@ Contents:
 * [What is it?](#what-is-it)
 * [World Editor](#world-editor)
   * [How to configure World Editor](#how-to-configure-world-Editor)
-
-<details>
-  <summary></summary>
-
-</details>
+  * [World Editor features](#world-editor-features)
+  * [Hotkeys & Shortcuts](#hotkeys-shortcuts)
+  * [Notes](#notes)
 
 ## What is it?
 
-This is a 3D multiplayer shooter with two game modes: deathmatch and team deathmatch. The game is being created from scratch using C++ and OpenGL. Along with the game comes a level editor called World Editor. This is just my portfolio project, so don't expect anything incredible.
+This is a 3D multiplayer shooter with two game modes: deathmatch and team deathmatch. The game is being created from scratch using C++ and OpenGL. Along with the game comes a level editor called World Editor (inspired by Valve Hammer Editor). This is just my portfolio project, so don't expect anything incredible.
 
 Why such a bizarre name is used? I conceived it as a mix of Half-Life, Quake and maybe Call of Duty (if I manage to implement killcam on time). Maps are from Half-Life (apart from its own), boosts are from Quake, weapons are from both. And the name is also a pun and refers to one of the first three-dimensional shooters - Wolfenstein 3D.
 
@@ -103,7 +101,7 @@ In the editor you can:
 * Press `[` to increase grid's scale and `]` to decrease
 
 ### Notes
-* Although some optimizations were introduced during the development, the overall performance is relatively poor so far. Possible further optimizations:
+* Although some optimizations were introduced during the development, the overall performance is relatively poor. Possible further optimizations:
   * sending 2D grids' data to the GPU once beforehand (not on each render as it is now)
   * the same can be applied to the points on the 2D grids and construction blocks (images of brushes that are created when using brush creating tool)
 * Creating map outside of the grid is not guaranteed to work correctly
