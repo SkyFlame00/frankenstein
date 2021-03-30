@@ -30,64 +30,64 @@ In the editor you can:
 
 <details>
   <summary>1. Move around, zoom in and out, increase or decrease scale of two-dimensional grids</summary>
-  ![Grid actions example][grid]
+  <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/grid.gif">
 
 </details>
 
 <details>
   <summary>2. Change windows layout proportions by dragging the horizontal, vertical or central handle</summary>
-  ![Handles dragging example][handles dragging]
+  <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/handles_dragging.gif">
 
 </details>
 
 <details>
   <summary>3. Create blocks called brushes that you build the level's geometry with</summary>
-  ![Brushes creating example][brushes creating]
+  <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/brush_creating.gif">
 
 </details>
 
 <details>
   <summary>4. Move brushes around and change their size</summary>
-  ![Brush actions example][brush actions]
+  <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/brush_actions.gif">
 
 </details>
 
 <details>
     <summary>5. Clip brushes. After clipping a brush can also be moved, resized or clipped again</summary>
-    ![Brush clipping example][brush clipping]  
+    <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/brush_clipping.gif">  
     CGAL was used to make [convex hulls](https://doc.cgal.org/latest/Convex_hull_3/index.html#Chapter_3D_Convex_Hulls) from given sets of vertices.
 
 </details>
 
 <details>
   <summary>6. Switch between a couple of viewing modes in 3D viewer: texture mode, polygon mode and wireframe mode</summary>
-  ![Viewing modes example][viewing modes]
+  <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/view_modes.gif">
 
 </details>
 
 <details>
     <summary>7. Display normals of polygons</summary>
-    ![Normals][normals]
+    <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/normals.gif">  
     You can toggle display with `Q` button.
 
 </details>
 
 <details>
     <summary>8. Attach different textures to brushes</summary>
-    ![Textures changing][textures changing]
+    <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/textures_changing.gif">  
     You can select multiple textures by holding `Left Ctrl` button while clicking on a polygon. There is a small optimization made to rendering multiple textures: for a particular brush in a single render call the algorithm tries to attach as many textures as your GPU allows (but no more than 32 as OpenGL specifies). If the maximum textures limit is exceeded for a particular brush, it will be rendered with more than one draw call.
 
 </details>
 
 <details>
     <summary>9. Shift, scale and rotate textures</summary>
-    ![Textures actions][textures actions]
+    <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/textures_actions.gif">  
 
 </details>
 
 <details>
     <summary>10. Save maps in JSON format and then open them</summary>
-    ![Maps saving][maps saving]
+    <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/maps_saving.gif">  
 
 </details>
 
