@@ -373,6 +373,7 @@ Brush::Brush(QList<QVector3D>& cubeVertices, Texture& texture, bool isUsingColor
 	for (auto* polygon : m_polygons)
 		calcTexCoords(polygon);
 
+	calcMetrics();
 	calcPolygonsCenters();
 	correctNormals();
 	setupTextures();
@@ -655,6 +656,7 @@ Brush::Brush(Polyhedron_3& polyhedron, Brush* parentBrush)
 		*v -= shift;
 	}
 
+	calcMetrics();
 	calcPolygonsCenters();
 	calcBoundingBox();
 	recalcParams();
@@ -759,8 +761,9 @@ Brush::Brush(Types::BrushJSON& brushData)
 	}
 
 	calcPolygonsCenters();
-	correctNormals();
+	//correctNormals();
 	calcBoundingBox();
+	calcMetrics();
 	setupTextures();
 	setup();
 }
@@ -1349,9 +1352,21 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 		newVertices[v] = vertex;
 	}
 
+	std::unordered_map<Types::Polygon*, QVector3D> newNorms;
+	for (auto* polygon : m_polygons)
+	{
+		auto v0 = newVertices[polygon->vertices[0]];
+		auto v1 = newVertices[polygon->vertices[1]];
+		auto v2 = newVertices[polygon->vertices[2]];
+		QVector3D norm = QVector3D::crossProduct(v0 - v1, v0 - v2);
+		norm.normalize();
+		newNorms[polygon] = norm;
+	}
+
 	for (auto* polygon : m_polygons)
 	{
 		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
+		//QMatrix4x4 model2 = get2DTransformMatrix(newNorms[polygon]);
 
 		for (auto* v : polygon->vertices)
 		{
@@ -1361,8 +1376,8 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 			QVector3D shift = newPos - oldPos;
 
 			auto& texCoord = polygon->verticesMap[v];
-			texCoord.setX(texCoord.x() + shift.x() / polygon->textureWidth * Constants::TEXTURE_MAGNIFYING_FACTOR);
-			texCoord.setY(texCoord.y() + shift.y() / polygon->textureHeight * Constants::TEXTURE_MAGNIFYING_FACTOR);
+			texCoord.setX(texCoord.x() + shift.x() / static_cast<float>(polygon->textureWidth));
+			texCoord.setY(texCoord.y() + shift.y() / static_cast<float>(polygon->textureHeight));
 		}
 	}
 
@@ -1430,11 +1445,13 @@ void Brush::calcResize(Axis axis, bool isHorizontal, bool isReversed, float step
 		}
 	}
 
+	calcMetrics();
 	calcPolygonsCenters();
 	recalcParams();
 	makeTrianglesBufferData();
 	makeLinesBufferData();
 	makeTrianglesLinesBufferData();
+	makeNormalsBufferData();
 }
 
 void Brush::doMoveStep(Axis axis, QVector2D pos, float step)
@@ -1591,8 +1608,8 @@ void Brush::calcTexCoords(Types::Polygon* polygon)
 	{
 		QMatrix4x4 model = get2DTransformMatrix(polygon->norm);
 		QVector3D position = model * *v;
-		float x = (position.x() - polygon->minX) / polygon->textureWidth * Constants::TEXTURE_MAGNIFYING_FACTOR;
-		float y = (position.y() - polygon->minY) / polygon->textureHeight * Constants::TEXTURE_MAGNIFYING_FACTOR;
+		float x = (position.x() - polygon->minX) / polygon->textureWidth;
+		float y = (position.y() - polygon->minY) / polygon->textureHeight;
 		polygon->verticesMap[v] = QVector2D(x, y);
 	}
 }
@@ -1633,7 +1650,7 @@ QMatrix4x4 Brush::get2DTransformMatrix(QVector3D norm)
 		QVector3D rotationAxis = QVector3D::crossProduct(projectionVec, norm);
 		float cos = QVector3D::dotProduct(norm, projectionVec) / (norm.length() * projectionVec.length());
 		float acos = -qRadiansToDegrees(qAcos(cos));
-		transform.rotate(acos, rotationAxis);
+		transform.rotate(acos, -rotationAxis);
 	}
 
 	if (shouldRotate(projectionVec))
@@ -1664,8 +1681,8 @@ void Brush::recalcParams()
 		polygon->c = norm.z();
 		polygon->d = -QVector3D::dotProduct(norm, v0);
 	}
-	
-	makeNormalsBufferData();
+
+	//correctNormals();
 }
 
 void Brush::selectPolygon(Types::Polygon* polygon)
@@ -1733,7 +1750,7 @@ void Brush::makeNormalsBufferData()
 	
 	for (auto* polygon : m_polygons)
 	{
-		QVector3D end(polygon->center + polygon->norm);
+		QVector3D end(polygon->center + polygon->norm * 30.0f);
 		lines.push_back({ polygon->center, end });
 		addVertex(polygon->center);
 		addVertex(end);
@@ -1784,4 +1801,11 @@ void Brush::correctNormals()
 			polygon->d = -QVector3D::dotProduct(polygon->norm, *polygon->vertices[0]);
 		}
 	}
+}
+
+void Brush::calcMetrics()
+{
+	m_width = std::abs(m_boundingBox.startX - m_boundingBox.endX);
+	m_height = std::abs(m_boundingBox.startY - m_boundingBox.endY);
+	m_length = std::abs(m_boundingBox.startZ - m_boundingBox.endZ);
 }

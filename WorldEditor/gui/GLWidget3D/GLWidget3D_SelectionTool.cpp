@@ -19,6 +19,7 @@ void GLWidget3D::processSelectionTool()
 
 		if (!isBrushPicked)
 		{
+			GlobalData::hideBrushMetrics();
 			return;
 		}
 
@@ -30,6 +31,8 @@ void GLWidget3D::processSelectionTool()
 
 		data.renderable = brush;
 		brush->m_selected = true;
+		GlobalData::showBrushMetrics();
+		GlobalData::updateBrushMetrics(brush->getWidth(), brush->getHeight(), brush->getLength());
 	}
 }
 

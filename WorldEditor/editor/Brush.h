@@ -45,6 +45,9 @@ public:
 	/* Normals should always point towards outside of the polygon. Otherwise, we correct them */
 	void correctNormals();
 	void calcResize(Axis axis, bool isHorizontal, bool isReversed, float steps) override;
+	inline int getWidth() { return m_width; }
+	inline int getHeight() { return m_height; }
+	inline int getLength() { return m_length; }
 
 	QVector3D m_origin = QVector3D(0, 0, 0);
 	bool m_selected = false;
@@ -88,7 +91,11 @@ private:
 	QMatrix4x4 get2DTransformMatrix(QVector3D norm);
 	void recalcParams();
 	void calcBoundingBox();
+	void calcMetrics();
 
+	int m_width;
+	int m_height;
+	int m_length;
 	QList<QVector3D*> m_uniqueVertices;
 	QList<Types::Edge> m_uniqueEdges;
 	int m_verticesCount = 0;

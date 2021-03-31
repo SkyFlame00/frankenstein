@@ -50,7 +50,7 @@ MainWindow::MainWindow()
 	setupToolsMenu();
 	setupTopToolbar();
 	setupLeftToolbar();
-	setupDocks();
+	setupBottomToolbar();
 	setupEditor();
 	setupWindows();
 	enableMouseTracking();
@@ -220,8 +220,13 @@ void MainWindow::setupLeftToolbar()
 	m_selectionToolButton->setChecked(true);
 }
 
-void MainWindow::setupDocks()
+void MainWindow::setupBottomToolbar()
 {
+	m_bottomToolbar = new QToolBar;
+	m_bottomToolbar->setMovable(false);
+	m_brushMetricsLabel = new QLabel(m_bottomToolbar);
+	m_bottomToolbar->addWidget(m_brushMetricsLabel);
+	addToolBar(Qt::ToolBarArea::BottomToolBarArea, m_bottomToolbar);
 }
 
 void MainWindow::setupEditor()

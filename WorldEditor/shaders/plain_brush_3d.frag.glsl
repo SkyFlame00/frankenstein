@@ -90,7 +90,6 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId
     {
         ambient  = light.ambient  * u_UniformColor;
         diffuse  = light.diffuse  * diff * u_UniformColor;
-        specular = light.specular * spec * u_UniformColor;
     }
     else
     {
@@ -101,5 +100,5 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, int activeTextureId
         #endif
     }
 
-    return (ambient + diffuse /*+ specular*/);
+    return (ambient + diffuse);
 }

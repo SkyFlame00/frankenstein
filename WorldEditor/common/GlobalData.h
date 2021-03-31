@@ -30,6 +30,9 @@ public:
 	static void onContextReady();
 	static void clearScene();
 	static void loadConfiguration();
+	static void showBrushMetrics();
+	static void hideBrushMetrics();
+	static void updateBrushMetrics(int width, int height, int length);
 	
 	struct {
 		BlockToolState state = BlockToolState::CREATING;

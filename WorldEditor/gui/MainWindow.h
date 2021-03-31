@@ -34,6 +34,7 @@ public:
 	inline static QAction* getBlockToolButton() { return m_instance->m_blockToolButton; }
 	inline static QAction* getClippingToolButton() { return m_instance->m_clippingToolButton; }
 	inline static QAction* getTextureToolButton() { return m_instance->m_textureToolButton; }
+	inline static QLabel* getBrushMetricsLabel() { return m_instance->m_brushMetricsLabel; }
 	
 	QMenuBar* menuBar;
 	QMenu* fileMenu;
@@ -54,7 +55,7 @@ private:
 	void setupToolsMenu();
 	void setupTopToolbar();
 	void setupLeftToolbar();
-	void setupDocks();
+	void setupBottomToolbar();
 	void setupEditor();
 	void setupWindows();
 	void enableMouseTracking();
@@ -120,6 +121,10 @@ private:
 	QAction* m_blockToolButton;
 	QAction* m_clippingToolButton;
 	QAction* m_textureToolButton;
+
+	/* Bottom toolbar */
+	QToolBar* m_bottomToolbar;
+	QLabel* m_brushMetricsLabel;
 
 	TextureToolDialog* m_textureToolDialog = nullptr;
 	SettingsWindow* m_settingsWindow = nullptr;

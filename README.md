@@ -4,9 +4,11 @@ Contents:
 * [What is it?](#what-is-it)
 * [World Editor](#world-editor)
   * [How to configure World Editor](#how-to-configure-world-Editor)
+  * [Give it a try without compiling](#give-it-a-try-without-compiling)
   * [World Editor features](#world-editor-features)
   * [Hotkeys & Shortcuts](#hotkeys-shortcuts)
   * [Notes](#notes)
+  * [Example](#example)
 
 ## What is it?
 
@@ -19,6 +21,10 @@ Why such a bizarre name is used? I conceived it as a mix of Half-Life, Quake and
 ### How to configure World Editor
 
 World Editor is being created with Qt 5.15, so you need to install and properly configure it in Visual Studio (see Qt Visual Studio Add-in). You also need to adjust paths for additional include and library directories to reflect your file system structure. 
+
+### Give it a try without compiling
+
+Download the latest binaries in the release section and run `WorldEditor.exe`.
 
 ### World Editor features
 
@@ -53,7 +59,7 @@ In the editor you can (click on an item to reveal the spoiler):
 <details>
     <summary>5. Clip brushes. After clipping a brush can also be moved, resized or clipped again</summary>
     <img src="https://raw.githubusercontent.com/SkyFlame00/frankenstein/master/WorldEditor/media/brush_clipping.gif">  
-    CGAL was used to make [convex hulls](https://doc.cgal.org/latest/Convex_hull_3/index.html#Chapter_3D_Convex_Hulls) from given sets of vertices.
+    CGAL was used to make <a href="https://doc.cgal.org/latest/Convex_hull_3/index.html#Chapter_3D_Convex_Hulls">convex hulls</a> from given sets of vertices.
 
 </details>
 
@@ -108,13 +114,11 @@ In the editor you can (click on an item to reveal the spoiler):
 * The default path to textures is `resources/textures`. If there is no textures present in this directory, the texture browser will be empty. You can change the destination in `Tools -> Settings -> Textures -> Path to textures`
 * The configuration file is stored as `worldeditor.config.json` in the root folder. It is created once you change the default path to textures
 
-[grid]: WorldEditor/media/grid.gif
-[handles dragging]: WorldEditor/media/handles_dragging.gif
-[brushes creating]: WorldEditor/media/brushes_creating.gif
-[brush actions]: WorldEditor/media/brush_actions.gif
-[brush clipping]: WorldEditor/media/brush_clipping.gif
-[viewing modes]: WorldEditor/media/view_modes.gif
-[normals]: WorldEditor/media/normals.gif
-[textures changing]: WorldEditor/media/textures_changing.gif
-[textures actions]: WorldEditor/media/textures_actions.gif
-[maps saving]: WorldEditor/media/maps_saving.gif
+### Example
+A small piece of de_dust2 map from Counter-Strike was recreated in WorldEditor. You can find it in the release archive in the `test_maps` folder.
+
+![de_dust2 textured view](WorldEditor/media/de_dust2_textured.png)
+*Textured view*
+
+![de_dust2 polygon view](WorldEditor/media/de_dust2_polygon.png)
+*Polygon view*

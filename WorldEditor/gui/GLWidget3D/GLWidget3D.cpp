@@ -57,7 +57,7 @@ void GLWidget3D::updateCamera()
 {
 	auto global = GlobalData::getInstance();
 	bool isWidgetActive = isCameraMode() || m_inputData.isMouseOver;
-	float deltaSec = m_timeDelta / 1000.0f;
+	float deltaSec = m_timeDelta / 100.0f;
 	auto& cdata = global->m_clippingToolData;
 	auto& sdata = global->m_selectionToolData;
 	

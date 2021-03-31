@@ -288,3 +288,25 @@ void GlobalData::loadConfiguration()
 		texturesPath = config.texture_settings.texture_path.c_str();
 	}
 }
+
+void GlobalData::showBrushMetrics()
+{
+	auto* label = MainWindow::getInstance()->getBrushMetricsLabel();
+	label->show();
+}
+
+void GlobalData::hideBrushMetrics()
+{
+	auto* label = MainWindow::getInstance()->getBrushMetricsLabel();
+	label->setText("");
+	label->hide();
+}
+
+void GlobalData::updateBrushMetrics(int width, int height, int length)
+{
+	auto* label = MainWindow::getInstance()->getBrushMetricsLabel();
+	auto w = QString(std::to_string(width).c_str());
+	auto h = QString(std::to_string(height).c_str());
+	auto l = QString(std::to_string(length).c_str());
+	label->setText("Width: " + w + " | Height: " + h + " | Length: " + l);
+}

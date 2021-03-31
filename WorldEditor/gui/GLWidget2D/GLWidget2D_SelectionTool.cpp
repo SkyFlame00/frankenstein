@@ -75,6 +75,9 @@ void GLWidget2D::processSelectionTool()
 
 			stepsX += deltaStepsX;
 			stepsY += deltaStepsY;
+			GlobalData::showBrushMetrics();
+			GlobalData::updateBrushMetrics(data->renderable->getWidth(), data->renderable->getHeight(),
+				data->renderable->getLength());
 		}
 		else if (m_inputData.leftMouseDown == ButtonDownState::RELEASED_NOT_PROCESSED)
 		{
